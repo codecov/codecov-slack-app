@@ -70,7 +70,10 @@ class Migration(migrations.Migration):
                 ("incoming_webhook_url", models.TextField(null=True)),
                 ("incoming_webhook_channel", models.TextField(null=True)),
                 ("incoming_webhook_channel_id", models.TextField(null=True)),
-                ("incoming_webhook_configuration_url", models.TextField(null=True)),
+                (
+                    "incoming_webhook_configuration_url",
+                    models.TextField(null=True),
+                ),
                 ("is_enterprise_install", models.BooleanField(null=True)),
                 ("token_type", models.CharField(max_length=32, null=True)),
                 ("installed_at", models.DateTimeField()),
@@ -108,7 +111,12 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="slackbot",
             index=models.Index(
-                fields=["client_id", "enterprise_id", "team_id", "installed_at"],
+                fields=[
+                    "client_id",
+                    "enterprise_id",
+                    "team_id",
+                    "installed_at",
+                ],
                 name="core_slackb_client__8c6e8e_idx",
             ),
         ),

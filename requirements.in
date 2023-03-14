@@ -2,3 +2,5 @@ asgiref
 Django
 psycopg2-binary
 sqlparse
+slack-sdk
+slack_bolt
