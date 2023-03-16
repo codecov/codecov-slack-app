@@ -100,7 +100,7 @@ class TestDjangoInstallationStore(TestCase):
         row = self.store.find_bot(
             team_id=self.bot.team_id, enterprise_id=self.bot.enterprise_id
         )
-        assert row is None
+        self.assertIsNone(row)
 
     def test_find_bot(self):
         self.store.save_bot(self.bot)
@@ -116,7 +116,7 @@ class TestDjangoInstallationStore(TestCase):
         row = self.store.find_installation(
             team_id=self.bot.team_id, enterprise_id=self.bot.enterprise_id
         )
-        assert row is None
+        self.assertIsNone(row)
 
     def test_find_installation(self):
         self.store.save(self.installation)
