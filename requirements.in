@@ -4,3 +4,4 @@ psycopg2-binary
 sqlparse
 slack-sdk
 slack_bolt
+pytest-django

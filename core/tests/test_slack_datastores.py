@@ -57,7 +57,7 @@ class TestDjangoOAuthStateStore(TestCase):
 
 class TestDjangoInstallationStore(TestCase):
     def setUp(self):
-        self.client_id = str(uuid4())
+        self.client_id = str(uuid4())[:32]
         self.logger = Logger(__name__)
         self.store = DjangoInstallationStore(self.client_id, self.logger)
         self.installation = Installation(
