@@ -73,5 +73,14 @@ class SlackInstallation(models.Model):
 
 
 class SlackOAuthState(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "state",
+                ]
+            ),
+        ]
+
     state = models.CharField(null=False, max_length=64)
     expire_at = models.DateTimeField(null=False)

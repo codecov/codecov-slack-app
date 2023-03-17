@@ -26,10 +26,6 @@ class DjangoInstallationStore(InstallationStore):
         self.client_id = client_id
         self._logger = logger
 
-    @property
-    def logger(self) -> Logger:
-        return self._logger
-
     def save(self, installation: Installation):
         i = installation.to_dict()
         if is_naive(i["installed_at"]):
@@ -43,14 +39,13 @@ class DjangoInstallationStore(InstallationStore):
         ):
             i["user_token_expires_at"] = make_aware(i["user_token_expires_at"])
         i["client_id"] = self.client_id
-        row_to_update = (
-            SlackInstallation.objects.filter(client_id=self.client_id)
-            .filter(enterprise_id=installation.enterprise_id)
-            .filter(team_id=installation.team_id)
-            .filter(installed_at=i["installed_at"])
-            .first()
-        )
-        if row_to_update is not None:
+        row_to_update = SlackInstallation.objects.filter(
+            client_id=self.client_id,
+            enterprise_id=installation.enterprise_id,
+            team_id=installation.team_id,
+            installed_at=i["installed_at"],
+        ).first()
+        if row_to_update:
             for key, value in i.items():
                 setattr(row_to_update, key, value)
             row_to_update.save()
@@ -69,14 +64,13 @@ class DjangoInstallationStore(InstallationStore):
             b["bot_token_expires_at"] = make_aware(b["bot_token_expires_at"])
         b["client_id"] = self.client_id
 
-        row_to_update = (
-            SlackBot.objects.filter(client_id=self.client_id)
-            .filter(enterprise_id=bot.enterprise_id)
-            .filter(team_id=bot.team_id)
-            .filter(installed_at=b["installed_at"])
-            .first()
-        )
-        if row_to_update is not None:
+        row_to_update = SlackBot.objects.filter(
+            client_id=self.client_id,
+            enterprise_id=bot.enterprise_id,
+            team_id=bot.team_id,
+            installed_at=b["installed_at"],
+        ).first()
+        if row_to_update:
             for key, value in b.items():
                 setattr(row_to_update, key, value)
             row_to_update.save()
@@ -94,25 +88,25 @@ class DjangoInstallationStore(InstallationStore):
         t_id = team_id or None
         if is_enterprise_install:
             t_id = None
-        rows = (
-            SlackBot.objects.filter(client_id=self.client_id)
-            .filter(enterprise_id=e_id)
-            .filter(team_id=t_id)
-            .order_by(F("installed_at").desc())[:1]
+        row = (
+            SlackBot.objects.filter(
+                client_id=self.client_id, enterprise_id=e_id, team_id=t_id
+            )
+            .order_by(F("installed_at").desc())
+            .first()
         )
-        if len(rows) > 0:
-            b = rows[0]
+        if row:
             return Bot(
-                app_id=b.app_id,
-                enterprise_id=b.enterprise_id,
-                team_id=b.team_id,
-                bot_token=b.bot_token,
-                bot_refresh_token=b.bot_refresh_token,
-                bot_token_expires_at=b.bot_token_expires_at,
-                bot_id=b.bot_id,
-                bot_user_id=b.bot_user_id,
-                bot_scopes=b.bot_scopes,
-                installed_at=b.installed_at,
+                app_id=row.app_id,
+                enterprise_id=row.enterprise_id,
+                team_id=row.team_id,
+                bot_token=row.bot_token,
+                bot_refresh_token=row.bot_refresh_token,
+                bot_token_expires_at=row.bot_token_expires_at,
+                bot_id=row.bot_id,
+                bot_user_id=row.bot_user_id,
+                bot_scopes=row.bot_scopes,
+                installed_at=row.installed_at,
             )
         return None
 
@@ -130,60 +124,67 @@ class DjangoInstallationStore(InstallationStore):
         if is_enterprise_install:
             t_id = None
         if user_id is None:
-            rows = (
-                SlackInstallation.objects.filter(client_id=self.client_id)
-                .filter(enterprise_id=e_id)
-                .filter(team_id=t_id)
-                .order_by(F("installed_at").desc())[:1]
+            row = (
+                SlackInstallation.objects.filter(
+                    client_id=self.client_id, enterprise_id=e_id, team_id=t_id
+                )
+                .order_by(F("installed_at").desc())
+                .first()
             )
         else:
-            rows = (
-                SlackInstallation.objects.filter(client_id=self.client_id)
-                .filter(enterprise_id=e_id)
-                .filter(team_id=t_id)
-                .filter(user_id=user_id)
-                .order_by(F("installed_at").desc())[:1]
+            row = (
+                SlackInstallation.objects.filter(
+                    client_id=self.client_id,
+                    enterprise_id=e_id,
+                    team_id=t_id,
+                    user_id=user_id,
+                )
+                .order_by(F("installed_at").desc())
+                .first()
             )
 
-        if len(rows) > 0:
-            i = rows[0]
+        if row:
             if user_id is not None:
                 # Fetch the latest bot token
-                latest_bot_rows = (
-                    SlackInstallation.objects.filter(client_id=self.client_id)
+                latest_bot_row = (
+                    SlackInstallation.objects.filter(
+                        client_id=self.client_id,
+                        enterprise_id=e_id,
+                        team_id=t_id,
+                    )
                     .exclude(bot_token__isnull=True)
-                    .filter(enterprise_id=e_id)
-                    .filter(team_id=t_id)
-                    .order_by(F("installed_at").desc())[:1]
+                    .order_by(F("installed_at").desc())
+                    .first()
                 )
-                if len(latest_bot_rows) > 0:
-                    b = latest_bot_rows[0]
-                    i.bot_id = b.bot_id
-                    i.bot_user_id = b.bot_user_id
-                    i.bot_scopes = b.bot_scopes
-                    i.bot_token = b.bot_token
-                    i.bot_refresh_token = b.bot_refresh_token
-                    i.bot_token_expires_at = b.bot_token_expires_at
+                if latest_bot_row:
+                    row.bot_id = latest_bot_row.bot_id
+                    row.bot_user_id = latest_bot_row.bot_user_id
+                    row.bot_scopes = latest_bot_row.bot_scopes
+                    row.bot_token = latest_bot_row.bot_token
+                    row.bot_refresh_token = latest_bot_row.bot_refresh_token
+                    row.bot_token_expires_at = (
+                        latest_bot_row.bot_token_expires_at
+                    )
 
             return Installation(
-                app_id=i.app_id,
-                enterprise_id=i.enterprise_id,
-                team_id=i.team_id,
-                bot_token=i.bot_token,
-                bot_refresh_token=i.bot_refresh_token,
-                bot_token_expires_at=i.bot_token_expires_at,
-                bot_id=i.bot_id,
-                bot_user_id=i.bot_user_id,
-                bot_scopes=i.bot_scopes,
-                user_id=i.user_id,
-                user_token=i.user_token,
-                user_refresh_token=i.user_refresh_token,
-                user_token_expires_at=i.user_token_expires_at,
-                user_scopes=i.user_scopes,
-                incoming_webhook_url=i.incoming_webhook_url,
-                incoming_webhook_channel_id=i.incoming_webhook_channel_id,
-                incoming_webhook_configuration_url=i.incoming_webhook_configuration_url,
-                installed_at=i.installed_at,
+                app_id=row.app_id,
+                enterprise_id=row.enterprise_id,
+                team_id=row.team_id,
+                bot_token=row.bot_token,
+                bot_refresh_token=row.bot_refresh_token,
+                bot_token_expires_at=row.bot_token_expires_at,
+                bot_id=row.bot_id,
+                bot_user_id=row.bot_user_id,
+                bot_scopes=row.bot_scopes,
+                user_id=row.user_id,
+                user_token=row.user_token,
+                user_refresh_token=row.user_refresh_token,
+                user_token_expires_at=row.user_token_expires_at,
+                user_scopes=row.user_scopes,
+                incoming_webhook_url=row.incoming_webhook_url,
+                incoming_webhook_channel_id=row.incoming_webhook_channel_id,
+                incoming_webhook_configuration_url=row.incoming_webhook_configuration_url,
+                installed_at=row.installed_at,
             )
         return None
 
@@ -198,10 +199,6 @@ class DjangoOAuthStateStore(OAuthStateStore):
     ):
         self.expiration_seconds = expiration_seconds
         self._logger = logger
-
-    @property
-    def logger(self) -> Logger:
-        return self._logger
 
     # Generate a random state value and store it in the database
     def issue(self) -> str:
@@ -219,7 +216,6 @@ class DjangoOAuthStateStore(OAuthStateStore):
             expire_at__gte=timezone.now()
         )
         if len(rows) > 0:
-            for row in rows:
-                row.delete()
+            rows.delete()
             return True
         return False

@@ -1,8 +1,0 @@
-# Byte-compiled
-__pycache__/
-core/migrations/__pycache__/
-core/__pycache__/
-
-# Django stuff:
-*.log
-db.sqlite3
