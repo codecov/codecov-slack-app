@@ -68,8 +68,19 @@ class TestDjangoInstallationStore(TestCase):
             bot_token="test-bot-token",
             bot_id="test-bot-id",
             bot_user_id="test-bot-user-id",
-            bot_scopes=["test-bot-scope"],
-            installed_at=timezone.now(),
+            bot_scopes="test-bot-scope",
+            installed_at="20230317",
+        )
+        self.second_installation = Installation(
+            app_id="test-app-id",
+            enterprise_id="test-enterprise-id",
+            team_id="test-installation-team-id",
+            user_id="test-user-id",
+            bot_token="test-bot-token",
+            bot_id="test-bot-id",
+            bot_user_id="other-test-bot-user-id",
+            bot_scopes="other-test-bot-scope",
+            installed_at="20230317",
         )
         self.bot = Bot(
             app_id="test-app-id",
@@ -78,7 +89,7 @@ class TestDjangoInstallationStore(TestCase):
             bot_token="test-bot-token",
             bot_id="test-bot-id",
             bot_user_id="test-bot-user-id",
-            bot_scopes=["test-bot-scope"],
+            bot_scopes="test-bot-scope",
             installed_at=timezone.now(),
         )
 
@@ -86,6 +97,18 @@ class TestDjangoInstallationStore(TestCase):
         self.store.save(self.installation)
         row = SlackInstallation.objects.get(client_id=self.store.client_id)
         self.assertEqual(row.enterprise_id, self.installation.enterprise_id)
+        self.assertEqual(row.team_id, self.installation.team_id)
+        self.assertEqual(row.user_id, self.installation.user_id)
+
+    def test_update_if_exists(self):
+        self.store.save(self.installation)
+        self.store.save(self.second_installation)
+        row = SlackInstallation.objects.filter(
+            client_id=self.store.client_id
+        ).first()
+
+        self.assertEqual(row.bot_user_id, self.second_installation.bot_user_id)
+        self.assertNotEqual(row.bot_user_id, self.installation.bot_user_id)
         self.assertEqual(row.team_id, self.installation.team_id)
         self.assertEqual(row.user_id, self.installation.user_id)
 

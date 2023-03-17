@@ -39,19 +39,53 @@ class DjangoInstallationStore(InstallationStore):
         ):
             i["user_token_expires_at"] = make_aware(i["user_token_expires_at"])
         i["client_id"] = self.client_id
-        row_to_update = SlackInstallation.objects.filter(
+        slack_installation = SlackInstallation.objects.filter(
             client_id=self.client_id,
             enterprise_id=installation.enterprise_id,
             team_id=installation.team_id,
             installed_at=i["installed_at"],
         ).first()
-        if row_to_update:
-            for key, value in i.items():
-                setattr(row_to_update, key, value)
-            row_to_update.save()
-        else:
-            SlackInstallation(**i).save()
 
+        if slack_installation is None:
+            slack_installation = SlackInstallation()
+
+        slack_installation.client_id = self.client_id
+        slack_installation.app_id = installation.app_id
+        slack_installation.enterprise_id = installation.enterprise_id
+        slack_installation.enterprise_name = installation.enterprise_name
+        slack_installation.enterprise_url = installation.enterprise_url
+        slack_installation.team_id = installation.team_id
+        slack_installation.team_name = installation.team_name
+        slack_installation.bot_token = installation.bot_token
+        slack_installation.bot_refresh_token = installation.bot_refresh_token
+        slack_installation.bot_token_expires_at = i["bot_token_expires_at"]
+        slack_installation.bot_id = installation.bot_id
+        slack_installation.bot_user_id = installation.bot_user_id
+        slack_installation.bot_scopes = installation.bot_scopes
+        slack_installation.user_id = installation.user_id
+        slack_installation.user_token = installation.user_token
+        slack_installation.user_refresh_token = installation.user_refresh_token
+        slack_installation.user_token_expires_at = i["user_token_expires_at"]
+        slack_installation.user_scopes = installation.user_scopes
+        slack_installation.incoming_webhook_url = (
+            installation.incoming_webhook_url
+        )
+        slack_installation.incoming_webhook_channel = (
+            installation.incoming_webhook_channel
+        )
+        slack_installation.incoming_webhook_channel_id = (
+            installation.incoming_webhook_channel_id
+        )
+        slack_installation.incoming_webhook_configuration_url = (
+            installation.incoming_webhook_configuration_url
+        )
+        slack_installation.is_enterprise_install = (
+            installation.is_enterprise_install
+        )
+        slack_installation.token_type = installation.token_type
+        slack_installation.installed_at = i["installed_at"]
+
+        slack_installation.save()
         self.save_bot(installation.to_bot())
 
     def save_bot(self, bot: Bot):
@@ -64,18 +98,32 @@ class DjangoInstallationStore(InstallationStore):
             b["bot_token_expires_at"] = make_aware(b["bot_token_expires_at"])
         b["client_id"] = self.client_id
 
-        row_to_update = SlackBot.objects.filter(
+        slack_bot = SlackBot.objects.filter(
             client_id=self.client_id,
             enterprise_id=bot.enterprise_id,
             team_id=bot.team_id,
             installed_at=b["installed_at"],
         ).first()
-        if row_to_update:
-            for key, value in b.items():
-                setattr(row_to_update, key, value)
-            row_to_update.save()
-        else:
-            SlackBot(**b).save()
+
+        if slack_bot is None:
+            slack_bot = SlackBot()
+
+        slack_bot.client_id = self.client_id
+        slack_bot.app_id = bot.app_id
+        slack_bot.enterprise_id = bot.enterprise_id
+        slack_bot.enterprise_name = bot.enterprise_name
+        slack_bot.team_id = bot.team_id
+        slack_bot.team_name = bot.team_name
+        slack_bot.bot_token = bot.bot_token
+        slack_bot.bot_refresh_token = bot.bot_refresh_token
+        slack_bot.bot_token_expires_at = b["bot_token_expires_at"]
+        slack_bot.bot_id = bot.bot_id
+        slack_bot.bot_user_id = bot.bot_user_id
+        slack_bot.bot_scopes = bot.bot_scopes
+        slack_bot.is_enterprise_install = bot.is_enterprise_install
+        slack_bot.installed_at = b["installed_at"]
+
+        slack_bot.save()
 
     def find_bot(
         self,
