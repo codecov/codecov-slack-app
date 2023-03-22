@@ -40,3 +40,31 @@ app = App(
 def hello_world(ack, say):
     ack()
     say("Hello world!")
+
+
+@app.event("app_home_opened")
+def update_home_tab(client, event, logger):
+    home_tab_blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Welcome to Codecov Slack app! :wave:\n\n"
+                "Use the `/codecov` command to interact with Codecov's public API.\n"
+                "For example, try typing `/codecov repos` to see a list of your repositories.\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Learn more about the Codecov API here:\n"
+                "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
+            },
+        }
+    ]
+
+    client.views_publish(
+        user_id=event["user"], view={"type": "home", "blocks": home_tab_blocks}
+    )
