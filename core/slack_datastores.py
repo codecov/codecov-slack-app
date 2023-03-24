@@ -38,7 +38,6 @@ class DjangoInstallationStore(InstallationStore):
             i["user_token_expires_at"]
         ):
             i["user_token_expires_at"] = make_aware(i["user_token_expires_at"])
-        i["client_id"] = self.client_id
         slack_installation = SlackInstallation.objects.filter(
             client_id=self.client_id,
             enterprise_id=installation.enterprise_id,
@@ -132,13 +131,11 @@ class DjangoInstallationStore(InstallationStore):
         team_id: Optional[str],
         is_enterprise_install: Optional[bool] = False,
     ) -> Optional[Bot]:
-        e_id = enterprise_id or None
-        t_id = team_id or None
         if is_enterprise_install:
-            t_id = None
+            team_id = None
         row = (
             SlackBot.objects.filter(
-                client_id=self.client_id, enterprise_id=e_id, team_id=t_id
+                client_id=self.client_id, enterprise_id=enterprise_id, team_id=team_id
             )
             .order_by(F("installed_at").desc())
             .first()
@@ -167,14 +164,12 @@ class DjangoInstallationStore(InstallationStore):
         user_id: Optional[str] = None,
         is_enterprise_install: Optional[bool] = False,
     ) -> Optional[Installation]:
-        e_id = enterprise_id or None
-        t_id = team_id or None
         if is_enterprise_install:
-            t_id = None
+            team_id = None
         if user_id is None:
             row = (
                 SlackInstallation.objects.filter(
-                    client_id=self.client_id, enterprise_id=e_id, team_id=t_id
+                    client_id=self.client_id, enterprise_id=enterprise_id, team_id=team_id
                 )
                 .order_by(F("installed_at").desc())
                 .first()
@@ -183,8 +178,8 @@ class DjangoInstallationStore(InstallationStore):
             row = (
                 SlackInstallation.objects.filter(
                     client_id=self.client_id,
-                    enterprise_id=e_id,
-                    team_id=t_id,
+                    enterprise_id=enterprise_id,
+                    team_id=team_id,
                     user_id=user_id,
                 )
                 .order_by(F("installed_at").desc())
@@ -197,8 +192,8 @@ class DjangoInstallationStore(InstallationStore):
                 latest_bot_row = (
                     SlackInstallation.objects.filter(
                         client_id=self.client_id,
-                        enterprise_id=e_id,
-                        team_id=t_id,
+                        enterprise_id=enterprise_id,
+                        team_id=team_id,
                     )
                     .exclude(bot_token__isnull=True)
                     .order_by(F("installed_at").desc())
@@ -263,7 +258,7 @@ class DjangoOAuthStateStore(OAuthStateStore):
         rows = SlackOAuthState.objects.filter(state=state).filter(
             expire_at__gte=timezone.now()
         )
-        if len(rows) > 0:
+        if rows.count() > 0:
             rows.delete()
             return True
         return False
