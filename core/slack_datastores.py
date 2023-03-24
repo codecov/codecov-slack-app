@@ -32,21 +32,24 @@ class DjangoInstallationStore(InstallationStore):
         user_token_expires_at = installation.user_token_expires_at
         installed_at = installation.installed_at
 
-        if  installed_at is not None:
+        if installed_at is not None:
             installed_at = datetime.datetime.fromtimestamp(installed_at)
             if is_naive(installed_at):
                 installed_at = make_aware(installed_at)
 
-        if  bot_token_expires_at is not None:
-            bot_token_expires_at = datetime.datetime.fromtimestamp(bot_token_expires_at)
+        if bot_token_expires_at is not None:
+            bot_token_expires_at = datetime.datetime.fromtimestamp(
+                bot_token_expires_at
+            )
             if is_naive(bot_token_expires_at):
                 bot_token_expires_at = make_aware(bot_token_expires_at)
 
         if user_token_expires_at is not None:
-            user_token_expires_at = datetime.datetime.fromtimestamp(user_token_expires_at)
+            user_token_expires_at = datetime.datetime.fromtimestamp(
+                user_token_expires_at
+            )
             if is_naive(user_token_expires_at):
                 user_token_expires_at = make_aware(user_token_expires_at)
-
 
         slack_installation = SlackInstallation.objects.filter(
             client_id=self.client_id,
@@ -101,13 +104,15 @@ class DjangoInstallationStore(InstallationStore):
         installed_at = bot.installed_at
         bot_token_expires_at = bot.bot_token_expires_at
 
-        if  installed_at is not None:
+        if installed_at is not None:
             installed_at = datetime.datetime.fromtimestamp(installed_at)
             if is_naive(installed_at):
                 installed_at = make_aware(installed_at)
 
-        if  bot_token_expires_at is not None:
-            bot_token_expires_at = datetime.datetime.fromtimestamp(bot_token_expires_at)
+        if bot_token_expires_at is not None:
+            bot_token_expires_at = datetime.datetime.fromtimestamp(
+                bot_token_expires_at
+            )
             if is_naive(bot_token_expires_at):
                 bot_token_expires_at = make_aware(bot_token_expires_at)
 
@@ -149,7 +154,9 @@ class DjangoInstallationStore(InstallationStore):
             team_id = None
         row = (
             SlackBot.objects.filter(
-                client_id=self.client_id, enterprise_id=enterprise_id, team_id=team_id
+                client_id=self.client_id,
+                enterprise_id=enterprise_id,
+                team_id=team_id,
             )
             .order_by(F("installed_at").desc())
             .first()
@@ -183,7 +190,9 @@ class DjangoInstallationStore(InstallationStore):
         if user_id is None:
             row = (
                 SlackInstallation.objects.filter(
-                    client_id=self.client_id, enterprise_id=enterprise_id, team_id=team_id
+                    client_id=self.client_id,
+                    enterprise_id=enterprise_id,
+                    team_id=team_id,
                 )
                 .order_by(F("installed_at").desc())
                 .first()
@@ -200,50 +209,52 @@ class DjangoInstallationStore(InstallationStore):
                 .first()
             )
 
-        if row:
-            if user_id is not None:
-                # Fetch the latest bot token
-                latest_bot_row = (
-                    SlackInstallation.objects.filter(
-                        client_id=self.client_id,
-                        enterprise_id=enterprise_id,
-                        team_id=team_id,
-                    )
-                    .exclude(bot_token__isnull=True)
-                    .order_by(F("installed_at").desc())
-                    .first()
-                )
-                if latest_bot_row:
-                    row.bot_id = latest_bot_row.bot_id
-                    row.bot_user_id = latest_bot_row.bot_user_id
-                    row.bot_scopes = latest_bot_row.bot_scopes
-                    row.bot_token = latest_bot_row.bot_token
-                    row.bot_refresh_token = latest_bot_row.bot_refresh_token
-                    row.bot_token_expires_at = (
-                        latest_bot_row.bot_token_expires_at
-                    )
+        if not row:
+            return None  # no installation found
 
-            return Installation(
-                app_id=row.app_id,
-                enterprise_id=row.enterprise_id,
-                team_id=row.team_id,
-                bot_token=row.bot_token,
-                bot_refresh_token=row.bot_refresh_token,
-                bot_token_expires_at=row.bot_token_expires_at,
-                bot_id=row.bot_id,
-                bot_user_id=row.bot_user_id,
-                bot_scopes=row.bot_scopes,
-                user_id=row.user_id,
-                user_token=row.user_token,
-                user_refresh_token=row.user_refresh_token,
-                user_token_expires_at=row.user_token_expires_at,
-                user_scopes=row.user_scopes,
-                incoming_webhook_url=row.incoming_webhook_url,
-                incoming_webhook_channel_id=row.incoming_webhook_channel_id,
-                incoming_webhook_configuration_url=row.incoming_webhook_configuration_url,
-                installed_at=row.installed_at,
+        installation = Installation(
+            app_id=row.app_id,
+            enterprise_id=row.enterprise_id,
+            team_id=row.team_id,
+            bot_token=row.bot_token,
+            bot_refresh_token=row.bot_refresh_token,
+            bot_token_expires_at=row.bot_token_expires_at,
+            bot_id=row.bot_id,
+            bot_user_id=row.bot_user_id,
+            bot_scopes=row.bot_scopes,
+            user_id=row.user_id,
+            user_token=row.user_token,
+            user_refresh_token=row.user_refresh_token,
+            user_token_expires_at=row.user_token_expires_at,
+            user_scopes=row.user_scopes,
+            incoming_webhook_url=row.incoming_webhook_url,
+            incoming_webhook_channel_id=row.incoming_webhook_channel_id,
+            incoming_webhook_configuration_url=row.incoming_webhook_configuration_url,
+            installed_at=row.installed_at,
+        )
+
+        if user_id is not None:
+            # Fetch the latest bot token
+            latest_bot_row = (
+                SlackInstallation.objects.filter(
+                    client_id=self.client_id,
+                    enterprise_id=enterprise_id,
+                    team_id=team_id,
+                )
+                .exclude(bot_token__isnull=True)
+                .order_by(F("installed_at").desc())
+                .first()
             )
-        return None
+
+            if latest_bot_row:
+                installation.bot_id = latest_bot_row.bot_id
+                installation.bot_user_id = latest_bot_row.bot_user_id
+                installation.bot_scopes = latest_bot_row.bot_scopes
+                installation.bot_token = latest_bot_row.bot_token
+                installation.bot_refresh_token = latest_bot_row.bot_refresh_token
+                installation.bot_token_expires_at = latest_bot_row.bot_token_expires_at
+
+        return installation
 
 
 class DjangoOAuthStateStore(OAuthStateStore):
