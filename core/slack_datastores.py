@@ -2,6 +2,7 @@
 # Bolt store implementations
 # ----------------------
 
+import datetime
 from logging import Logger
 from typing import Optional
 from uuid import uuid4
@@ -27,22 +28,31 @@ class DjangoInstallationStore(InstallationStore):
         self._logger = logger
 
     def save(self, installation: Installation):
-        i = installation.to_dict()
-        if is_naive(i["installed_at"]):
-            i["installed_at"] = make_aware(i["installed_at"])
-        if i.get("bot_token_expires_at") is not None and is_naive(
-            i["bot_token_expires_at"]
-        ):
-            i["bot_token_expires_at"] = make_aware(i["bot_token_expires_at"])
-        if i.get("user_token_expires_at") is not None and is_naive(
-            i["user_token_expires_at"]
-        ):
-            i["user_token_expires_at"] = make_aware(i["user_token_expires_at"])
+        bot_token_expires_at = installation.bot_token_expires_at
+        user_token_expires_at = installation.user_token_expires_at
+        installed_at = installation.installed_at
+
+        if  installed_at is not None:
+            installed_at = datetime.datetime.fromtimestamp(installed_at)
+            if is_naive(installed_at):
+                installed_at = make_aware(installed_at)
+
+        if  bot_token_expires_at is not None:
+            bot_token_expires_at = datetime.datetime.fromtimestamp(bot_token_expires_at)
+            if is_naive(bot_token_expires_at):
+                bot_token_expires_at = make_aware(bot_token_expires_at)
+
+        if user_token_expires_at is not None:
+            user_token_expires_at = datetime.datetime.fromtimestamp(user_token_expires_at)
+            if is_naive(user_token_expires_at):
+                user_token_expires_at = make_aware(user_token_expires_at)
+
+
         slack_installation = SlackInstallation.objects.filter(
             client_id=self.client_id,
             enterprise_id=installation.enterprise_id,
             team_id=installation.team_id,
-            installed_at=i["installed_at"],
+            installed_at=installed_at,
         ).first()
 
         if slack_installation is None:
@@ -57,14 +67,14 @@ class DjangoInstallationStore(InstallationStore):
         slack_installation.team_name = installation.team_name
         slack_installation.bot_token = installation.bot_token
         slack_installation.bot_refresh_token = installation.bot_refresh_token
-        slack_installation.bot_token_expires_at = i["bot_token_expires_at"]
+        slack_installation.bot_token_expires_at = bot_token_expires_at
         slack_installation.bot_id = installation.bot_id
         slack_installation.bot_user_id = installation.bot_user_id
         slack_installation.bot_scopes = installation.bot_scopes
         slack_installation.user_id = installation.user_id
         slack_installation.user_token = installation.user_token
         slack_installation.user_refresh_token = installation.user_refresh_token
-        slack_installation.user_token_expires_at = i["user_token_expires_at"]
+        slack_installation.user_token_expires_at = user_token_expires_at
         slack_installation.user_scopes = installation.user_scopes
         slack_installation.incoming_webhook_url = (
             installation.incoming_webhook_url
@@ -82,26 +92,30 @@ class DjangoInstallationStore(InstallationStore):
             installation.is_enterprise_install
         )
         slack_installation.token_type = installation.token_type
-        slack_installation.installed_at = i["installed_at"]
+        slack_installation.installed_at = installed_at
 
         slack_installation.save()
         self.save_bot(installation.to_bot())
 
     def save_bot(self, bot: Bot):
-        b = bot.to_dict()
-        if is_naive(b["installed_at"]):
-            b["installed_at"] = make_aware(b["installed_at"])
-        if b.get("bot_token_expires_at") is not None and is_naive(
-            b["bot_token_expires_at"]
-        ):
-            b["bot_token_expires_at"] = make_aware(b["bot_token_expires_at"])
-        b["client_id"] = self.client_id
+        installed_at = bot.installed_at
+        bot_token_expires_at = bot.bot_token_expires_at
+
+        if  installed_at is not None:
+            installed_at = datetime.datetime.fromtimestamp(installed_at)
+            if is_naive(installed_at):
+                installed_at = make_aware(installed_at)
+
+        if  bot_token_expires_at is not None:
+            bot_token_expires_at = datetime.datetime.fromtimestamp(bot_token_expires_at)
+            if is_naive(bot_token_expires_at):
+                bot_token_expires_at = make_aware(bot_token_expires_at)
 
         slack_bot = SlackBot.objects.filter(
             client_id=self.client_id,
             enterprise_id=bot.enterprise_id,
             team_id=bot.team_id,
-            installed_at=b["installed_at"],
+            installed_at=installed_at,
         ).first()
 
         if slack_bot is None:
@@ -115,12 +129,12 @@ class DjangoInstallationStore(InstallationStore):
         slack_bot.team_name = bot.team_name
         slack_bot.bot_token = bot.bot_token
         slack_bot.bot_refresh_token = bot.bot_refresh_token
-        slack_bot.bot_token_expires_at = b["bot_token_expires_at"]
+        slack_bot.bot_token_expires_at = bot_token_expires_at
         slack_bot.bot_id = bot.bot_id
         slack_bot.bot_user_id = bot.bot_user_id
         slack_bot.bot_scopes = bot.bot_scopes
         slack_bot.is_enterprise_install = bot.is_enterprise_install
-        slack_bot.installed_at = b["installed_at"]
+        slack_bot.installed_at = installed_at
 
         slack_bot.save()
 
