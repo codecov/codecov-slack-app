@@ -251,8 +251,12 @@ class DjangoInstallationStore(InstallationStore):
                 installation.bot_user_id = latest_bot_row.bot_user_id
                 installation.bot_scopes = latest_bot_row.bot_scopes
                 installation.bot_token = latest_bot_row.bot_token
-                installation.bot_refresh_token = latest_bot_row.bot_refresh_token
-                installation.bot_token_expires_at = latest_bot_row.bot_token_expires_at
+                installation.bot_refresh_token = (
+                    latest_bot_row.bot_refresh_token
+                )
+                installation.bot_token_expires_at = (
+                    latest_bot_row.bot_token_expires_at
+                )
 
         return installation
 
