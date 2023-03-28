@@ -9,7 +9,7 @@ class ServiceOptions(models.TextChoices):
 
 
 class SlackUser(models.Model):
-    user_id = models.CharField(max_length=50, unique=True)
+    user_id = models.CharField(primary_key=True, max_length=50)
     username = models.CharField(max_length=100, null=True)
     email = models.CharField(max_length=100, null=True)
     display_name = models.CharField(max_length=100, null=True)
