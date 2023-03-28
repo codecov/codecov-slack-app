@@ -43,6 +43,7 @@ class Service(models.Model):
         on_delete=models.CASCADE,
         related_name="services",
         db_column="user_id",
+        max_length=50,
     )
     name = models.CharField(max_length=50, choices=ServiceOptions.choices)
     service_userid = models.CharField(max_length=50, unique=True)
