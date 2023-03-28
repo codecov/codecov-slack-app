@@ -5,6 +5,7 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
+from service_auth.helpers import force_login
 
 logger = logging.getLogger(__name__)
 client_id, client_secret, signing_secret, scopes, user_scopes = (
@@ -40,3 +41,12 @@ app = App(
 def hello_world(ack, say):
     ack()
     say("Hello world!")
+
+
+@app.command("/test_gh_login")
+def test_gh_login(ack, command, say, client):
+    ack()
+    # check if api endpoint requested is private or public
+    # if private, check if user is logged in / force login
+    force_login(client, command)
+    say("You're logged in!----")
