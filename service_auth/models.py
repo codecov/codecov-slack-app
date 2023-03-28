@@ -39,22 +39,24 @@ class SlackUser(models.Model):
 
 class Service(models.Model):
     user = models.ForeignKey(
-        SlackUser, on_delete=models.CASCADE, related_name="services"
+        SlackUser,
+        on_delete=models.CASCADE,
+        related_name="services",
+        db_column="user_id",
     )
-    service_name = models.CharField(
-        max_length=50, choices=ServiceOptions.choices
-    )
-    service_id = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, choices=ServiceOptions.choices)
+    service_userid = models.CharField(max_length=50, unique=True)
+    service_username = models.CharField(max_length=100, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.service_name
+        return self.name
 
     class Meta:
         indexes = [
-            models.Index(fields=["service_name", "service_id"]),
+            models.Index(fields=["name", "service_userid"]),
         ]
 
     def save(self, *args, **kwargs):
