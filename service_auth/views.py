@@ -1,9 +1,10 @@
 import base64
+import datetime
 import os
 
 import requests
 from django.http import HttpResponse
-from .models import SlackUser, Service, ServiceOptions
+from .models import SlackUser, Service
 
 gh_client_id = os.environ.get("GITHUB_CLIENT_ID")
 gh_client_secret = os.environ.get("GITHUB_CLIENT_SECRET")
@@ -49,19 +50,21 @@ def gh_callback(request):
         if service_userid and service_username: 
             # Save the service user id and service username to DB
             user = SlackUser.objects.filter(user_id=user_id).first()
-            service = Service.objects.filter(user=user, service_name=provider).first()
+            service = Service.objects.filter(user=user, name=provider).first()
 
             if not service:
                 new_service = Service(
                     user=user,
                 )
-                new_service.service_id = service_userid
-                new_service.service_name="github",
+                new_service.service_userid = service_userid
+                new_service.name=provider,
+                new_service.service_username = service_username
                 new_service.save()
 
             else:
-                service.service_id = service_userid
-                service.service_name = service_username
+                service.service_userid = service_userid
+                service.service_username = service_username
+                service.updated_at = datetime.datetime.now()
 
                 service.save()
             
