@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import gh_callback
+from .views import GithubCallbackView
 
 urlpatterns = [
-    path("/gh/callback", gh_callback, name="gh_callback"),
+    path("gh/callback", GithubCallbackView.as_view()),
 ]

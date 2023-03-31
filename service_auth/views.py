@@ -3,78 +3,68 @@ import datetime
 import os
 
 import requests
-from django.http import HttpResponse
-from .models import SlackUser, Service
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Service, SlackUser
+from .helpers import validate_gh_call_params, get_github_user
+from .actions import create_new_codecov_access_token
 
-gh_client_id = os.environ.get("GITHUB_CLIENT_ID")
-gh_client_secret = os.environ.get("GITHUB_CLIENT_SECRET")
-gh_redirect_uri = os.environ.get("GITHUB_REDIRECT_URI")
+GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
+GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 
+class GithubCallbackView(APIView):
+    """
+    Callback endpoint for github authentication flow
+    """
+    def get(self, request, format=None):
+        provider = "github"
+        # Get the authorization code from the GitHub's callback request
+        code = request.GET.get("code")
+        state = request.GET.get("state")
+        user_id = base64.b64decode(state).decode("utf-8")
+        
+        validate_gh_call_params(code, state)
 
-def get_github_user(access_token):
-    url = "https://api.github.com/user"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data.get("id"), data.get("login")
-    else:
-        return None, None
+        # Exchange the authorization code for an access token
+        headers = {"Accept": "application/json"}
+        data = {
+            "code": code,
+            "client_id": GITHUB_CLIENT_ID,
+            "client_secret": GITHUB_CLIENT_SECRET,
+            "redirect_uri": GITHUB_REDIRECT_URI,
+        }
+        response = requests.post(
+            "https://github.com/login/oauth/access_token",
+            headers=headers,
+            data=data,
+        )
 
+        access_token = response.json().get("access_token")
+        if not access_token:
+            return Response({"detail": "Error: No access token received from GitHub"}, status=400)
 
-def gh_callback(request):
-    provider = "github"
-    # Get the authorization code from the GitHub's callback request
-    code = request.GET.get("code")
-    state = request.GET.get("state")
-    user_id = base64.b64decode(state).decode('utf-8')  # use this to get user id from DB
-
-    # Exchange the authorization code for an access token
-    headers = {"Accept": "application/json"}
-    data = {
-        "code": code,
-        "client_id": gh_client_id,
-        "client_secret": gh_client_secret,
-        "redirect_uri": gh_redirect_uri,
-    }
-    response = requests.post(
-        "https://github.com/login/oauth/access_token",
-        headers=headers,
-        data=data,
-    )
-
-    # Parse the access token from the response and save it to DB
-    access_token = response.json()["access_token"]
-    if access_token:
         service_userid, service_username = get_github_user(access_token)
-        if service_userid and service_username: 
-            # Save the service user id and service username to DB
-            user = SlackUser.objects.filter(user_id=user_id).first()
-            service = Service.objects.filter(user=user, name=provider).first()
+        if not service_userid or not service_username:
+            return Response({"detail": "Error: Could not get user info from GitHub"}, status=400)
 
-            if not service:
-                new_service = Service(
-                    user=user,
-                )
-                new_service.service_userid = service_userid
-                new_service.name=provider,
-                new_service.service_username = service_username
-                new_service.save()
+        user = SlackUser.objects.filter(user_id=user_id).first()
+        if not user:
+            return Response({"detail": "Slack user not found"}, status=404)
 
-            else:
-                service.service_userid = service_userid
-                service.service_username = service_username
-                service.updated_at = datetime.datetime.now()
+        service = Service.objects.filter(user=user, name=(provider,)).first()
+        if not service:
+            service = Service(
+                user=user,
+            )
+            service.name = (provider,)
 
-                service.save()
-            
-            return HttpResponse("You have successfully logged in")
-    # Step 5: Redirect the user to the desired page --> SLACK WORKSPACE PAGE
-    return HttpResponse("You have successfully logged in")
+        service.service_userid = service_userid
+        service.service_username = service_username
+        service.updated_at = datetime.datetime.now()
+        service.active = True
 
+        service.save()
 
-# update the provider name to be in an enum -> use lower case too 
-# make sure to handle create or update provider name 
-# update the name of the service 
-# make sure to handle other flows -> if user is not found, if service is not found, etc.
-# maybe do a shared function where the logic of getting the user and service is shared
+        create_new_codecov_access_token(user)
+        return Response({"detail": "You have successfully logged in"}, status=200)
