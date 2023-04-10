@@ -8,7 +8,7 @@ from .models import SlackUser
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_SCOPES = os.environ.get("GITHUB_SCOPES", "repo").split(",")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
-SLACK_API_TOKEN = os.environ.get("SLACK_API_TOKEN")
+CODECOV_SECRET = os.environ.get("CODECOV_SECRET")
 
 
 def _user_info(user_info):
@@ -69,7 +69,7 @@ def create_new_codecov_access_token(slack_user):
     request_url = 'http://api.codecov.io/internal/slack/generate-token/'
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer {SLACK_API_TOKEN}',
+        'Authorization': 'Bearer {CODECOV_SECRET}',
         'username': slack_user.username,
         'service': slack_user.active_service.name,
     }
