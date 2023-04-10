@@ -1,7 +1,8 @@
 import ast
 import base64
-import requests
 import os
+
+import requests
 
 from .models import SlackUser
 
@@ -31,7 +32,7 @@ def verify_codecov_access_token(slack_user):
     url = f"https://api.codecov.io/api/v2/{service_name}/{owner}"
     headers = {
         "accept": "application/json",
-        "Authorization": f"Bearer {codecov_access_token}"
+        "Authorization": f"Bearer {codecov_access_token}",
     }
 
     response = requests.get(url, headers=headers)
@@ -66,17 +67,17 @@ def get_or_create_slack_user(user_info):
 
 
 def create_new_codecov_access_token(slack_user):
-    request_url = 'http://api.codecov.io/internal/slack/generate-token/'
+    request_url = "http://api.codecov.io/internal/slack/generate-token/"
     headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer {CODECOV_SECRET}',
-        'username': slack_user.username,
-        'service': slack_user.active_service.name,
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {CODECOV_SECRET}",
+        "username": slack_user.username,
+        "service": slack_user.active_service.name,
     }
     response = requests.post(request_url, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        slack_user.codecov_access_token = data.get('token')
+        slack_user.codecov_access_token = data.get("token")
         slack_user.save()
     else:
         raise Exception("Error creating codecov access token")

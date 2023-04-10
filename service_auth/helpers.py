@@ -1,13 +1,13 @@
-from rest_framework.exceptions import ValidationError
 import requests
+from rest_framework.exceptions import ValidationError
+
 
 def validate_gh_call_params(code, state):
     if not code:
-        raise ValidationError('Missing code parameter')
+        raise ValidationError("Missing code parameter")
     if not state:
-        raise ValidationError('Missing state parameter')
-        
-    
+        raise ValidationError("Missing state parameter")
+
 
 def get_github_user(access_token):
     url = "https://api.github.com/user"

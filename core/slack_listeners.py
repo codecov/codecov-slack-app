@@ -51,8 +51,10 @@ def test_gh_login(ack, command, say, client):
     # if private, check if user is logged in / force login
     try:
         handle_private_endpoints(client, command)
-        
+
         # actually fire the api request
     except Exception as e:
         logger.error(e)
-        say("There was an error processing your request. Please try again later.")
+        say(
+            "There was an error processing your request. Please try again later."
+        )
