@@ -7,3 +7,4 @@ slack_bolt
 pytest-django
 requests
 djangorestframework
+pyjwt

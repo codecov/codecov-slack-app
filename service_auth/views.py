@@ -1,7 +1,7 @@
-import base64
 import datetime
 import os
 
+import jwt
 import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +13,7 @@ from .models import Service, SlackUser
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
+USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 
 
 class GithubCallbackView(APIView):
@@ -25,7 +26,9 @@ class GithubCallbackView(APIView):
         # Get the authorization code from the GitHub's callback request
         code = request.GET.get("code")
         state = request.GET.get("state")
-        user_id = base64.b64decode(state).decode("utf-8")
+        user_id = jwt.decode(state, USER_ID_SECRET, algorithms=["HS256"])[
+            "user_id"
+        ]
 
         validate_gh_call_params(code, state)
 
@@ -42,7 +45,11 @@ class GithubCallbackView(APIView):
             headers=headers,
             data=data,
         )
-
+        if response.status_code != 200:
+            return Response(
+                {"detail": "Error: Could not get access token from GitHub"},
+                status=400,
+            )
         access_token = response.json().get("access_token")
         if not access_token:
             return Response(
@@ -61,16 +68,15 @@ class GithubCallbackView(APIView):
         if not user:
             return Response({"detail": "Slack user not found"}, status=404)
 
-        service = Service.objects.filter(user=user, name=(provider,)).first()
+        service = Service.objects.filter(user=user, name=provider).first()
         if not service:
             service = Service(
                 user=user,
             )
-            service.name = (provider,)
+            service.name = provider
 
         service.service_userid = service_userid
         service.service_username = service_username
-        service.updated_at = datetime.datetime.now()
         service.active = True
 
         service.save()

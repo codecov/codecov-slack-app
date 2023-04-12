@@ -4,7 +4,7 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from service_auth.actions import handle_private_endpoints
+from service_auth.actions import authenticate_command
 
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -50,7 +50,7 @@ def test_gh_login(ack, command, say, client):
     # check if api endpoint requested is private or public
     # if private, check if user is logged in / force login
     try:
-        handle_private_endpoints(client, command)
+        authenticate_command(client, command)
 
         # actually fire the api request
     except Exception as e:
