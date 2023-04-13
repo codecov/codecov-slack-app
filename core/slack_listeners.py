@@ -4,7 +4,7 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from .command_resolvers import service_logout, service_login
+from .resolvers import service_logout, service_login
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
