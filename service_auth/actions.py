@@ -80,10 +80,12 @@ def create_new_codecov_access_token(slack_user: SlackUser):
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer {CODECOV_SECRET}",
-        "username": slack_user.username,
+    }
+    data = {
+        "username": slack_user.active_service.service_username,
         "service": slack_user.active_service.name,
     }
-    response = requests.post(request_url, headers=headers)
+    response = requests.post(request_url, headers=headers, data=data)
     if response.status_code == 200:
         data = response.json()
         slack_user.codecov_access_token = data.get("token")
