@@ -4,7 +4,8 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from .resolvers import service_logout, service_login
+from .resolvers import (resolve_help, resolve_organizations, resolve_owner,
+                        resolve_service_login, resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -37,13 +38,62 @@ app = App(
 )
 
 
-@app.command("/logout")
-def resolve_logout(ack, command, say, client):
+@app.command("/codecov")
+def handle_codecov_commands(ack, command, say, client):
     ack()
-    service_logout(client, command, say)
+    command_text = command["text"].split(" ")[0]
+
+    try:
+        if command_text == "login":
+            resolve_service_login(client, command, say)
+        elif command_text == "logout":
+            resolve_service_logout(client, command, say)
+        elif command_text == "organizations":
+            resolve_organizations(client, command, say)
+        elif command_text == "owner":
+            resolve_owner(client, command, say)
+        elif command_text == "help":
+            resolve_help(say)
+
+        else:
+            message_payload = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Invalid command.\n*Need some help?*",
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Help",
+                                "emoji": True,
+                            },
+                            "value": "help",
+                            "action_id": "help-message",
+                        }
+                    ],
+                },
+            ]
+
+            say(
+                text="",
+                blocks=message_payload,
+            )
+
+    except Exception as e:
+        logger.error(e)
+        say(
+            "There was an error processing your request. Please try again later."
+        )
 
 
-@app.command("/login")
-def resolve_login(ack, command, say, client):
+@app.action("help-message")
+def handle_help_message(ack, say):
     ack()
-    service_login(client, command, say)
+    resolve_help(say)
