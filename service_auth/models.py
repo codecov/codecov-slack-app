@@ -46,7 +46,7 @@ class Service(models.Model):
         max_length=50,
     )
     name = models.CharField(max_length=50, choices=ServiceOptions.choices)
-    service_userid = models.CharField(max_length=50, unique=True)
+    service_userid = models.CharField(max_length=50)
     service_username = models.CharField(max_length=100, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
