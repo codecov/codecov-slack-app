@@ -5,6 +5,7 @@ from service_auth.actions import (authenticate_command,
                                   handle_codecov_public_api_request,
                                   view_login_modal)
 from service_auth.models import Service
+from core.helpers import validate_owner_params
 
 logger = logging.getLogger(__name__)
 
@@ -68,11 +69,15 @@ def resolve_organizations(client, command, say):
 def resolve_owner(client, command, say):
     """Get owner's information"""
     command_text = command["text"].split(" ")
+    if len(command_text) < 3:
+        say("Please provide a username and service")
+        return
     owner_username = command_text[1].split("=")[1]
-    service = command_text[2].split("=")[1]  # handle valid service
+    service = command_text[2].split("=")[1]     
     user_id = command["user_id"]
 
     try:
+        validate_owner_params(owner_username, service, say)
         data = handle_codecov_public_api_request(
             user_id=user_id,
             endpoint_name="owner",
@@ -86,7 +91,7 @@ def resolve_owner(client, command, say):
     except Exception as e:
         logger.error(e)
         say(
-            "There was an error processing your request. Are you sure you provided the correct service and username?"
+           f"{e if e else 'There was an error processing your request. Please try again later.'}"
         )
 
 
