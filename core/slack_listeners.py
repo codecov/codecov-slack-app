@@ -4,6 +4,8 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
+from service_auth.actions import authenticate_command
+
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -40,3 +42,19 @@ app = App(
 def hello_world(ack, say):
     ack()
     say("Hello world!")
+
+
+@app.command("/test_gh_login")
+def test_gh_login(ack, command, say, client):
+    ack()
+    # check if api endpoint requested is private or public
+    # if private, check if user is logged in / force login
+    try:
+        authenticate_command(client, command)
+
+        # actually fire the api request
+    except Exception as e:
+        logger.error(e)
+        say(
+            "There was an error processing your request. Please try again later."
+        )

@@ -5,3 +5,6 @@ sqlparse
 slack-sdk
 slack_bolt
 pytest-django
+requests
+djangorestframework
+pyjwt
