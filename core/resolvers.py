@@ -1,11 +1,11 @@
 import logging
 
+from core.helpers import validate_owner_params
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
                                   view_login_modal)
 from service_auth.models import Service
-from core.helpers import validate_owner_params
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +32,8 @@ def resolve_service_logout(client, command, say):
 
 def resolve_service_login(client, command, say):
     """Login to a service -- overrides current active service"""
-    try:
-        view_login_modal(client, command)
 
-    except Exception as e:
-        logger.error(e)
-        say(
-            "There was an error processing your request. Please try again later."
-        )
+    view_login_modal(client, command)
 
 
 def resolve_organizations(client, command, say):
@@ -73,25 +67,25 @@ def resolve_owner(client, command, say):
         say("Please provide a username and service")
         return
     owner_username = command_text[1].split("=")[1]
-    service = command_text[2].split("=")[1]     
+    service = command_text[2].split("=")[1]
     user_id = command["user_id"]
 
     try:
-        validate_owner_params(owner_username, service, say)
+        normalized_name = validate_owner_params(owner_username, service, say)
         data = handle_codecov_public_api_request(
             user_id=user_id,
             endpoint_name="owner",
             owner_username=owner_username,
-            service=service,
+            service=normalized_name,
         )
-        formatted_data = f"*Owner information for {owner_username}*:\n\n Service: {data['service']}\nUsername: {data['username']}\nName: {data['name']}"
 
+        formatted_data = f"*Owner information for {owner_username}*:\n\n Service: {data['service']}\nUsername: {data['username']}\nName: {data['name']}"
         say(formatted_data)
 
     except Exception as e:
         logger.error(e)
         say(
-           f"{e if e else 'There was an error processing your request. Please try again later.'}"
+            f"{e if e else 'There was an error processing your request. Please try again later.'}"
         )
 
 
