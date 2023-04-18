@@ -183,7 +183,7 @@ def handle_codecov_public_api_request(
     )
 
     if not endpoint_details:
-        return "Endpoint not found"
+        raise Exception("Endpoint not found")
 
     request_url = endpoint_details["url"]
     is_private = endpoint_details["is_private"]
@@ -195,13 +195,9 @@ def handle_codecov_public_api_request(
         codecov_access_token = slack_user.codecov_access_token
         headers["Authorization"] = f"Bearer {codecov_access_token}"
 
-    try:
-        response = requests.get(request_url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            return response.text
-
-    except Exception as e:
-        return str(e)
+    response = requests.get(request_url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        raise Exception(f"Error: {response.status_code}, {response.text}")
