@@ -46,7 +46,7 @@ slack-sdk==3.20.2
     # via
     #   -r requirements.in
     #   slack-bolt
-sqlparse==0.4.3
+sqlparse==0.4.4
     # via
     #   -r requirements.in
     #   django
