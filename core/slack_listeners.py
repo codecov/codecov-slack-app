@@ -4,8 +4,8 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from service_auth.actions import authenticate_command
-
+from .resolvers import (resolve_help, resolve_organizations, resolve_owner,
+                        resolve_service_login, resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -38,23 +38,62 @@ app = App(
 )
 
 
-@app.command("/hello_world")
-def hello_world(ack, say):
+@app.command("/codecov")
+def handle_codecov_commands(ack, command, say, client):
     ack()
-    say("Hello world!")
+    command_text = command["text"].split(" ")[0]
 
-
-@app.command("/test_gh_login")
-def test_gh_login(ack, command, say, client):
-    ack()
-    # check if api endpoint requested is private or public
-    # if private, check if user is logged in / force login
     try:
-        authenticate_command(client, command)
+        if command_text == "login":
+            resolve_service_login(client, command, say)
+        elif command_text == "logout":
+            resolve_service_logout(client, command, say)
+        elif command_text == "organizations":
+            resolve_organizations(client, command, say)
+        elif command_text == "owner":
+            resolve_owner(client, command, say)
+        elif command_text == "help":
+            resolve_help(say)
 
-        # actually fire the api request
+        else:
+            message_payload = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Invalid command.\n*Need some help?*",
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Help",
+                                "emoji": True,
+                            },
+                            "value": "help",
+                            "action_id": "help-message",
+                        }
+                    ],
+                },
+            ]
+
+            say(
+                text="",
+                blocks=message_payload,
+            )
+
     except Exception as e:
         logger.error(e)
         say(
             "There was an error processing your request. Please try again later."
         )
+
+
+@app.action("help-message")
+def handle_help_message(ack, say):
+    ack()
+    resolve_help(say)
