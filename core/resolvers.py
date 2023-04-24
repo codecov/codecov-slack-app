@@ -1,7 +1,7 @@
 import logging
 
 from core.helpers import validate_owner_params
-from service_auth.actions import (authenticate_command,
+from service_auth.actions import (EndpointName, authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
                                   view_login_modal)
@@ -41,7 +41,8 @@ def resolve_organizations(client, command, say):
     try:
         authenticate_command(client, command)
         codecov_response = handle_codecov_public_api_request(
-            user_id=command["user_id"], endpoint_name="service_owners"
+            user_id=command["user_id"],
+            endpoint_name=EndpointName.SERVICE_OWNERS,
         )
         results = codecov_response["results"]
 
@@ -74,7 +75,7 @@ def resolve_owner(client, command, say):
         normalized_name = validate_owner_params(owner_username, service, say)
         data = handle_codecov_public_api_request(
             user_id=user_id,
-            endpoint_name="owner",
+            endpoint_name=EndpointName.OWNER,
             owner_username=owner_username,
             service=normalized_name,
         )

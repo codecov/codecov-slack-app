@@ -1,4 +1,7 @@
 import os
+from dataclasses import dataclass
+from enum import Enum
+from typing import Dict
 
 import jwt
 import requests
@@ -14,22 +17,37 @@ USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
 
+@dataclass
+class Endpoint:
+    url: str
+    is_private: bool
+
+
+class EndpointName(Enum):
+    SERVICE_OWNERS = "service_owners"
+    OWNER = "owner"
+    USER_LIST = "user_list"
+
+
 def get_endpoint_details(
-    endpoint_name, service=None, owner_username=None, repository=None
-):
-    endpoints_map = {
-        "service_owners": {
-            "url": f"{CODECOV_PUBLIC_API}/{service}/",
-            "is_private": True,
-        },
-        "owner": {
-            "url": f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
-            "is_private": False,
-        },
-        "user_list": {
-            "url": f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
-            "is_private": True,
-        },
+    endpoint_name: EndpointName,
+    service=None,
+    owner_username=None,
+    repository=None,
+) -> Endpoint:
+    endpoints_map: Dict[EndpointName, Endpoint] = {
+        EndpointName.SERVICE_OWNERS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/",
+            is_private=True,
+        ),
+        EndpointName.OWNER: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
+            is_private=False,
+        ),
+        EndpointName.USER_LIST: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
+            is_private=True,
+        ),
     }
 
     return endpoints_map[endpoint_name]
@@ -173,7 +191,7 @@ def view_login_modal(
 
 
 def handle_codecov_public_api_request(
-    user_id, endpoint_name, service=None, owner_username=None
+    user_id, endpoint_name: EndpointName, service=None, owner_username=None
 ):
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
     _service = service if service else slack_user.active_service.name
@@ -185,8 +203,8 @@ def handle_codecov_public_api_request(
     if not endpoint_details:
         raise Exception("Endpoint not found")
 
-    request_url = endpoint_details["url"]
-    is_private = endpoint_details["is_private"]
+    request_url = endpoint_details.url
+    is_private = endpoint_details.is_private
 
     headers = {
         "accept": "application/json",
