@@ -110,7 +110,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Commands:* \n\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information",
+                "text": "*Commands:* \n\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service> [is_admin=<is_admin] [activated=<activated>] [page=<page>] [per_page=<per_page>]` - Get a list of users for the specified owner\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository \n `/codecov help` - Get help \n\n",
             },
         },
         {"type": "divider"},
@@ -118,7 +118,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Note* that the order of the variables in your command text is important for the command to be processed correctly.",
+                "text": "*Note* that some of commands requires you to login to a service first. \n\n",
             },
         },
     ]
