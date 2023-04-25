@@ -172,6 +172,44 @@ def resolve_users(client, command, say):
         )
 
 
+def resolve_repo_config(client, command, say):
+    """Returns the repository configuration for the specified owner and repository"""
+    user_id = command["user_id"]
 
+    command_text = command["text"].split(" ")
+    if len(command_text) < 4:
+        say("Please provide a username and service and repository name")
+        return
 
+    params_dict = extract_command_params(command_text)
 
+    owner_username = params_dict.get("username")
+    service = params_dict.get("service")
+    repository = params_dict.get("repository")
+
+    if not repository:
+        say("Please provide a repository name")
+        return
+
+    try:
+        validate_owner_params(owner_username, service, say)
+        authenticate_command(client, command)
+
+        data = handle_codecov_public_api_request(
+            user_id=user_id,
+            endpoint_name=EndpointName.REPO_CONFIG,
+            service=service,
+            owner_username=owner_username,
+            repository=repository,
+        )
+
+        formatted_data = f"*Repository configuration for {owner_username}*\n\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        say(formatted_data)
+
+    except Exception as e:
+        logger.error(e)
+        say(
+            f"{e if e else 'There was an error processing your request. Please try again later.'}"
+        )
