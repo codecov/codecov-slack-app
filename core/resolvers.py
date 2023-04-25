@@ -1,6 +1,6 @@
 import logging
 
-from core.helpers import validate_owner_params
+from core.helpers import validate_owner_params, extract_command_params, extract_users_optional_params
 from service_auth.actions import (EndpointName, authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -63,14 +63,18 @@ def resolve_organizations(client, command, say):
 
 def resolve_owner(client, command, say):
     """Get owner's information"""
+    user_id = command["user_id"]
+
     command_text = command["text"].split(" ")
     if len(command_text) < 3:
         say("Please provide a username and service")
         return
-    owner_username = command_text[1].split("=")[1]
-    service = command_text[2].split("=")[1]
-    user_id = command["user_id"]
-
+    
+    params_dict = extract_command_params(command_text)
+    
+    owner_username = params_dict.get("username")
+    service = params_dict.get("service")
+    
     try:
         normalized_name = validate_owner_params(owner_username, service, say)
         data = handle_codecov_public_api_request(
@@ -122,3 +126,52 @@ def resolve_help(say):
         text="",
         blocks=message_payload,
     )
+
+
+def resolve_users(client, command, say):
+    """Returns a paginated list of users for the specified owner"""
+    user_id = command["user_id"]
+
+    command_text = command["text"].split(" ")
+    if len(command_text) < 3:
+        say("Please provide a username and service")
+        return
+    
+    params_dict = extract_command_params(command_text)
+    
+    owner_username = params_dict.get("username")
+    service = params_dict.get("service")
+
+    optional_params = extract_users_optional_params(params_dict)
+
+    try:
+        validate_owner_params(owner_username, service, say)
+        authenticate_command(client, command)
+
+        data = handle_codecov_public_api_request(
+            user_id=user_id,
+            endpoint_name=EndpointName.USERS_LIST,
+            owner_username=owner_username,
+            service=service,
+            params=optional_params
+        )
+
+        if data["count"] == 0:
+            say(f"No users found for {owner_username}")
+            return
+    
+        formatted_data = f"*Users for {owner_username}*\n\n"
+        for user in data["results"]:
+            formatted_data += f"Username: {user['username']}\nName: {user['name']}\nEmail: {user['email']}\nActivated: {user['activated']}\nAdmin: {user['is_admin']}\n\n"            
+        say(formatted_data)
+
+    except Exception as e:
+        logger.error(e)
+        say(
+            f"{e if e else 'There was an error processing your request. Please try again later.'}"
+        )
+
+
+
+
+

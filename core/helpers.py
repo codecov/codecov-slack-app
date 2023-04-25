@@ -18,3 +18,36 @@ def validate_owner_params(owner_username, service, say):
         )
 
     return normalized_name
+
+
+def extract_command_params(command_text):
+    params_dict = {}
+
+    for command in command_text:
+        if "=" not in command:
+            continue
+
+        params_dict[command.split("=")[0]] = command.split("=")[1]
+
+    return params_dict
+
+def extract_users_optional_params(params_dict):
+    activated = params_dict.get("activated")
+    is_admin = params_dict.get("is_admin")
+    search = params_dict.get("search")
+    page = params_dict.get("page")
+    page_size = params_dict.get("page_size")
+
+    optional_params = {}
+    if activated:
+        optional_params["activated"] = activated
+    if is_admin:
+        optional_params["is_admin"] = is_admin
+    if search:
+        optional_params["search"] = search
+    if page:
+        optional_params["page"] = page
+    if page_size:
+        optional_params["page_size"] = page_size
+
+    return optional_params

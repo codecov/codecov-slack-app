@@ -6,6 +6,7 @@ from typing import Dict
 import jwt
 import requests
 from slack_sdk.errors import SlackApiError
+import urllib.parse
 
 from .models import SlackUser
 
@@ -26,7 +27,7 @@ class Endpoint:
 class EndpointName(Enum):
     SERVICE_OWNERS = "service_owners"
     OWNER = "owner"
-    USER_LIST = "user_list"
+    USERS_LIST = "users_list"
 
 
 def get_endpoint_details(
@@ -34,7 +35,10 @@ def get_endpoint_details(
     service=None,
     owner_username=None,
     repository=None,
+    params=None,
 ) -> Endpoint:
+    params_str = urllib.parse.urlencode(params)
+
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/",
@@ -44,13 +48,18 @@ def get_endpoint_details(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
             is_private=False,
         ),
-        EndpointName.USER_LIST: Endpoint(
+        EndpointName.USERS_LIST: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
             is_private=True,
         ),
     }
 
-    return endpoints_map[endpoint_name]
+    endpoint = endpoints_map[endpoint_name]
+    if params_str:
+        print(params_str, flush=True)
+        endpoint.url = f"{endpoint.url}?{params_str}"
+
+    return endpoint
 
 
 def _user_info(user_info):
@@ -191,13 +200,13 @@ def view_login_modal(
 
 
 def handle_codecov_public_api_request(
-    user_id, endpoint_name: EndpointName, service=None, owner_username=None
+    user_id, endpoint_name: EndpointName, service=None, owner_username=None, params=None
 ):
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
     _service = service if service else slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
-        endpoint_name, service=_service, owner_username=owner_username
+        endpoint_name, service=_service, owner_username=owner_username, params=params
     )
 
     if not endpoint_details:

@@ -5,7 +5,7 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from .resolvers import (resolve_help, resolve_organizations, resolve_owner,
-                        resolve_service_login, resolve_service_logout)
+                        resolve_service_login, resolve_service_logout, resolve_users)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,8 @@ def handle_codecov_commands(ack, command, say, client):
             resolve_organizations(client, command, say)
         elif command_text == "owner":
             resolve_owner(client, command, say)
+        elif command_text == "users":
+            resolve_users(client, command, say)
         elif command_text == "help":
             resolve_help(say)
 
