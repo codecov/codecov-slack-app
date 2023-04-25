@@ -5,7 +5,8 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from .resolvers import (resolve_help, resolve_organizations, resolve_owner,
-                        resolve_service_login, resolve_service_logout, resolve_users, resolve_repo_config)
+                        resolve_repo_config, resolve_service_login,
+                        resolve_service_logout, resolve_users)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)

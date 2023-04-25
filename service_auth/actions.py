@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict
@@ -6,7 +7,6 @@ from typing import Dict
 import jwt
 import requests
 from slack_sdk.errors import SlackApiError
-import urllib.parse
 
 from .models import SlackUser
 
@@ -204,13 +204,22 @@ def view_login_modal(
 
 
 def handle_codecov_public_api_request(
-    user_id, endpoint_name: EndpointName, service=None, owner_username=None, repository=None, params=None
+    user_id,
+    endpoint_name: EndpointName,
+    service=None,
+    owner_username=None,
+    repository=None,
+    params=None,
 ):
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
     _service = service if service else slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
-        endpoint_name, service=_service, owner_username=owner_username, repository=repository, params=params
+        endpoint_name,
+        service=_service,
+        owner_username=owner_username,
+        repository=repository,
+        params=params,
     )
 
     if not endpoint_details:

@@ -1,6 +1,7 @@
 import logging
 
-from core.helpers import validate_owner_params, extract_command_params, extract_users_optional_params
+from core.helpers import (extract_command_params,
+                          extract_users_optional_params, validate_owner_params)
 from service_auth.actions import (EndpointName, authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -69,12 +70,12 @@ def resolve_owner(client, command, say):
     if len(command_text) < 3:
         say("Please provide a username and service")
         return
-    
+
     params_dict = extract_command_params(command_text)
-    
+
     owner_username = params_dict.get("username")
     service = params_dict.get("service")
-    
+
     try:
         normalized_name = validate_owner_params(owner_username, service, say)
         data = handle_codecov_public_api_request(
@@ -136,9 +137,9 @@ def resolve_users(client, command, say):
     if len(command_text) < 3:
         say("Please provide a username and service")
         return
-    
+
     params_dict = extract_command_params(command_text)
-    
+
     owner_username = params_dict.get("username")
     service = params_dict.get("service")
 
@@ -153,16 +154,16 @@ def resolve_users(client, command, say):
             endpoint_name=EndpointName.USERS_LIST,
             owner_username=owner_username,
             service=service,
-            params=optional_params
+            params=optional_params,
         )
 
         if data["count"] == 0:
             say(f"No users found for {owner_username}")
             return
-    
+
         formatted_data = f"*Users for {owner_username}*\n\n"
         for user in data["results"]:
-            formatted_data += f"Username: {user['username']}\nName: {user['name']}\nEmail: {user['email']}\nActivated: {user['activated']}\nAdmin: {user['is_admin']}\n\n"            
+            formatted_data += f"Username: {user['username']}\nName: {user['name']}\nEmail: {user['email']}\nActivated: {user['activated']}\nAdmin: {user['is_admin']}\n\n"
         say(formatted_data)
 
     except Exception as e:
