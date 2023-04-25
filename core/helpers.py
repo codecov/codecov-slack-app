@@ -31,6 +31,7 @@ def extract_command_params(command_text):
 
     return params_dict
 
+
 def extract_users_optional_params(params_dict):
     activated = params_dict.get("activated")
     is_admin = params_dict.get("is_admin")
