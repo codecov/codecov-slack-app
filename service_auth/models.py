@@ -59,6 +59,7 @@ class Service(models.Model):
         indexes = [
             models.Index(fields=["name", "user"]),
         ]
+        unique_together = ("user", "name", "service_userid")
 
     def save(self, *args, **kwargs):
         if self.active:
