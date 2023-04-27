@@ -120,7 +120,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n\n\n*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> per_page=<per_page>` - Get a list of users for the specified owner\n\n\n*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> per_page=<per_page>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository \n `/codecov help` - Get help \n\n",
+                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n\n\n*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n\n\n*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n\n\n*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n\n",
             },
         },
         {"type": "divider"},
@@ -128,7 +128,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Note* that some of commands requires you to login to a service first. \n\n",
+                "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
             },
         },
     ]
