@@ -13,6 +13,37 @@ from .enums import EndpointName
 logger = logging.getLogger(__name__)
 
 
+class BaseResolver:
+    def __init__(self, client, command, say):
+        self.client = client
+        self.command = command
+        self.say = say
+
+    def __call__(self):
+        try:
+            params_dict = extract_command_params(command=self.command)
+            optional_params = extract_optional_params(
+                params_dict, command=self.command
+            )
+
+            service = params_dict.get("service")
+            if service:
+                normalized_service = validate_service(service)
+                params_dict["service"] = normalized_service
+
+            res = self.resolve(params_dict, optional_params)
+            self.say(res)
+
+        except Exception as e:
+            logger.error(e)
+            self.say(
+                f"{e if e else 'There was an error processing your request. Please try again later.'}"
+            )
+
+    def resolve(self, *args, **kwargs):
+        raise NotImplementedError("must implement resolve in subclass")
+
+
 def resolve_service_logout(client, command, say):
     """Logout of current active service"""
     slack_user_id = command["user_id"]
@@ -39,12 +70,13 @@ def resolve_service_login(client, command, say):
     view_login_modal(client, command)
 
 
-def resolve_organizations(client, command, say):
+class OrgsResolver(BaseResolver):
     """Get a list of organizations that the user is a member of"""
-    try:
-        authenticate_command(client, command)
+
+    def resolve(self, params_dict, optional_params):
+        authenticate_command(client=self.client, command=self.command)
         codecov_response = handle_codecov_public_api_request(
-            user_id=command["user_id"],
+            user_id=self.command["user_id"],
             endpoint_name=EndpointName.SERVICE_OWNERS,
         )
         results = codecov_response["results"]
@@ -55,41 +87,22 @@ def resolve_organizations(client, command, say):
                 formatted_response += f"*{key.capitalize()}*: {value}\n"
             formatted_response += "\n"
 
-        say(formatted_response)
-
-    except Exception as e:
-        logger.error(e)
-        say(
-            "There was an error processing your request. Please try again later."
-        )
+        return formatted_response
 
 
-def resolve_owner(client, command, say):
-    """Get owner's information"""
-    user_id = command["user_id"]
-
-    try:
-        params_dict = extract_command_params(command, say)
-
-        owner_username = params_dict.get("username")
-        service = params_dict.get("service")
-
-        normalized_name = validate_service(service)
+class OwnerResolver(BaseResolver):
+    def resolve(self, params_dict, optional_params):
+        """Get owner's information"""
         data = handle_codecov_public_api_request(
-            user_id=user_id,
+            user_id=self.command["user_id"],
             endpoint_name=EndpointName.OWNER,
-            service=normalized_name,
+            service=params_dict.get("service"),
             params_dict=params_dict,
         )
 
+        owner_username = params_dict.get("username")
         formatted_data = f"*Owner information for {owner_username}*:\n\n Service: {data['service']}\nUsername: {data['username']}\nName: {data['name']}"
-        say(formatted_data)
-
-    except Exception as e:
-        logger.error(e)
-        say(
-            f"{e if e else 'There was an error processing your request. Please try again later.'}"
-        )
+        return formatted_data
 
 
 def resolve_help(say):
@@ -107,7 +120,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n\n\n*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> per_page=<per_page>` - Get a list of users for the specified owner\n\n\n*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `name=<name> active=<active> page=<page> per_page=<per_page>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository \n `/codecov help` - Get help \n\n",
+                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n\n\n*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> per_page=<per_page>` - Get a list of users for the specified owner\n\n\n*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> per_page=<per_page>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository \n `/codecov help` - Get help \n\n",
             },
         },
         {"type": "divider"},
@@ -126,140 +139,83 @@ def resolve_help(say):
     )
 
 
-def resolve_users(client, command, say):
-    """Returns a paginated list of users for the specified owner"""
-    user_id = command["user_id"]
-
-    try:
-        params_dict = extract_command_params(command, say)
-        service = params_dict.get("service")
-        owner_username = params_dict.get("username")
-
-        optional_params = extract_optional_params(params_dict, command)
-        normalized_name = validate_service(service)
-
-        authenticate_command(client, command)
-
+class UsersResolver(BaseResolver):
+    def resolve(self, params_dict, optional_params):
+        """Returns a paginated list of users for the specified owner"""
+        authenticate_command(client=self.client, command=self.command)
         data = handle_codecov_public_api_request(
-            user_id=user_id,
+            user_id=self.command["user_id"],
             endpoint_name=EndpointName.USERS_LIST,
-            service=normalized_name,
+            service=params_dict.get("service"),
             optional_params=optional_params,
             params_dict=params_dict,
         )
 
+        owner_username = params_dict.get("username")
         if data["count"] == 0:
-            say(f"No users found for {owner_username}")
-            return
+            return f"No users found for {owner_username}"
 
         formatted_data = f"*Users for {owner_username}*\n\n"
         for user in data["results"]:
             formatted_data += f"Username: {user['username']}\nName: {user['name']}\nEmail: {user['email']}\nActivated: {user['activated']}\nAdmin: {user['is_admin']}\n\n"
-        say(formatted_data)
-
-    except Exception as e:
-        logger.error(e)
-        say(
-            f"{e if e else 'There was an error processing your request. Please try again later.'}"
-        )
+        return formatted_data
 
 
-def resolve_repo_config(client, command, say):
-    """Returns the repository configuration for the specified owner and repository"""
-    user_id = command["user_id"]
-
-    try:
-        params_dict = extract_command_params(command, say)
-
-        owner_username = params_dict.get("username")
-        service = params_dict.get("service")
-
-        normalized_name = validate_service(service)
-
-        authenticate_command(client, command)
+class RepoConfigResolver(BaseResolver):
+    def resolve(self, params_dict, optional_params):
+        """Returns the repository configuration for the specified owner and repository"""
+        authenticate_command(client=self.client, command=self.command)
 
         data = handle_codecov_public_api_request(
-            user_id=user_id,
+            user_id=self.command["user_id"],
             endpoint_name=EndpointName.REPO_CONFIG,
-            service=normalized_name,
+            service=params_dict.get("service"),
             params_dict=params_dict,
         )
 
+        owner_username = params_dict.get("username")
         formatted_data = f"*Repository configuration for {owner_username}*\n\n"
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
-        say(formatted_data)
-
-    except Exception as e:
-        logger.error(e)
-        say(
-            f"{e if e else 'There was an error processing your request. Please try again later.'}"
-        )
+        return formatted_data
 
 
-def resolve_repos(client, command, say):
-    """Returns a paginated list of repositories for the specified owner"""
-    user_id = command["user_id"]
-
-    try:
-        params_dict = extract_command_params(command, say)
-
-        owner_username = params_dict.get("username")
-        service = params_dict.get("service")
-
-        optional_params = extract_optional_params(params_dict, command)
-        normalized_name = validate_service(service)
-
+class RepoResolver(BaseResolver):
+    def resolve(self, params_dict, optional_params):
+        """Returns a single repository by name for the specified owner"""
         data = handle_codecov_public_api_request(
-            user_id=user_id,
-            endpoint_name=EndpointName.REPOS,
-            service=normalized_name,
-            optional_params=optional_params,
-            params_dict=params_dict,
-        )
-
-        if data["count"] == 0:
-            say(f"No repositories found for {owner_username}")
-            return
-
-        formatted_data = f"*Repositories for {owner_username}*\n\n"
-        for repo in data["results"]:
-            formatted_data += f"**Name: {repo['name']}**\nUpdate stamp: {repo['updatestamp']}\nBranch: {repo['branch']}\nPrivate: {repo['private']}\nLanguage: {repo['language']}\nActive: {repo['active']}\nActivated: {repo['activated']} \n\nAuthor username: {repo['author']['username']}\nAuthor service: {repo['author']['service']}\n------------------\n"
-        say(formatted_data)
-
-    except Exception as e:
-        logger.error(e)
-        say(
-            f"{e if e else 'There was an error processing your request. Please try again later.'}"
-        )
-
-
-def resolve_repo(client, command, say):
-    """Returns a single repository by name for the specified owner"""
-    user_id = command["user_id"]
-
-    try:
-        params_dict = extract_command_params(command, say)
-
-        service = params_dict.get("service")
-        repository = params_dict.get("repository")
-
-        normalized_name = validate_service(service)
-
-        data = handle_codecov_public_api_request(
-            user_id=user_id,
+            user_id=self.command["user_id"],
             endpoint_name=EndpointName.REPO,
-            service=normalized_name,
+            service=params_dict.get("service"),
             params_dict=params_dict,
         )
+
+        repository = params_dict.get("repository")
 
         formatted_data = f"*Repository {repository}*\n\n"
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
-        say(formatted_data)
+        return formatted_data
 
-    except Exception as e:
-        logger.error(e)
-        say(
-            f"{e if e else 'There was an error processing your request. Please try again later.'}"
+
+class ReposResolver(BaseResolver):
+    """Returns a paginated list of repositories for the specified owner"""
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=EndpointName.REPOS,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
         )
+
+        owner_username = params_dict.get("username")
+
+        if data["count"] == 0:
+            return f"No repositories found for {owner_username}"
+
+        formatted_data = f"*Repositories for {owner_username}*\n\n"
+        for repo in data["results"]:
+            formatted_data += f"**Name: {repo['name']}**\nUpdate stamp: {repo['updatestamp']}\nBranch: {repo['branch']}\nPrivate: {repo['private']}\nLanguage: {repo['language']}\nActive: {repo['active']}\nActivated: {repo['activated']} \n\nAuthor username: {repo['author']['username']}\nAuthor service: {repo['author']['service']}\n------------------\n"
+        return formatted_data

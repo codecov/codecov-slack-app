@@ -4,10 +4,10 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from .resolvers import (resolve_help, resolve_organizations, resolve_owner,
-                        resolve_repo, resolve_repo_config, resolve_repos,
-                        resolve_service_login, resolve_service_logout,
-                        resolve_users)
+from .resolvers import (OrgsResolver, OwnerResolver, RepoConfigResolver,
+                        RepoResolver, ReposResolver, UsersResolver,
+                        resolve_help, resolve_service_login,
+                        resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -51,17 +51,17 @@ def handle_codecov_commands(ack, command, say, client):
         elif command_text == "logout":
             resolve_service_logout(client, command, say)
         elif command_text == "organizations":
-            resolve_organizations(client, command, say)
+            OrgsResolver(client, command, say).__call__()
         elif command_text == "owner":
-            resolve_owner(client, command, say)
+            OwnerResolver(client, command, say).__call__()
         elif command_text == "users":
-            resolve_users(client, command, say)
+            UsersResolver(client, command, say).__call__()
         elif command_text == "repo-config":
-            resolve_repo_config(client, command, say)
+            RepoConfigResolver(client, command, say).__call__()
         elif command_text == "repos" or command_text == "repositories":
-            resolve_repos(client, command, say)
+            ReposResolver(client, command, say).__call__()
         elif command_text == "repository" or command_text == "repo":
-            resolve_repo(client, command, say)
+            RepoResolver(client, command, say).__call__()
         elif command_text == "help":
             resolve_help(say)
 

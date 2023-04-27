@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 from .enums import EndpointName
 
@@ -8,6 +8,17 @@ from .enums import EndpointName
 class Command:
     required_params: list
     optional_params: list
+
+    def validate(self, params_dict):
+        if len(self.required_params) > 0:
+            if len(params_dict) == 0:
+                raise ValueError(
+                    "Missing required parameters"
+                )  # provide a help message
+
+            for param in self.required_params:
+                if param not in params_dict:
+                    raise ValueError(f"Missing required parameter {param}")
 
 
 endpoint_mapping: Dict[EndpointName, Command] = {
@@ -61,7 +72,7 @@ def validate_service(service):
     return normalized_name
 
 
-def extract_command_params(command, say):
+def extract_command_params(command):
     params_dict = {}
     command_text = command["text"].split(" ")
 
@@ -71,17 +82,8 @@ def extract_command_params(command, say):
 
         params_dict[param.split("=")[0]] = param.split("=")[1]
 
-    endpoint = endpoint_mapping.get(command_text[0])
-
-    if endpoint.required_params is not None:
-        if len(params_dict) == 0:
-            raise ValueError(
-                "Missing required parameters"
-            )  # provide a help message
-
-        for param in endpoint.required_params:
-            if param not in params_dict:
-                raise ValueError(f"Missing required parameter {param}")
+    command = endpoint_mapping.get(command_text[0])
+    command.validate(params_dict)
 
     return params_dict
 
