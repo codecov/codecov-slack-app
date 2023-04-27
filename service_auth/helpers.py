@@ -43,6 +43,7 @@ def get_endpoint_details(
 ) -> Endpoint:
     owner_username = params_dict.get("username")
     repository = params_dict.get("repository")
+    branch = params_dict.get("branch")
 
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
@@ -68,6 +69,14 @@ def get_endpoint_details(
         EndpointName.REPO: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/",
             is_private=False,
+        ),
+        EndpointName.BRANCHES: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/",
+            is_private=True,
+        ),
+        EndpointName.BRANCH: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/{branch}/",
+            is_private=True,
         ),
     }
 

@@ -50,6 +50,14 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         required_params=["username", "service", "repository"],
         optional_params=[],
     ),
+    EndpointName.BRANCHES.value: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["author", "ordering", "page", "page_size"],
+    ),
+    EndpointName.BRANCH.value: Command(
+        required_params=["username", "service", "repository", "branch"],
+        optional_params=[],
+    ),
 }
 
 service_mapping = {
