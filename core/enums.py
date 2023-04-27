@@ -8,3 +8,5 @@ class EndpointName(Enum):
     REPO_CONFIG = "repo-config"
     REPOS = "repos"
     REPO = "repo"
+    BRANCHES = "branches"
+    BRANCH = "branch"
