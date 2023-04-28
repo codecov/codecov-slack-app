@@ -177,15 +177,13 @@ def handle_codecov_public_api_request(
         raise Exception("Endpoint not found")
 
     request_url = endpoint_details.url
-    is_private = endpoint_details.is_private
-
     headers = {
         "accept": "application/json",
     }
 
     codecov_access_token = slack_user.codecov_access_token
 
-    if is_private or codecov_access_token:
+    if codecov_access_token:
         codecov_access_token = slack_user.codecov_access_token
         headers["Authorization"] = f"Bearer {codecov_access_token}"
 

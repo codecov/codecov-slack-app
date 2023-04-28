@@ -1,5 +1,5 @@
 BLACK = black
-BLACK_ARGS = --line-length 79 --target-version py38
+BLACK_ARGS = --line-length 79
 
 ISORT = isort
 ISORT_ARGS = -rc 
@@ -7,6 +7,7 @@ ISORT_ARGS = -rc
 
 .PHONY: format
 format:
+	pip3 install black==22.3.0 isort
 	$(BLACK) $(BLACK_ARGS) .
 	$(ISORT) $(ISORT_ARGS) .
 

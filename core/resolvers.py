@@ -1,7 +1,7 @@
 import logging
 
 from core.helpers import (extract_command_params, extract_optional_params,
-                          validate_service)
+                          format_nested_keys, validate_service)
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -9,6 +9,7 @@ from service_auth.actions import (authenticate_command,
 from service_auth.models import Service
 
 from .enums import EndpointName
+from .helpers import endpoint_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +22,17 @@ class BaseResolver:
 
     def __call__(self):
         try:
+            command = endpoint_mapping.get(self.command["text"].split(" ")[0])
+            if command.is_private:
+                authenticate_command(
+                    client=self.client,
+                    command=self.command,
+                )
+
             params_dict = extract_command_params(command=self.command)
             optional_params = extract_optional_params(
                 params_dict, command=self.command
             )
-
             service = params_dict.get("service")
             if service:
                 normalized_service = validate_service(service)
@@ -74,25 +81,24 @@ class OrgsResolver(BaseResolver):
     """Get a list of organizations that the user is a member of"""
 
     def resolve(self, params_dict, optional_params):
-        authenticate_command(client=self.client, command=self.command)
-        codecov_response = handle_codecov_public_api_request(
+        data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.SERVICE_OWNERS,
         )
-        results = codecov_response["results"]
 
-        formatted_response = "*Organizations you have access to are:*\n\n"
-        for result in results:  # maybe take this out to a helper function
-            for key, value in result.items():
-                formatted_response += f"*{key.capitalize()}*: {value}\n"
-            formatted_response += "\n"
+        if data["count"] == 0:
+            return "You are not a member of any organization"
 
-        return formatted_response
+        formatted_response = (
+            f"*Organizations you have access to*: ({data['count']})\n\n"
+        )
+        return format_nested_keys(data, formatted_response)
 
 
 class OwnerResolver(BaseResolver):
+    """Get owner's information"""
+
     def resolve(self, params_dict, optional_params):
-        """Get owner's information"""
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.OWNER,
@@ -120,7 +126,36 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n `/codecov logout` - Logout of current active service\n\n\n*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n\n\n*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n\n\n*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n\n",
+                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n`/codecov logout` - Logout of current active service\n",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Commits commands:*\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n`/codecov commit repository=<repository> username=<username> service=<service> commitid=<commitid>` - Get commit information\n",
             },
         },
         {"type": "divider"},
@@ -140,9 +175,9 @@ def resolve_help(say):
 
 
 class UsersResolver(BaseResolver):
+    """Returns a paginated list of users for the specified owner"""
+
     def resolve(self, params_dict, optional_params):
-        """Returns a paginated list of users for the specified owner"""
-        authenticate_command(client=self.client, command=self.command)
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.USERS_LIST,
@@ -155,17 +190,14 @@ class UsersResolver(BaseResolver):
         if data["count"] == 0:
             return f"No users found for {owner_username}"
 
-        formatted_data = f"*Users for {owner_username}*\n\n"
-        for user in data["results"]:
-            formatted_data += f"Username: {user['username']}\nName: {user['name']}\nEmail: {user['email']}\nActivated: {user['activated']}\nAdmin: {user['is_admin']}\n\n"
-        return formatted_data
+        formatted_data = f"*Users for {owner_username}*: ({data['count']})\n\n"
+        return format_nested_keys(data, formatted_data)
 
 
 class RepoConfigResolver(BaseResolver):
-    def resolve(self, params_dict, optional_params):
-        """Returns the repository configuration for the specified owner and repository"""
-        authenticate_command(client=self.client, command=self.command)
+    """Returns the repository configuration for the specified owner and repository"""
 
+    def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.REPO_CONFIG,
@@ -181,8 +213,9 @@ class RepoConfigResolver(BaseResolver):
 
 
 class RepoResolver(BaseResolver):
+    """Returns a single repository by name for the specified owner"""
+
     def resolve(self, params_dict, optional_params):
-        """Returns a single repository by name for the specified owner"""
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.REPO,
@@ -215,16 +248,16 @@ class ReposResolver(BaseResolver):
         if data["count"] == 0:
             return f"No repositories found for {owner_username}"
 
-        formatted_data = f"*Repositories for {owner_username}*\n\n"
-        for repo in data["results"]:
-            formatted_data += f"**Name: {repo['name']}**\nUpdate stamp: {repo['updatestamp']}\nBranch: {repo['branch']}\nPrivate: {repo['private']}\nLanguage: {repo['language']}\nActive: {repo['active']}\nActivated: {repo['activated']} \n\nAuthor username: {repo['author']['username']}\nAuthor service: {repo['author']['service']}\n------------------\n"
-        return formatted_data
+        formatted_data = (
+            f"*Repositories for {owner_username}*: ({data['count']})\n\n"
+        )
+        return format_nested_keys(data, formatted_data)
 
 
 class BranchesResolver(BaseResolver):
+    """Returns a paginated list of branches for the specified owner and repository"""
+
     def resolve(self, params_dict, optional_params):
-        """Returns a paginated list of branches for the specified owner and repository"""
-        authenticate_command(client=self.client, command=self.command)
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.BRANCHES,
@@ -236,16 +269,14 @@ class BranchesResolver(BaseResolver):
         if data["count"] == 0:
             return f"No branches found for {repo}"
 
-        formatted_data = f"*Branches for {repo}*\n\n"
-        for branch in data["results"]:
-            formatted_data += f"**Name: {branch['name']}**\nUpdate stamp: {branch['updatestamp']}\n------------------\n"
-        return formatted_data
+        formatted_data = f"*Branches for {repo}*: ({data['count']})\n\n"
+        return format_nested_keys(data, formatted_data)
 
 
 class BranchResolver(BaseResolver):
+    """Returns a single branch by name for the specified owner and repository"""
+
     def resolve(self, params_dict, optional_params):
-        """Returns a single branch by name for the specified owner and repository"""
-        authenticate_command(client=self.client, command=self.command)
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=EndpointName.BRANCH,
@@ -264,3 +295,87 @@ class BranchResolver(BaseResolver):
                 )
 
         return f"Branch {branch} found for {repo} \n\n{formatted_data}"
+
+
+class CommitsResolver(BaseResolver):
+    """Returns a paginated list of commits for the specified owner and repository"""
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=EndpointName.COMMITS,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No commits found for {repo}"
+
+        formatted_data = f"*Commits for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class CommitResolver(BaseResolver):
+    """Returns a single commit by commit ID for the specified owner and repository"""
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=EndpointName.COMMIT,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+        )
+
+        repo = params_dict.get("repository")
+        commit_id = params_dict.get("commitid")
+
+        if data:
+            formatted_data = f"*Commit {commit_id} for {repo}*\n\n"
+            for key in data:
+                formatted_data += f"{key.capitalize()}: {data[key]}\n"
+
+        return formatted_data
+
+
+class PullsResolver(BaseResolver):
+    """Returns a paginated list of pull requests for the specified owner and repository"""
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=EndpointName.PULLS,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No pulls found for {repo}"
+
+        formatted_data = f"*Pulls for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class PullResolver(BaseResolver):
+    """Returns a single pull request by pull request ID for the specified owner and repository"""
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=EndpointName.PULL,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+        )
+
+        repo = params_dict.get("repository")
+        pull_id = params_dict.get("pullid")
+
+        if data:
+            formatted_data = f"*Pull {pull_id} for {repo}*\n\n"
+            for key in data:
+                formatted_data += f"{key.capitalize()}: {data[key]}\n"
+
+        return formatted_data

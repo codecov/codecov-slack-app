@@ -10,3 +10,7 @@ class EndpointName(Enum):
     REPO = "repo"
     BRANCHES = "branches"
     BRANCH = "branch"
+    COMMITS = "commits"
+    COMMIT = "commit"
+    PULLS = "pulls"
+    PULL = "pull"
