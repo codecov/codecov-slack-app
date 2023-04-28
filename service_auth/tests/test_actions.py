@@ -1,45 +1,15 @@
-import os
 from unittest.mock import Mock, patch
 
 import pytest
 from django.test import TestCase
 
 from core.enums import EndpointName
-from service_auth.actions import (
-    _user_info,
-    authenticate_command,
-    create_new_codecov_access_token,
-    get_or_create_slack_user,
-    handle_codecov_public_api_request,
-    verify_codecov_access_token,
-)
+from service_auth.actions import (authenticate_command,
+                                  create_new_codecov_access_token,
+                                  get_or_create_slack_user,
+                                  handle_codecov_public_api_request,
+                                  verify_codecov_access_token)
 from service_auth.models import Service, SlackUser
-
-
-def test_user_info():
-    user_info = {
-        "user": {
-            "name": "user",
-            "profile": {
-                "email": "user@example.com",
-                "display_name": "Test User",
-            },
-            "team_id": "12345",
-            "is_bot": False,
-            "is_owner": True,
-            "is_admin": False,
-        }
-    }
-    expected_output = {
-        "username": "user",
-        "email": "user@example.com",
-        "display_name": "Test User",
-        "team_id": "12345",
-        "is_bot": False,
-        "is_owner": True,
-        "is_admin": False,
-    }
-    assert _user_info(user_info) == expected_output
 
 
 @pytest.mark.django_db
@@ -315,7 +285,4 @@ class TestHandleCodecovPublicAPI(TestCase):
                 params_dict=params_dict,
             )
 
-        assert (
-            str(e.value)
-            == "Error: 403, Forbidden"
-        )
+        assert str(e.value) == "Error: 403, Forbidden"

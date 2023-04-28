@@ -11,6 +11,26 @@ from core.enums import EndpointName
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
 
+def _user_info(user_info):
+    username = user_info["user"]["name"]
+    email = user_info["user"]["profile"]["email"]
+    display_name = user_info["user"]["profile"]["display_name"]
+    team_id = user_info["user"]["team_id"]
+    is_bot = user_info["user"]["is_bot"]
+    is_owner = user_info["user"]["is_owner"]
+    is_admin = user_info["user"]["is_admin"]
+
+    return {
+        "username": username,
+        "email": email,
+        "display_name": display_name,
+        "team_id": team_id,
+        "is_bot": is_bot,
+        "is_owner": is_owner,
+        "is_admin": is_admin,
+    }
+
+
 def validate_gh_call_params(code, state):
     if not code:
         raise ValidationError("Missing code parameter")
