@@ -14,7 +14,9 @@ from .helpers import endpoint_mapping
 logger = logging.getLogger(__name__)
 
 
-class BaseResolver:
+class BaseResolver:    
+    command_name = None
+
     def __init__(self, client, command, say):
         self.client = client
         self.command = command
@@ -22,7 +24,7 @@ class BaseResolver:
 
     def __call__(self):
         try:
-            command = endpoint_mapping.get(self.command["text"].split(" ")[0])
+            command = endpoint_mapping.get(self.command_name)
             if command.is_private:
                 authenticate_command(
                     client=self.client,
@@ -79,6 +81,7 @@ def resolve_service_login(client, command, say):
 
 class OrgsResolver(BaseResolver):
     """Get a list of organizations that the user is a member of"""
+    command_name = "organizations"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -97,6 +100,7 @@ class OrgsResolver(BaseResolver):
 
 class OwnerResolver(BaseResolver):
     """Get owner's information"""
+    command_name = "owner"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -184,6 +188,7 @@ def resolve_help(say):
 
 class UsersResolver(BaseResolver):
     """Returns a paginated list of users for the specified owner"""
+    command_name = "users"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -204,6 +209,7 @@ class UsersResolver(BaseResolver):
 
 class RepoConfigResolver(BaseResolver):
     """Returns the repository configuration for the specified owner and repository"""
+    command_name = "repo-config"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -222,6 +228,7 @@ class RepoConfigResolver(BaseResolver):
 
 class RepoResolver(BaseResolver):
     """Returns a single repository by name for the specified owner"""
+    command_name = "repo"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -241,6 +248,7 @@ class RepoResolver(BaseResolver):
 
 class ReposResolver(BaseResolver):
     """Returns a paginated list of repositories for the specified owner"""
+    command_name = "repos"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -264,6 +272,7 @@ class ReposResolver(BaseResolver):
 
 class BranchesResolver(BaseResolver):
     """Returns a paginated list of branches for the specified owner and repository"""
+    command_name = "branches"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -283,6 +292,7 @@ class BranchesResolver(BaseResolver):
 
 class BranchResolver(BaseResolver):
     """Returns a single branch by name for the specified owner and repository"""
+    command_name = "branch"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -307,6 +317,7 @@ class BranchResolver(BaseResolver):
 
 class CommitsResolver(BaseResolver):
     """Returns a paginated list of commits for the specified owner and repository"""
+    command_name = "commits"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -327,6 +338,7 @@ class CommitsResolver(BaseResolver):
 
 class CommitResolver(BaseResolver):
     """Returns a single commit by commit ID for the specified owner and repository"""
+    command_name = "commit"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -349,6 +361,7 @@ class CommitResolver(BaseResolver):
 
 class PullsResolver(BaseResolver):
     """Returns a paginated list of pull requests for the specified owner and repository"""
+    command_name = "pulls"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
@@ -369,6 +382,7 @@ class PullsResolver(BaseResolver):
 
 class PullResolver(BaseResolver):
     """Returns a single pull request by pull request ID for the specified owner and repository"""
+    command_name = "pull"
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
