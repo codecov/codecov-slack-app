@@ -1,13 +1,11 @@
 import os
-import urllib.parse
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict
 
 import jwt
 import requests
-from slack_sdk.errors import SlackApiError
 
+from core.enums import EndpointName
+
+from .helpers import get_endpoint_details
 from .models import SlackUser
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
@@ -16,54 +14,6 @@ GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 CODECOV_SECRET = os.environ.get("CODECOV_SECRET")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
-
-
-@dataclass
-class Endpoint:
-    url: str
-    is_private: bool
-
-
-class EndpointName(Enum):
-    SERVICE_OWNERS = "service_owners"
-    OWNER = "owner"
-    USERS_LIST = "users_list"
-    REPO_CONFIG = "repo_config"
-
-
-def get_endpoint_details(
-    endpoint_name: EndpointName,
-    service=None,
-    owner_username=None,
-    repository=None,
-    params=None,
-) -> Endpoint:
-    endpoints_map: Dict[EndpointName, Endpoint] = {
-        EndpointName.SERVICE_OWNERS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/",
-            is_private=True,
-        ),
-        EndpointName.OWNER: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
-            is_private=False,
-        ),
-        EndpointName.USERS_LIST: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
-            is_private=True,
-        ),
-        EndpointName.REPO_CONFIG: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/config/",
-            is_private=True,
-        ),
-    }
-
-    endpoint = endpoints_map[endpoint_name]
-
-    if params:
-        params_str = urllib.parse.urlencode(params)
-        endpoint.url = f"{endpoint.url}?{params_str}"
-
-    return endpoint
 
 
 def _user_info(user_info):
@@ -207,19 +157,20 @@ def handle_codecov_public_api_request(
     user_id,
     endpoint_name: EndpointName,
     service=None,
-    owner_username=None,
-    repository=None,
-    params=None,
+    optional_params=None,
+    params_dict=None,
 ):
+    if not params_dict:
+        params_dict = {}
+
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
     _service = service if service else slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
         endpoint_name,
         service=_service,
-        owner_username=owner_username,
-        repository=repository,
-        params=params,
+        optional_params=optional_params,
+        params_dict=params_dict,
     )
 
     if not endpoint_details:
@@ -231,7 +182,10 @@ def handle_codecov_public_api_request(
     headers = {
         "accept": "application/json",
     }
-    if is_private:
+
+    codecov_access_token = slack_user.codecov_access_token
+
+    if is_private or codecov_access_token:
         codecov_access_token = slack_user.codecov_access_token
         headers["Authorization"] = f"Bearer {codecov_access_token}"
 
@@ -239,5 +193,9 @@ def handle_codecov_public_api_request(
     if response.status_code == 200:
         data = response.json()
         return data
+    elif response.status_code == 404:
+        raise Exception(
+            "Error: Not found. \nPlease use `/codecov login` if you are accessing private data."
+        )
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
