@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 
 import pytest
@@ -51,6 +52,8 @@ class TestGetEndpointDetails(TestCase):
         self.service = "gh"
 
     def test_get_endpoint_details(self):
+        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
+
         endpoint = get_endpoint_details(
             endpoint_name=self.endpoint,
             service=self.service,
@@ -60,6 +63,8 @@ class TestGetEndpointDetails(TestCase):
         self.assertEqual(endpoint.is_private, False)
 
     def test_get_endpoint_details_with_optional_params(self):
+        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
+
         endpoint = get_endpoint_details(
             endpoint_name=self.endpoint,
             service=self.service,
@@ -70,6 +75,8 @@ class TestGetEndpointDetails(TestCase):
         self.assertEqual(endpoint.is_private, False)
 
     def test_get_endpoint_details_is_private(self):
+        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
+
         endpoint = get_endpoint_details(
             endpoint_name=EndpointName.SERVICE_OWNERS,
             service=self.service,

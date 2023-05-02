@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
@@ -182,6 +183,7 @@ class TestHandleCodecovPublicAPI(TestCase):
         )
 
     def test_successful_request(self, mock_get):
+        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
         params_dict = {
             "username": "rula99",
             "service": "github",
@@ -241,6 +243,7 @@ class TestHandleCodecovPublicAPI(TestCase):
         assert str(e.value) == "'random'"  # it's an enum
 
     def test_codecov_access_token_exists(self, mock_get):
+        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
         self.slack_user.codecov_access_token = (
             "12345678-1234-5678-1234-567822245672"
         )
