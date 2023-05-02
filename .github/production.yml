@@ -41,7 +41,6 @@ jobs:
       - name: Build
         env:
           ENV: production
-          NPM_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         run: |-
           make build
 
