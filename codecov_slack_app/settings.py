@@ -136,9 +136,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Sentry SDK setup
-SENTRY_SAMPLE_RATE = float(
-    os.environ.get("SENTRY_SAMPLE_RATE", 0.1)
-)
+SENTRY_SAMPLE_RATE = float(os.environ.get("SENTRY_SAMPLE_RATE", 0.1))
 
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN"),
@@ -147,5 +145,5 @@ sentry_sdk.init(
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
     traces_sample_rate=SENTRY_SAMPLE_RATE,
-    environment="production"
+    environment="production",
 )
