@@ -23,11 +23,11 @@ class Command:
 
 
 endpoint_mapping: Dict[EndpointName, Command] = {
-    EndpointName.SERVICE_OWNERS.value: Command(is_private=True),
-    EndpointName.OWNER.value: Command(
+    EndpointName.SERVICE_OWNERS: Command(is_private=True),
+    EndpointName.OWNER: Command(
         required_params=["username", "service"],
     ),
-    EndpointName.USERS_LIST.value: Command(
+    EndpointName.USERS_LIST: Command(
         required_params=["username", "service"],
         optional_params=[
             "activated",
@@ -38,41 +38,41 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         ],
         is_private=True,
     ),
-    EndpointName.REPO_CONFIG.value: Command(
+    EndpointName.REPO_CONFIG: Command(
         required_params=["username", "service", "repository"],
         is_private=True,
     ),
-    EndpointName.REPOS.value: Command(
+    EndpointName.REPOS: Command(
         required_params=["username", "service"],
         optional_params=["active", "names", "search", "page", "page_size"],
     ),
-    EndpointName.REPO.value: Command(
+    EndpointName.REPO: Command(
         required_params=["username", "service", "repository"],
     ),
-    EndpointName.BRANCHES.value: Command(
+    EndpointName.BRANCHES: Command(
         required_params=["username", "service", "repository"],
         optional_params=["author", "ordering", "page", "page_size"],
         is_private=True,
     ),
-    EndpointName.BRANCH.value: Command(
+    EndpointName.BRANCH: Command(
         required_params=["username", "service", "repository", "branch"],
         is_private=True,
     ),
-    EndpointName.COMMITS.value: Command(
+    EndpointName.COMMITS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["branch", "page", "page_size"],
         is_private=True,
     ),
-    EndpointName.COMMIT.value: Command(
+    EndpointName.COMMIT: Command(
         required_params=["username", "service", "repository", "commitid"],
         is_private=True,
     ),
-    EndpointName.PULLS.value: Command(
+    EndpointName.PULLS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["ordering", "page", "page_size", "state"],
         is_private=True,
     ),
-    EndpointName.PULL.value: Command(
+    EndpointName.PULL: Command(
         required_params=["username", "service", "repository", "pullid"],
         is_private=True,
     ),
@@ -98,7 +98,7 @@ def validate_service(service):
     return normalized_name
 
 
-def extract_command_params(command):
+def extract_command_params(command, command_name):
     params_dict = {}
     command_text = command["text"].split(" ")
 
@@ -108,15 +108,14 @@ def extract_command_params(command):
 
         params_dict[param.split("=")[0]] = param.split("=")[1]
 
-    command = endpoint_mapping.get(command_text[0])
+    command = endpoint_mapping.get(command_name)
     command.validate(params_dict)
 
     return params_dict
 
 
-def extract_optional_params(params_dict, command):
-    command_text = command["text"].split(" ")[0]
-    endpoint = endpoint_mapping[command_text]
+def extract_optional_params(params_dict, command_name):
+    endpoint = endpoint_mapping.get(command_name)
 
     if not bool(endpoint.optional_params):
         return {}

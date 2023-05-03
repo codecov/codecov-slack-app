@@ -14,7 +14,7 @@ from .helpers import endpoint_mapping
 logger = logging.getLogger(__name__)
 
 
-class BaseResolver:    
+class BaseResolver:
     command_name = None
 
     def __init__(self, client, command, say):
@@ -29,11 +29,14 @@ class BaseResolver:
                 authenticate_command(
                     client=self.client,
                     command=self.command,
+                    say=self.say,
                 )
 
-            params_dict = extract_command_params(command=self.command)
+            params_dict = extract_command_params(
+                command=self.command, command_name=self.command_name
+            )
             optional_params = extract_optional_params(
-                params_dict, command=self.command
+                params_dict, command_name=self.command_name
             )
             service = params_dict.get("service")
             if service:
@@ -81,12 +84,13 @@ def resolve_service_login(client, command, say):
 
 class OrgsResolver(BaseResolver):
     """Get a list of organizations that the user is a member of"""
-    command_name = "organizations"
+
+    command_name = EndpointName.SERVICE_OWNERS
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.SERVICE_OWNERS,
+            endpoint_name=self.command_name,
         )
 
         if data["count"] == 0:
@@ -100,12 +104,13 @@ class OrgsResolver(BaseResolver):
 
 class OwnerResolver(BaseResolver):
     """Get owner's information"""
-    command_name = "owner"
+
+    command_name = EndpointName.OWNER
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.OWNER,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -188,12 +193,13 @@ def resolve_help(say):
 
 class UsersResolver(BaseResolver):
     """Returns a paginated list of users for the specified owner"""
-    command_name = "users"
+
+    command_name = EndpointName.USERS_LIST
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.USERS_LIST,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             optional_params=optional_params,
             params_dict=params_dict,
@@ -209,12 +215,13 @@ class UsersResolver(BaseResolver):
 
 class RepoConfigResolver(BaseResolver):
     """Returns the repository configuration for the specified owner and repository"""
-    command_name = "repo-config"
+
+    command_name = EndpointName.REPO_CONFIG
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.REPO_CONFIG,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -228,12 +235,13 @@ class RepoConfigResolver(BaseResolver):
 
 class RepoResolver(BaseResolver):
     """Returns a single repository by name for the specified owner"""
-    command_name = "repo"
+
+    command_name = EndpointName.REPO
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.REPO,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -248,12 +256,13 @@ class RepoResolver(BaseResolver):
 
 class ReposResolver(BaseResolver):
     """Returns a paginated list of repositories for the specified owner"""
-    command_name = "repos"
+
+    command_name = EndpointName.REPOS
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.REPOS,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
             optional_params=optional_params,
@@ -272,12 +281,13 @@ class ReposResolver(BaseResolver):
 
 class BranchesResolver(BaseResolver):
     """Returns a paginated list of branches for the specified owner and repository"""
-    command_name = "branches"
+
+    command_name = EndpointName.BRANCHES
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.BRANCHES,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -292,12 +302,13 @@ class BranchesResolver(BaseResolver):
 
 class BranchResolver(BaseResolver):
     """Returns a single branch by name for the specified owner and repository"""
-    command_name = "branch"
+
+    command_name = EndpointName.BRANCH
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.BRANCH,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -317,12 +328,13 @@ class BranchResolver(BaseResolver):
 
 class CommitsResolver(BaseResolver):
     """Returns a paginated list of commits for the specified owner and repository"""
-    command_name = "commits"
+
+    command_name = EndpointName.COMMITS
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.COMMITS,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
             optional_params=optional_params,
@@ -338,12 +350,13 @@ class CommitsResolver(BaseResolver):
 
 class CommitResolver(BaseResolver):
     """Returns a single commit by commit ID for the specified owner and repository"""
-    command_name = "commit"
+
+    command_name = EndpointName.COMMIT
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.COMMIT,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )
@@ -361,12 +374,13 @@ class CommitResolver(BaseResolver):
 
 class PullsResolver(BaseResolver):
     """Returns a paginated list of pull requests for the specified owner and repository"""
-    command_name = "pulls"
+
+    command_name = EndpointName.PULLS
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.PULLS,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
             optional_params=optional_params,
@@ -382,12 +396,13 @@ class PullsResolver(BaseResolver):
 
 class PullResolver(BaseResolver):
     """Returns a single pull request by pull request ID for the specified owner and repository"""
-    command_name = "pull"
+
+    command_name = EndpointName.PULL
 
     def resolve(self, params_dict, optional_params):
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
-            endpoint_name=EndpointName.PULL,
+            endpoint_name=self.command_name,
             service=params_dict.get("service"),
             params_dict=params_dict,
         )

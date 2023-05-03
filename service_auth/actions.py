@@ -99,7 +99,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         raise Exception("Error creating codecov access token")
 
 
-def authenticate_command(client, command):
+def authenticate_command(client, command, say):
     slack_user_id = command["user_id"]
     user_info = client.users_info(user=slack_user_id)
     slack_user = get_or_create_slack_user(user_info)
@@ -111,6 +111,7 @@ def authenticate_command(client, command):
             create_new_codecov_access_token(slack_user)
         return
 
+    say("You are not authenticated to use this command. Please login first.")
     view_login_modal(client, command)
 
 
@@ -192,8 +193,11 @@ def handle_codecov_public_api_request(
         data = response.json()
         return data
     elif response.status_code == 404:
-        raise Exception(
-            "Error: Not found. \nPlease use `/codecov login` if you are accessing private data."
+        msg = (
+            f"Please use `/codecov login` if you are accessing private data."
+            if not codecov_access_token
+            else ""
         )
+        raise Exception("Error: Not found." + msg)
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
