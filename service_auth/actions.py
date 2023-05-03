@@ -5,7 +5,7 @@ import requests
 
 from core.enums import EndpointName
 
-from .helpers import get_endpoint_details
+from .helpers import _user_info, get_endpoint_details
 from .models import SlackUser
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
@@ -14,26 +14,6 @@ GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 CODECOV_SECRET = os.environ.get("CODECOV_SECRET")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
-
-
-def _user_info(user_info):
-    username = user_info["user"]["name"]
-    email = user_info["user"]["profile"]["email"]
-    display_name = user_info["user"]["profile"]["display_name"]
-    team_id = user_info["user"]["team_id"]
-    is_bot = user_info["user"]["is_bot"]
-    is_owner = user_info["user"]["is_owner"]
-    is_admin = user_info["user"]["is_admin"]
-
-    return {
-        "username": username,
-        "email": email,
-        "display_name": display_name,
-        "team_id": team_id,
-        "is_bot": is_bot,
-        "is_owner": is_owner,
-        "is_admin": is_admin,
-    }
 
 
 def verify_codecov_access_token(slack_user: SlackUser):
