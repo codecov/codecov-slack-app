@@ -415,3 +415,76 @@ class PullResolver(BaseResolver):
                 formatted_data += f"{key.capitalize()}: {data[key]}\n"
 
         return formatted_data
+
+
+class ComponentsResolver(BaseResolver):
+    """Returns a paginated list of components for the specified owner and repository"""
+
+    command_name = EndpointName.COMPONENTS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if not len(data):
+            return f"No components found for {repo}"
+
+        formatted_data = f"*Components for {repo}*: ({len(data)})\n"
+        for component in data:
+            for key in component:
+                formatted_data += f"{key.capitalize()}: {component[key]}\n"
+
+            formatted_data += "---------------- \n"
+
+        return formatted_data
+
+
+class FlagsResolver(BaseResolver):
+    """Returns a paginated list of flags for the specified owner and repository"""
+
+    command_name = EndpointName.FLAGS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No flags found for {repo}"
+
+        formatted_data = f"*Flags for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class CoverageTrendResolver(BaseResolver):
+    """Returns a paginated list of coverage trends for the specified owner and repository"""
+
+    command_name = EndpointName.COVERAGE_TREND
+
+    def resolve(self, params_dict, optional_params):
+        optional_params["interval"] = "1d"
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No coverage trends found for {repo}"
+
+        formatted_data = f"*Coverage trends for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)

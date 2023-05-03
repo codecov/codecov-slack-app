@@ -5,10 +5,11 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
-                        CommitsResolver, OrgsResolver, OwnerResolver,
-                        PullResolver, PullsResolver, RepoConfigResolver,
-                        RepoResolver, ReposResolver, UsersResolver,
-                        resolve_help, resolve_service_login,
+                        CommitsResolver, ComponentsResolver,
+                        CoverageTrendResolver, FlagsResolver, OrgsResolver,
+                        OwnerResolver, PullResolver, PullsResolver,
+                        RepoConfigResolver, RepoResolver, ReposResolver,
+                        UsersResolver, resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -102,6 +103,12 @@ def handle_codecov_commands(ack, command, say, client):
                 PullsResolver(client, command, say)()
             case "pull":
                 PullResolver(client, command, say)()
+            case "components":
+                ComponentsResolver(client, command, say)()
+            case "flags":
+                FlagsResolver(client, command, say)()
+            case "coverage-trend":
+                CoverageTrendResolver(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:
@@ -118,6 +125,7 @@ def handle_codecov_commands(ack, command, say, client):
 def handle_help_message(ack, say):
     ack()
     resolve_help(say)
+
 
 @app.event("app_home_opened")
 def update_home_tab(client, event, logger):
@@ -139,7 +147,7 @@ def update_home_tab(client, event, logger):
                 "text": "Learn more about the Codecov API here:\n"
                 "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
             },
-        }
+        },
     ]
 
     client.views_publish(
