@@ -50,9 +50,8 @@ def get_github_user(access_token):
 
 
 @dataclass
-class Endpoint:
+class Endpoint:  # keeping this here for now
     url: str
-    is_private: bool
 
 
 def get_endpoint_details(
@@ -64,39 +63,45 @@ def get_endpoint_details(
     owner_username = params_dict.get("username")
     repository = params_dict.get("repository")
     branch = params_dict.get("branch")
+    commit_id = params_dict.get("commitid")
+    pull_id = params_dict.get("pullid")
 
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/",
-            is_private=True,
         ),
         EndpointName.OWNER: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
-            is_private=False,
         ),
         EndpointName.USERS_LIST: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
-            is_private=True,
         ),
         EndpointName.REPO_CONFIG: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/config/",
-            is_private=True,
         ),
         EndpointName.REPOS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/",
-            is_private=False,
         ),
         EndpointName.REPO: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/",
-            is_private=False,
         ),
         EndpointName.BRANCHES: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/",
-            is_private=True,
         ),
         EndpointName.BRANCH: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/{branch}/",
-            is_private=True,
+        ),
+        EndpointName.COMMITS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits/",
+        ),
+        EndpointName.COMMIT: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits/{commit_id}/",
+        ),
+        EndpointName.PULLS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/",
+        ),
+        EndpointName.PULL: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/{pull_id}/",
         ),
     }
 

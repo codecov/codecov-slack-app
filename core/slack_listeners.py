@@ -4,10 +4,12 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from .resolvers import (BranchesResolver, BranchResolver, OrgsResolver,
-                        OwnerResolver, RepoConfigResolver, RepoResolver,
-                        ReposResolver, UsersResolver, resolve_help,
-                        resolve_service_login, resolve_service_logout)
+from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
+                        CommitsResolver, OrgsResolver, OwnerResolver,
+                        PullResolver, PullsResolver, RepoConfigResolver,
+                        RepoResolver, ReposResolver, UsersResolver,
+                        resolve_help, resolve_service_login,
+                        resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
 logger = logging.getLogger(__name__)
@@ -45,60 +47,65 @@ def handle_codecov_commands(ack, command, say, client):
     ack()
     command_text = command["text"].split(" ")[0]
 
-    try:
-        if command_text == "login":
-            resolve_service_login(client, command, say)
-        elif command_text == "logout":
-            resolve_service_logout(client, command, say)
-        elif command_text == "organizations":
-            OrgsResolver(client, command, say).__call__()
-        elif command_text == "owner":
-            OwnerResolver(client, command, say).__call__()
-        elif command_text == "users":
-            UsersResolver(client, command, say).__call__()
-        elif command_text == "repo-config":
-            RepoConfigResolver(client, command, say).__call__()
-        elif command_text == "repos" or command_text == "repositories":
-            ReposResolver(client, command, say).__call__()
-        elif command_text == "repository" or command_text == "repo":
-            RepoResolver(client, command, say).__call__()
-        elif command_text == "branches":
-            BranchesResolver(client, command, say).__call__()
-        elif command_text == "branch":
-            BranchResolver(client, command, say).__call__()
-        elif command_text == "help":
-            resolve_help(say)
-
-        else:
-            message_payload = [
+    message_payload = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Invalid command.\n*Need some help?*",
+            },
+        },
+        {
+            "type": "actions",
+            "elements": [
                 {
-                    "type": "section",
+                    "type": "button",
                     "text": {
-                        "type": "mrkdwn",
-                        "text": "Invalid command.\n*Need some help?*",
+                        "type": "plain_text",
+                        "text": "Help",
+                        "emoji": True,
                     },
-                },
-                {
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "Help",
-                                "emoji": True,
-                            },
-                            "value": "help",
-                            "action_id": "help-message",
-                        }
-                    ],
-                },
-            ]
+                    "value": "help",
+                    "action_id": "help-message",
+                }
+            ],
+        },
+    ]
 
-            say(
-                text="",
-                blocks=message_payload,
-            )
+    try:
+        match command_text:
+            case "login":
+                resolve_service_login(client, command, say)
+            case "logout":
+                resolve_service_logout(client, command, say)
+            case "organizations":
+                OrgsResolver(client, command, say)()
+            case "owner":
+                OwnerResolver(client, command, say)()
+            case "users":
+                UsersResolver(client, command, say)()
+            case "repo-config":
+                RepoConfigResolver(client, command, say)()
+            case "repos":
+                ReposResolver(client, command, say)()
+            case "repo":
+                RepoResolver(client, command, say)()
+            case "branches":
+                BranchesResolver(client, command, say)()
+            case "branch":
+                BranchResolver(client, command, say)()
+            case "commits":
+                CommitsResolver(client, command, say)()
+            case "commit":
+                CommitResolver(client, command, say)()
+            case "pulls":
+                PullsResolver(client, command, say)()
+            case "pull":
+                PullResolver(client, command, say)()
+            case "help":
+                resolve_help(say)
+            case _:
+                say(text="", blocks=message_payload)
 
     except Exception as e:
         logger.error(e)
@@ -111,3 +118,30 @@ def handle_codecov_commands(ack, command, say, client):
 def handle_help_message(ack, say):
     ack()
     resolve_help(say)
+
+@app.event("app_home_opened")
+def update_home_tab(client, event, logger):
+    home_tab_blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Welcome to Codecov Slack app! :wave:\n\n"
+                "Use the `/codecov` command to interact with Codecov's public API.\n"
+                "For example, try typing `/codecov repos` to see a list of your repositories.\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Learn more about the Codecov API here:\n"
+                "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
+            },
+        }
+    ]
+
+    client.views_publish(
+        user_id=event["user"], view={"type": "home", "blocks": home_tab_blocks}
+    )
