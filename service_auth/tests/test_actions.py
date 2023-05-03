@@ -183,7 +183,6 @@ class TestHandleCodecovPublicAPI(TestCase):
         )
 
     def test_successful_request(self, mock_get):
-        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
         params_dict = {
             "username": "rula99",
             "service": "github",
@@ -199,7 +198,7 @@ class TestHandleCodecovPublicAPI(TestCase):
         )
 
         mock_get.assert_called_once_with(
-            "None/github/rula99/repos/",  # TODO: fix this add env var
+            "https://codecov.io/api/github/rula99/repos/",
             headers={"accept": "application/json"},
         )
 
@@ -243,7 +242,6 @@ class TestHandleCodecovPublicAPI(TestCase):
         assert str(e.value) == "'random'"  # it's an enum
 
     def test_codecov_access_token_exists(self, mock_get):
-        os.environ["CODECOV_PUBLIC_API"] = "https://codecov.io/api/"
         self.slack_user.codecov_access_token = (
             "12345678-1234-5678-1234-567822245672"
         )
@@ -264,7 +262,7 @@ class TestHandleCodecovPublicAPI(TestCase):
         )
 
         mock_get.assert_called_once_with(
-            "None/github/rula99/repos/",  # TODO: fix this add env var
+            "https://codecov.io/api/github/rula99/repos/",
             headers={
                 "accept": "application/json",
                 "Authorization": f"Bearer {self.slack_user.codecov_access_token}",
