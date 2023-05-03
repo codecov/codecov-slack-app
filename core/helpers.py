@@ -6,11 +6,12 @@ from .enums import EndpointName
 
 @dataclass
 class Command:
-    required_params: list
-    optional_params: list
+    required_params: Optional[list] = None
+    optional_params: Optional[list] = None
+    is_private: bool = False
 
     def validate(self, params_dict):
-        if len(self.required_params) > 0:
+        if bool(self.required_params):
             if len(params_dict) == 0:
                 raise ValueError(
                     "Missing required parameters"
@@ -22,13 +23,11 @@ class Command:
 
 
 endpoint_mapping: Dict[EndpointName, Command] = {
-    EndpointName.SERVICE_OWNERS.value: Command(
-        required_params=[], optional_params=[]
+    EndpointName.SERVICE_OWNERS: Command(is_private=True),
+    EndpointName.OWNER: Command(
+        required_params=["username", "service"],
     ),
-    EndpointName.OWNER.value: Command(
-        required_params=["username", "service"], optional_params=[]
-    ),
-    EndpointName.USERS_LIST.value: Command(
+    EndpointName.USERS_LIST: Command(
         required_params=["username", "service"],
         optional_params=[
             "activated",
@@ -37,26 +36,45 @@ endpoint_mapping: Dict[EndpointName, Command] = {
             "page",
             "page_size",
         ],
+        is_private=True,
     ),
-    EndpointName.REPO_CONFIG.value: Command(
+    EndpointName.REPO_CONFIG: Command(
         required_params=["username", "service", "repository"],
-        optional_params=[],
+        is_private=True,
     ),
-    EndpointName.REPOS.value: Command(
+    EndpointName.REPOS: Command(
         required_params=["username", "service"],
         optional_params=["active", "names", "search", "page", "page_size"],
     ),
-    EndpointName.REPO.value: Command(
+    EndpointName.REPO: Command(
         required_params=["username", "service", "repository"],
-        optional_params=[],
     ),
-    EndpointName.BRANCHES.value: Command(
+    EndpointName.BRANCHES: Command(
         required_params=["username", "service", "repository"],
         optional_params=["author", "ordering", "page", "page_size"],
+        is_private=True,
     ),
-    EndpointName.BRANCH.value: Command(
+    EndpointName.BRANCH: Command(
         required_params=["username", "service", "repository", "branch"],
-        optional_params=[],
+        is_private=True,
+    ),
+    EndpointName.COMMITS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "page", "page_size"],
+        is_private=True,
+    ),
+    EndpointName.COMMIT: Command(
+        required_params=["username", "service", "repository", "commitid"],
+        is_private=True,
+    ),
+    EndpointName.PULLS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["ordering", "page", "page_size", "state"],
+        is_private=True,
+    ),
+    EndpointName.PULL: Command(
+        required_params=["username", "service", "repository", "pullid"],
+        is_private=True,
     ),
 }
 
@@ -80,7 +98,7 @@ def validate_service(service):
     return normalized_name
 
 
-def extract_command_params(command):
+def extract_command_params(command, command_name):
     params_dict = {}
     command_text = command["text"].split(" ")
 
@@ -90,17 +108,16 @@ def extract_command_params(command):
 
         params_dict[param.split("=")[0]] = param.split("=")[1]
 
-    command = endpoint_mapping.get(command_text[0])
+    command = endpoint_mapping.get(command_name)
     command.validate(params_dict)
 
     return params_dict
 
 
-def extract_optional_params(params_dict, command):
-    command_text = command["text"].split(" ")[0]
-    endpoint = endpoint_mapping[command_text]
+def extract_optional_params(params_dict, command_name):
+    endpoint = endpoint_mapping.get(command_name)
 
-    if endpoint.optional_params is None:
+    if not bool(endpoint.optional_params):
         return {}
 
     optional_params = {}
@@ -110,3 +127,11 @@ def extract_optional_params(params_dict, command):
             optional_params[key] = params_dict.get(key)
 
     return optional_params
+
+
+def format_nested_keys(data, formatted_data):
+    for res in data["results"]:
+        for key in res:
+            formatted_data += f"*{key.capitalize()}*: {res[key]}\n"
+        formatted_data += "------------------\n"
+    return formatted_data

@@ -1,5 +1,5 @@
 BLACK = black
-BLACK_ARGS = --line-length 79 --target-version py38
+BLACK_ARGS = --line-length 79
 
 ISORT = isort
 ISORT_ARGS = -rc 
@@ -11,6 +11,7 @@ build_date ?= $(shell git show -s --date=iso8601-strict --pretty=format:%cd $$sh
 
 .PHONY: format
 format:
+	pip3 install black==22.3.0 isort
 	$(BLACK) $(BLACK_ARGS) .
 	$(ISORT) $(ISORT_ARGS) .
 
