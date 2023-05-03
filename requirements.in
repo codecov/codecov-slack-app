@@ -8,3 +8,4 @@ pytest-django
 requests
 djangorestframework
 pyjwt
+sentry-sdk
