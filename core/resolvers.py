@@ -29,7 +29,6 @@ class BaseResolver:
                 authenticate_command(
                     client=self.client,
                     command=self.command,
-                    say=self.say,
                 )
 
             params_dict = extract_command_params(
