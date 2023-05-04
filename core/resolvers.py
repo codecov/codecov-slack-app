@@ -187,7 +187,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trend username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
+                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
             },
         },
         {"type": "divider"},
@@ -483,13 +483,13 @@ class FlagsResolver(BaseResolver):
         return format_nested_keys(data, formatted_data)
 
 
-class CoverageTrendResolver(BaseResolver):
+class CoverageTrendsResolver(BaseResolver):
     """Returns a paginated list of coverage trends for the specified owner and repository"""
 
-    command_name = EndpointName.COVERAGE_TREND
+    command_name = EndpointName.COVERAGE_TRENDS
 
     def resolve(self, params_dict, optional_params):
-        optional_params["interval"] = "1d"
+        optional_params["interval"] = "1d" # set a default interval of 1 day
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=self.command_name,
@@ -498,9 +498,9 @@ class CoverageTrendResolver(BaseResolver):
             optional_params=optional_params,
         )
 
-        repo = params_dict.get("repository")
+        flag = params_dict.get("flag")
         if data["count"] == 0:
-            return f"No coverage trends found for {repo}"
+            return f"No coverage trends found for {flag}"
 
-        formatted_data = f"*Coverage trends for {repo}*: ({data['count']})\n"
+        formatted_data = f"*Coverage trends for {flag}*: ({data['count']})\n"
         return format_nested_keys(data, formatted_data)

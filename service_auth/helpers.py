@@ -110,7 +110,7 @@ def get_endpoint_details(
         EndpointName.FLAGS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/",
         ),
-        EndpointName.COVERAGE_TREND: Endpoint(
+        EndpointName.COVERAGE_TRENDS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/{flag}/coverage/",
         ),
     }

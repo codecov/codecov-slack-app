@@ -6,7 +6,7 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
                         CommitsResolver, ComponentsResolver,
-                        CoverageTrendResolver, FlagsResolver, OrgsResolver,
+                        CoverageTrendsResolver, FlagsResolver, OrgsResolver,
                         OwnerResolver, PullResolver, PullsResolver,
                         RepoConfigResolver, RepoResolver, ReposResolver,
                         UsersResolver, resolve_help, resolve_service_login,
@@ -107,8 +107,8 @@ def handle_codecov_commands(ack, command, say, client):
                 ComponentsResolver(client, command, say)()
             case "flags":
                 FlagsResolver(client, command, say)()
-            case "coverage-trend":
-                CoverageTrendResolver(client, command, say)()
+            case "coverage-trends": # use endpoint enum for cases
+                CoverageTrendsResolver(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:

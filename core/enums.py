@@ -16,4 +16,4 @@ class EndpointName(Enum):
     PULL = "pull"
     COMPONENTS = "components"
     FLAGS = "flags"
-    COVERAGE_TREND = "coverage-trend"
+    COVERAGE_TRENDS = "coverage-trends"

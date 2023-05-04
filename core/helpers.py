@@ -86,7 +86,7 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         optional_params=["page", "page_size"],
         is_private=True,
     ),
-    EndpointName.COVERAGE_TREND: Command(
+    EndpointName.COVERAGE_TRENDS: Command(
         required_params=["username", "service", "repository", "flag"],
         optional_params=[
             "branch",
