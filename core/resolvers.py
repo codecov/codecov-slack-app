@@ -179,6 +179,22 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
+                "text": "*Components commands:*\n`/codecov components username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> sha=<sha>` - Gets a list of components for the specified repository\n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
                 "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
             },
         },
@@ -415,3 +431,76 @@ class PullResolver(BaseResolver):
                 formatted_data += f"{key.capitalize()}: {data[key]}\n"
 
         return formatted_data
+
+
+class ComponentsResolver(BaseResolver):
+    """Returns a paginated list of components for the specified owner and repository"""
+
+    command_name = EndpointName.COMPONENTS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if not len(data):
+            return f"No components found for {repo}"
+
+        formatted_data = f"*Components for {repo}*: ({len(data)})\n"
+        for component in data:
+            for key in component:
+                formatted_data += f"{key.capitalize()}: {component[key]}\n"
+
+            formatted_data += "---------------- \n"
+
+        return formatted_data
+
+
+class FlagsResolver(BaseResolver):
+    """Returns a paginated list of flags for the specified owner and repository"""
+
+    command_name = EndpointName.FLAGS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No flags found for {repo}"
+
+        formatted_data = f"*Flags for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class CoverageTrendsResolver(BaseResolver):
+    """Returns a paginated list of coverage trends for the specified owner and repository"""
+
+    command_name = EndpointName.COVERAGE_TRENDS
+
+    def resolve(self, params_dict, optional_params):
+        optional_params["interval"] = "1d" # set a default interval of 1 day
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        flag = params_dict.get("flag")
+        if data["count"] == 0:
+            return f"No coverage trends found for {flag}"
+
+        formatted_data = f"*Coverage trends for {flag}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)

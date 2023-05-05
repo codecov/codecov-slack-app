@@ -76,6 +76,28 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         required_params=["username", "service", "repository", "pullid"],
         is_private=True,
     ),
+    EndpointName.COMPONENTS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "sha"],
+        is_private=True,
+    ),
+    EndpointName.FLAGS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["page", "page_size"],
+        is_private=True,
+    ),
+    EndpointName.COVERAGE_TRENDS: Command(
+        required_params=["username", "service", "repository", "flag"],
+        optional_params=[
+            "branch",
+            "page",
+            "page_size",
+            "end_date",
+            "interval",
+            "start_date",
+        ],
+        is_private=True,
+    ),
 }
 
 service_mapping = {

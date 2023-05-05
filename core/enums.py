@@ -14,3 +14,6 @@ class EndpointName(Enum):
     COMMIT = "commit"
     PULLS = "pulls"
     PULL = "pull"
+    COMPONENTS = "components"
+    FLAGS = "flags"
+    COVERAGE_TRENDS = "coverage-trends"
