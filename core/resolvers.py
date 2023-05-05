@@ -577,7 +577,6 @@ class CoverageTrendsResolver(BaseResolver):
         return format_nested_keys(data, formatted_data)
 
 
-
 class CoverageTrendResolver(BaseResolver):
     """Returns a paginated list of timeseries measurements aggregated by the specified interval"""
 
