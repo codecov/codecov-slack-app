@@ -98,6 +98,26 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         ],
         is_private=True,
     ),
+    EndpointName.COMPARISON: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["pullid", "base", "head"],
+        is_private=True,
+    ),
+    EndpointName.COMPONENT_COMPARISON: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["pullid", "base", "head"],
+        is_private=True,
+    ),
+    EndpointName.FILE_COMPARISON: Command(
+        required_params=["username", "service", "repository", "path"],
+        optional_params=["pullid", "base", "head"],
+        is_private=True,
+    ),
+    EndpointName.FLAG_COMPARISON: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["pullid", "base", "head"],
+        is_private=True,
+    ),
 }
 
 service_mapping = {
@@ -157,3 +177,13 @@ def format_nested_keys(data, formatted_data):
             formatted_data += f"*{key.capitalize()}*: {res[key]}\n"
         formatted_data += "------------------\n"
     return formatted_data
+
+
+def validate_comparison_params(params_dict):
+    base = params_dict.get("base")
+    head = params_dict.get("head")
+    pull_id = params_dict.get("pullid")
+    if (not base or not head) and (not pull_id):
+        raise Exception(
+            "Comparison requires both a base and head parameter or a pullid parameter"
+        )
