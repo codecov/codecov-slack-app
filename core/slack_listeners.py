@@ -6,13 +6,14 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
 
-from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport, CommitCoverageTotals, CommitResolver,
-                        CommitsResolver, ComparisonResolver,
-                        ComponentsResolver, CoverageTrendResolver, CoverageTrendsResolver, FileCoverageReport,
-                        FlagsResolver, OrgsResolver, OwnerResolver,
-                        PullResolver, PullsResolver, RepoConfigResolver,
-                        RepoResolver, ReposResolver, UsersResolver,
-                        resolve_help, resolve_service_login,
+from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
+                        CommitCoverageTotals, CommitResolver, CommitsResolver,
+                        ComparisonResolver, ComponentsResolver,
+                        CoverageTrendResolver, CoverageTrendsResolver,
+                        FileCoverageReport, FlagsResolver, OrgsResolver,
+                        OwnerResolver, PullResolver, PullsResolver,
+                        RepoConfigResolver, RepoResolver, ReposResolver,
+                        UsersResolver, resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
