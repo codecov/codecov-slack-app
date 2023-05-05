@@ -118,6 +118,33 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         optional_params=["pullid", "base", "head"],
         is_private=True,
     ),
+    EndpointName.COVERAGE_TREND: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=[
+            "branch",
+            "page",
+            "page_size",
+            "end_date",
+            "start_date",
+            "interval",
+        ],
+        is_private=True,
+    ),
+    EndpointName.FILE_COVERAGE_REPORT: Command(
+        required_params=["username", "service", "repository", "path"],
+        optional_params=["branch", "sha"],
+        is_private=True,
+    ),
+    EndpointName.COMMIT_COVERAGE_REPORT: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "component_id", "flag", "path", "sha"],
+        is_private=True,
+    ),
+    EndpointName.COMMIT_COVERAGE_TOTALS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "component_id", "flag", "path", "sha"],
+        is_private=True,
+    ),
 }
 
 service_mapping = {

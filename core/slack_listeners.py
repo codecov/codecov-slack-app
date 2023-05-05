@@ -6,9 +6,9 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
 
-from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
+from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport, CommitCoverageTotals, CommitResolver,
                         CommitsResolver, ComparisonResolver,
-                        ComponentsResolver, CoverageTrendsResolver,
+                        ComponentsResolver, CoverageTrendResolver, CoverageTrendsResolver, FileCoverageReport,
                         FlagsResolver, OrgsResolver, OwnerResolver,
                         PullResolver, PullsResolver, RepoConfigResolver,
                         RepoResolver, ReposResolver, UsersResolver,
@@ -137,6 +137,14 @@ def handle_codecov_commands(ack, command, say, client):
                     say,
                     command_name=EndpointName.FLAG_COMPARISON,
                 )()
+            case "coverage-trend":
+                CoverageTrendResolver(client, command, say)()
+            case "commit-coverage-report":
+                CommitCoverageReport(client, command, say)()
+            case "commit-coverage-totals":
+                CommitCoverageTotals(client, command, say)()
+            case "file-coverage-report":
+                FileCoverageReport(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:

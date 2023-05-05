@@ -240,6 +240,14 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
+                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
                 "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
             },
         },
@@ -582,3 +590,105 @@ class CoverageTrendsResolver(BaseResolver):
 
         formatted_data = f"*Coverage trends for {flag}*: ({data['count']})\n"
         return format_nested_keys(data, formatted_data)
+
+
+
+class CoverageTrendResolver(BaseResolver):
+    """Returns a paginated list of timeseries measurements aggregated by the specified interval"""
+
+    command_name = EndpointName.COVERAGE_TREND
+
+    def resolve(self, params_dict, optional_params):
+        optional_params["interval"] = "1d"
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No coverage trend found for {repo}"
+
+        formatted_data = f"*Coverage trend for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class FileCoverageReport(BaseResolver):  # Test this
+    """Returns coverage info for a single file specified by path."""
+
+    command_name = EndpointName.FILE_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        path = params_dict.get("path")
+        if data["count"] == 0:
+            return f"No coverage report found for {path} in {repo}"
+
+        formatted_data = (
+            f"*Coverage report for {path} in {repo}*: ({data['count']})\n"
+        )
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+
+        return formatted_data
+
+
+class CommitCoverageReport(BaseResolver):
+    """returns line-by-line coverage info (hit=0/miss=1/partial=2)."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*:\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data
+
+
+class CommitCoverageTotals(BaseResolver):
+    """Returns the coverage totals for a given commit and the coverage totals broken down by file."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_TOTALS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data
