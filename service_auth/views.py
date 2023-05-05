@@ -1,8 +1,8 @@
-import datetime
 import os
 
 import jwt
 import requests
+from django.shortcuts import redirect
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,6 +14,7 @@ GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
+SLACK_APP_ID = os.environ.get("SLACK_APP_ID")
 
 
 class GithubCallbackView(APIView):
@@ -81,7 +82,13 @@ class GithubCallbackView(APIView):
 
         service.save()
 
+        # create new codecov access token
         create_new_codecov_access_token(user)
-        return Response(
-            {"detail": "You have successfully logged in"}, status=200
+
+        # redirect to slack app
+        team_id = user.team_id
+        slack_url = (
+            f"https://slack.com/app_redirect?app={SLACK_APP_ID}&team={team_id}"
         )
+
+        return redirect(slack_url)
