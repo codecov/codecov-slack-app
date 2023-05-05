@@ -181,3 +181,31 @@ def update_home_tab(client, event, logger):
     client.views_publish(
         user_id=event["user"], view={"type": "home", "blocks": home_tab_blocks}
     )
+
+@app.action("close-modal")
+def handle_close_modal(ack, body, client):
+    response = {
+        "response_action": "update",
+        "view": {
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Codecov App"},
+            "close": {"type": "plain_text", "text": "Close"},
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "You can close this modal now!",
+                    },
+                }
+            ],
+        },
+    }
+
+    response["view"]["close"] = {"type": "plain_text", "text": "Done"}
+    client.views_update(
+        view_id=body["view"]["id"],
+        hash=body["view"]["hash"],
+        view=response["view"],
+    )
+    ack(response)
