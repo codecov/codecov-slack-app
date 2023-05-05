@@ -17,3 +17,7 @@ class EndpointName(Enum):
     COMPONENTS = "components"
     FLAGS = "flags"
     COVERAGE_TRENDS = "coverage-trends"
+    COMPARISON = "compare"
+    COMPONENT_COMPARISON = "compare-component"
+    FILE_COMPARISON = "compare-file"
+    FLAG_COMPARISON = "compare-flag"

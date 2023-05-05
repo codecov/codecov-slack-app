@@ -4,12 +4,15 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
+from core.enums import EndpointName
+
 from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
-                        CommitsResolver, ComponentsResolver,
-                        CoverageTrendsResolver, FlagsResolver, OrgsResolver,
-                        OwnerResolver, PullResolver, PullsResolver,
-                        RepoConfigResolver, RepoResolver, ReposResolver,
-                        UsersResolver, resolve_help, resolve_service_login,
+                        CommitsResolver, ComparisonResolver,
+                        ComponentsResolver, CoverageTrendsResolver,
+                        FlagsResolver, OrgsResolver, OwnerResolver,
+                        PullResolver, PullsResolver, RepoConfigResolver,
+                        RepoResolver, ReposResolver, UsersResolver,
+                        resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -107,8 +110,33 @@ def handle_codecov_commands(ack, command, say, client):
                 ComponentsResolver(client, command, say)()
             case "flags":
                 FlagsResolver(client, command, say)()
-            case "coverage-trends": # use endpoint enum for cases
+            case "coverage-trends":  # use endpoint enum for cases
                 CoverageTrendsResolver(client, command, say)()
+            case "compare":
+                ComparisonResolver(
+                    client, command, say, command_name=EndpointName.COMPARISON
+                )()
+            case "compare-component":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.COMPONENT_COMPARISON,
+                )()
+            case "compare-file":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.FILE_COMPARISON,
+                )()
+            case "compare-flag":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.FLAG_COMPARISON,
+                )()
             case "help":
                 resolve_help(say)
             case _:
