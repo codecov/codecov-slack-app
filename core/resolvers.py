@@ -3,12 +3,18 @@ import logging
 
 from slack_sdk.errors import SlackApiError
 
-from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, validate_service)
-from service_auth.actions import (authenticate_command,
-                                  get_or_create_slack_user,
-                                  handle_codecov_public_api_request,
-                                  view_login_modal)
+from core.helpers import (
+    extract_command_params,
+    extract_optional_params,
+    format_nested_keys,
+    validate_service,
+)
+from service_auth.actions import (
+    authenticate_command,
+    get_or_create_slack_user,
+    handle_codecov_public_api_request,
+    view_login_modal,
+)
 from service_auth.models import Service
 
 from .enums import EndpointName
@@ -46,11 +52,12 @@ class BaseResolver:
                 params_dict["service"] = normalized_service
 
             res = self.resolve(params_dict, optional_params)
+
             if res:
-                summary, detail = self.split_message(message=res)
-                thread_ts = self.post_message(summary)
-                if detail is not None:
-                    self.post_in_thread(thread_ts, detail)
+                if len(res) > 4000:
+                    self.post_snippet(res)
+                else:
+                    self.say(res)
 
         except Exception as e:
             logger.error(e)
@@ -61,35 +68,17 @@ class BaseResolver:
     def resolve(self, *args, **kwargs):
         raise NotImplementedError("must implement resolve in subclass")
 
-    def post_message(self, message):
+    def post_snippet(self, message):
         try:
-            response = self.say(
+            self.client.files_upload_v2(
                 channel=self.command["channel_id"],
-                text=message,
-                unfurl_links=True,
+                content=message,
+                filename="codecov_response.txt",
+                title="Codecov API Snippet",
             )
-            return response["ts"]
+
         except SlackApiError as e:
             print(f"Error posting message: {e}")
-
-    def post_in_thread(self, thread_ts, message):
-        try:
-            self.say(
-                channel=self.command["channel_id"],
-                thread_ts=thread_ts,
-                text=message,
-                unfurl_links=True,
-            )
-        except SlackApiError as e:
-            print(f"Error posting message in thread: {e}")
-
-    def split_message(self, message, max_length=4000):
-        if len(message) <= max_length:
-            return message, None
-
-        summary = message[:max_length] + "..."
-        detail = message[max_length:]
-        return summary, detail
 
 
 def resolve_service_logout(client, command, say):
