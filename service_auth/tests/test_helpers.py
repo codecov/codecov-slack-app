@@ -57,7 +57,9 @@ class TestGetEndpointDetails(TestCase):
             service=self.service,
             params_dict=self.params_dict,
         )
-        self.assertEqual(endpoint.url, "https://codecov.io/api/gh/codecov/repos/")
+        self.assertEqual(
+            endpoint.url, "https://codecov.io/api/gh/codecov/repos/"
+        )
         self.assertEqual(endpoint.is_private, False)
 
     def test_get_endpoint_details_with_optional_params(self):
@@ -67,7 +69,10 @@ class TestGetEndpointDetails(TestCase):
             params_dict=self.params_dict,
             optional_params={"page_size": "99"},
         )
-        self.assertEqual(endpoint.url, "https://codecov.io/api/gh/codecov/repos/?page_size=99")
+        self.assertEqual(
+            endpoint.url,
+            "https://codecov.io/api/gh/codecov/repos/?page_size=99",
+        )
         self.assertEqual(endpoint.is_private, False)
 
     def test_get_endpoint_details_is_private(self):

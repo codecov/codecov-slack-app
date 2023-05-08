@@ -65,6 +65,8 @@ def get_endpoint_details(
     branch = params_dict.get("branch")
     commit_id = params_dict.get("commitid")
     pull_id = params_dict.get("pullid")
+    flag = params_dict.get("flag")
+    file_path = params_dict.get("path")
 
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
@@ -102,6 +104,27 @@ def get_endpoint_details(
         ),
         EndpointName.PULL: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/{pull_id}/",
+        ),
+        EndpointName.COMPONENTS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/components/",
+        ),
+        EndpointName.FLAGS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/",
+        ),
+        EndpointName.COVERAGE_TRENDS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/{flag}/coverage/",
+        ),
+        EndpointName.COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/",
+        ),
+        EndpointName.COMPONENT_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/components/",
+        ),
+        EndpointName.FILE_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/file/{file_path}/",
+        ),
+        EndpointName.FLAG_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags/",
         ),
     }
 
