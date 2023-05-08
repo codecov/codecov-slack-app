@@ -145,5 +145,5 @@ sentry_sdk.init(
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
     traces_sample_rate=SENTRY_SAMPLE_RATE,
-    environment="production",
+    environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
 )
