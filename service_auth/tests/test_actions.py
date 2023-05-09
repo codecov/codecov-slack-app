@@ -264,7 +264,7 @@ class TestHandleCodecovPublicAPI(TestCase):
         mock_get.assert_called_once_with(
             "https://codecov.io/api/github/rula99/repos/",
             headers={
-                "Content-Type": "application/json",
+                "accept": "application/json",
                 "Authorization": f"Bearer {self.slack_user.codecov_access_token}",
             },
         )
