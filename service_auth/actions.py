@@ -62,6 +62,7 @@ def get_or_create_slack_user(user_info):
 def create_new_codecov_access_token(slack_user: SlackUser):
     request_url = "http://api.codecov.io/internal/slack/generate-token/"
     headers = {
+        "accept": "application/json",
         "Authorization": "Bearer {CODECOV_SECRET}",
     }
     data = {
@@ -75,7 +76,6 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         slack_user.codecov_access_token = data.get("token")
         slack_user.save()
     else:
-        print(response.status_code, response.json(), flush=True)
         raise Exception("Error creating codecov access token")
 
 
@@ -144,12 +144,11 @@ def handle_codecov_public_api_request(
         params_dict = {}
 
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
-    if slack_user.active_service:
-        service = slack_user.active_service.name
+    _service = service if service else slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
         endpoint_name,
-        service=service,
+        service=_service,
         optional_params=optional_params,
         params_dict=params_dict,
     )
