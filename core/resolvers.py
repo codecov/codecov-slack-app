@@ -22,7 +22,7 @@ from .helpers import endpoint_mapping, validate_comparison_params
 
 logger = logging.getLogger(__name__)
 
-
+SIZE_THRESHOLD = 4000
 class BaseResolver:
     command_name = None
 
@@ -54,7 +54,7 @@ class BaseResolver:
             res = self.resolve(params_dict, optional_params)
 
             if res:
-                if len(res) > 4000:
+                if len(res) > SIZE_THRESHOLD:
                     self.post_snippet(res)
                 else:
                     self.say(res)
