@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+
 class TestHealth(APITestCase):
     def test_health(self):
         url = reverse("health")
