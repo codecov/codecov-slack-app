@@ -17,7 +17,8 @@ To run the app locally, follow these steps:
 Make sure you have Docker installed. If you do not have Docker installed, please refer to the Docker documentation to install Docker on your local machine.
 
 5- Start the Docker containers:
-`docker-compose up`
+`make up`
+for first run `make gcr.login` may be needed
 
 Access the app in your web browser at http://localhost:8000. (make sure to add the localhost to your settings allowed hosts)
 
