@@ -3,18 +3,12 @@ import logging
 
 from slack_sdk.errors import SlackApiError
 
-from core.helpers import (
-    extract_command_params,
-    extract_optional_params,
-    format_nested_keys,
-    validate_service,
-)
-from service_auth.actions import (
-    authenticate_command,
-    get_or_create_slack_user,
-    handle_codecov_public_api_request,
-    view_login_modal,
-)
+from core.helpers import (extract_command_params, extract_optional_params,
+                          format_nested_keys, validate_service)
+from service_auth.actions import (authenticate_command,
+                                  get_or_create_slack_user,
+                                  handle_codecov_public_api_request,
+                                  view_login_modal)
 from service_auth.models import Service
 
 from .enums import EndpointName
@@ -23,6 +17,8 @@ from .helpers import endpoint_mapping, validate_comparison_params
 logger = logging.getLogger(__name__)
 
 SIZE_THRESHOLD = 4000
+
+
 class BaseResolver:
     command_name = None
 
