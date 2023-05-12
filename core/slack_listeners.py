@@ -13,6 +13,7 @@ from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         FileCoverageReport, FlagsResolver, OrgsResolver,
                         OwnerResolver, PullResolver, PullsResolver,
                         RepoConfigResolver, RepoResolver, ReposResolver,
+                        NotificationResolver,
                         UsersResolver, resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
@@ -146,6 +147,8 @@ def handle_codecov_commands(ack, command, say, client):
                 CommitCoverageTotals(client, command, say)()
             case "file-coverage-report":
                 FileCoverageReport(client, command, say)()
+            case "notify":
+                NotificationResolver(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:

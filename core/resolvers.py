@@ -4,7 +4,8 @@ import logging
 from slack_sdk.errors import SlackApiError
 
 from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, validate_service)
+                          format_nested_keys, get_or_create_notifications,
+                          validate_service)
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -676,3 +677,95 @@ class CommitCoverageTotals(BaseResolver):
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
         return formatted_data
+class NotificationResolver(BaseResolver):
+    """Saves a user's notification preferences for a repository"""
+
+    command_name = EndpointName.NOTIFICATION
+
+    def resolve(self, params_dict, optional_params):
+        bot_token = self.client.token
+        user_id = self.command["user_id"]
+        channel_id = self.command["channel_id"]
+
+        user_info = self.client.users_info(user=user_id)
+        user = get_or_create_slack_user(user_info)
+
+        # Check if repo public or private
+        data = handle_codecov_public_api_request(
+            user_id=user_id,
+            endpoint_name=EndpointName.REPO,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+        )
+
+        if not data:
+            msg = (
+                f"Please use `/codecov login` if you are requesting notifications for a private repo."
+                if not user.codecov_access_token
+                else ""
+            )
+
+            raise Exception(f"Error: 404 Repo Not Found. {msg}")
+
+        data["slack__bot_token"] = bot_token
+        data["slack__channel_id"] = channel_id
+
+        if data["private"] == False:
+            return get_or_create_notifications(data)
+
+        else:
+            repo_name = data["name"]
+            # double check if user approve of notifications for private repo
+            self.client.views_open(
+                trigger_id=self.command["trigger_id"],
+                view={
+                    "type": "modal",
+                    "title": {
+                        "type": "plain_text",
+                        "text": "Codecov Notifications",
+                    },
+                    "blocks": [
+                        {"type": "divider"},
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f"Are you sure you want to turn notifications on for {repo_name}?",
+                            },
+                        },
+                        {
+                            "type": "context",
+                            "elements": [
+                                {
+                                    "type": "mrkdwn",
+                                    "text": "_Note: This is a private repo_",
+                                }
+                            ],
+                        },
+                        {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "text": "Yes",
+                                    },
+                                    "style": "primary",
+                                    "value": "approve",
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "text": "Nope",
+                                    },
+                                    "style": "danger",
+                                    "value": "decline",
+                                },
+                            ],
+                        },
+                        {"type": "divider"},
+                    ],
+                },
+            )

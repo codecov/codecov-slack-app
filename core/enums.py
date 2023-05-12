@@ -25,3 +25,4 @@ class EndpointName(Enum):
     FILE_COVERAGE_REPORT = "file-coverage-report"
     COMMIT_COVERAGE_REPORT = "commit-coverage-report"
     COMMIT_COVERAGE_TOTALS = "commit-coverage-totals"
+    NOTIFICATION = "notification"
