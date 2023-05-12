@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -84,3 +85,31 @@ class SlackOAuthState(models.Model):
 
     state = models.CharField(null=False, max_length=64)
     expire_at = models.DateTimeField(null=False)
+
+
+class Notification(models.Model):
+    bot_token = models.TextField(null=True)
+    repo = models.TextField(null=True)
+    owner = models.TextField(null=True)
+    channels = ArrayField(
+        models.CharField(
+            max_length=21,
+        ),
+        unique=True,
+        blank=True,
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (("bot_token", "repo", "owner"),)
+        indexes = [
+            models.Index(
+                fields=[
+                    "bot_token",
+                    "repo",
+                    "owner",
+                ]
+            )
+        ]
