@@ -221,7 +221,7 @@ class TestHandleCodecovPublicAPI(TestCase):
 
         assert (
             str(e.value)
-            == "Error: Not found. \nPlease use `/codecov login` if you are accessing private data."
+            == "Error: Not found.Please use `/codecov login` if you are accessing private data."
         )
 
     def test_random_endpoint(self, mock_get):
