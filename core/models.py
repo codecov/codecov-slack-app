@@ -95,7 +95,6 @@ class Notification(models.Model):
         models.CharField(
             max_length=21,
         ),
-        unique=True,
         blank=True,
         null=True,
     )
