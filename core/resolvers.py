@@ -4,8 +4,9 @@ import logging
 from slack_sdk.errors import SlackApiError
 
 from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, get_or_create_notifications,
+                          format_nested_keys, configure_notification, endpoint_mapping, validate_comparison_params,
                           validate_service)
+from core.models import Notification
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -13,7 +14,6 @@ from service_auth.actions import (authenticate_command,
 from service_auth.models import Service
 
 from .enums import EndpointName
-from .helpers import endpoint_mapping, validate_comparison_params
 
 logger = logging.getLogger(__name__)
 
@@ -686,11 +686,24 @@ class NotificationResolver(BaseResolver):
         bot_token = self.client.token
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
+        
+
+        # Notification already exists 
+        notifications = Notification.objects.filter(
+        repo=params_dict["repository"],
+        owner=params_dict["username"],
+        bot_token=bot_token,
+        )
+
+        if notifications.exists():
+            notification = notifications[0]
+            if notification.channels and channel_id in notification.channels:
+                return f"Notification already enabled for {params_dict['repository']} in this channel 👀"
 
         user_info = self.client.users_info(user=user_id)
         user = get_or_create_slack_user(user_info)
 
-        # Check if repo public or private
+        # Is repo public or private
         data = handle_codecov_public_api_request(
             user_id=user_id,
             endpoint_name=EndpointName.REPO,
@@ -707,19 +720,21 @@ class NotificationResolver(BaseResolver):
 
             raise Exception(f"Error: 404 Repo Not Found. {msg}")
 
-        data["slack__bot_token"] = bot_token
-        data["slack__channel_id"] = channel_id
+        params_dict["slack__bot_token"] = bot_token
+        params_dict["slack__channel_id"] = channel_id
 
+        # Configure notifications if repo is public
         if data["private"] == False:
-            return get_or_create_notifications(data)
+            return configure_notification(data=params_dict)
 
         else:
-            repo_name = data["name"]
-            # double check if user approve of notifications for private repo
+            repo_name = params_dict["repository"]
+            # Double check if user approve of notifications for private repo
             self.client.views_open(
                 trigger_id=self.command["trigger_id"],
                 view={
                     "type": "modal",
+                    "private_metadata": json.dumps(params_dict),
                     "title": {
                         "type": "plain_text",
                         "text": "Codecov Notifications",
@@ -753,6 +768,7 @@ class NotificationResolver(BaseResolver):
                                     },
                                     "style": "primary",
                                     "value": "approve",
+                                    "action_id": "approve-notification",
                                 },
                                 {
                                     "type": "button",
@@ -762,6 +778,7 @@ class NotificationResolver(BaseResolver):
                                     },
                                     "style": "danger",
                                     "value": "decline",
+                                    "action_id": "decline-notification",
                                 },
                             ],
                         },

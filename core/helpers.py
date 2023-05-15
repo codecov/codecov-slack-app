@@ -241,23 +241,20 @@ def channel_exists(client, channel_id):
         return False
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
-def get_or_create_notifications(data):
+
+def configure_notification(data):
     notification, created = Notification.objects.get_or_create(
-        repo=data["name"],
-        owner=data["author"]["name"],
+        repo=data["repository"],
+        owner=data["username"],
         bot_token=data["slack__bot_token"],
     )
     channel_id = data["slack__channel_id"]
 
     if notification.channels:
-        print(notification.channels, "channel_id", channel_id, flush=True)
-        if channel_id in notification.channels:
-            return f"Notification already enabled for {data['name']} in this channel 👀"
-
         notification.channels.append(channel_id)
 
     else:
         notification.channels = [channel_id]
 
     notification.save()
-    return f"Notifications for {data['name']} enabled in this channel 📳."
+    return f"Notifications for {data['repository']} enabled in this channel 📳."

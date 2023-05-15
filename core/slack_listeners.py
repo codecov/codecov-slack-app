@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -5,6 +6,7 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
+from core.helpers import configure_notification
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
@@ -222,3 +224,15 @@ def handle_close_modal(ack, body, client):
         view=response["view"],
     )
     ack(response)
+
+@app.action("approve-notification")
+def handle_approve_notification(ack, body, client, logger):
+    ack()
+    logger.info(body)
+    # fetch metadata from private_metadata
+    data = json.loads(body["view"]["private_metadata"])
+    message = configure_notification(data)
+    client.chat_postMessage(
+        channel=data["slack__channel_id"],
+        text=message,
+    )
