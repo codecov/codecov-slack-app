@@ -229,10 +229,43 @@ def handle_close_modal(ack, body, client):
 def handle_approve_notification(ack, body, client, logger):
     ack()
     logger.info(body)
-    # fetch metadata from private_metadata
     data = json.loads(body["view"]["private_metadata"])
     message = configure_notification(data)
-    client.chat_postMessage(
-        channel=data["slack__channel_id"],
-        text=message,
+
+    client.views_update(
+        view_id=body["view"]["id"],
+        view={
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Codecov Notification"},
+            "close": {"type": "plain_text", "text": "Close"},
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": message},
+                }
+            ],
+        },
+    )
+   
+
+@app.action("decline-notification")
+def handle_decline_notification(ack, body, client, logger):
+    ack()
+    logger.info(body)
+    client.views_update(
+        view_id=body["view"]["id"],
+        view={
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Codecov Notification"},
+            "close": {"type": "plain_text", "text": "Close"},
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Notification declined. You can safely close this modal.",
+                    },
+                }
+            ],
+        },
     )
