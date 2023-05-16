@@ -89,11 +89,10 @@ class SlackOAuthState(models.Model):
 
 CHANNEL_ID_LENGTH = 21
 class Notification(models.Model):
-    bot_token = models.ForeignKey(
+    installation = models.ForeignKey(
         SlackInstallation,
         on_delete=models.CASCADE,
-        related_name="notification",
-        db_column="bot_token",
+        related_name="notifications",
     )
     repo = models.TextField(null=True)
     owner = models.TextField(null=True)
@@ -108,11 +107,11 @@ class Notification(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (("bot_token", "repo", "owner"),)
+        unique_together = (("installation", "repo", "owner"),)
         indexes = [
             models.Index(
                 fields=[
-                    "bot_token",
+                    "installation",
                     "repo",
                     "owner",
                 ]
