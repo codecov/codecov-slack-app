@@ -42,6 +42,7 @@ jobs:
         env:
           ENV: production
         run: |-
+          make build-requirements
           make build
 
       # Push the Docker image to Google Artifact Registry
