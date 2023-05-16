@@ -688,8 +688,7 @@ class NotificationResolver(BaseResolver):
     command_name = EndpointName.NOTIFICATION
 
     def resolve(self, params_dict, optional_params):
-        print(self.command)
-        bot_token = self.client["token"]
+        bot_token = self.client.token
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
 
