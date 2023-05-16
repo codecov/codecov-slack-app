@@ -6,7 +6,7 @@ from slack_sdk.errors import SlackApiError
 from core.helpers import (extract_command_params, extract_optional_params,
                           format_nested_keys, configure_notification, endpoint_mapping, validate_comparison_params,
                           validate_service)
-from core.models import Notification
+from core.models import Notification, SlackInstallation
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -690,10 +690,15 @@ class NotificationResolver(BaseResolver):
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
 
+        installation = SlackInstallation.objects.get(
+            bot_token=bot_token,
+            team_id=self.command["team_id"],
+        )
+
         notifications = Notification.objects.filter(
         repo=params_dict["repository"],
         owner=params_dict["username"],
-        bot_token=bot_token,
+        installation=installation,
         )
 
         # Disable notifications
