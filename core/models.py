@@ -40,7 +40,7 @@ class SlackInstallation(models.Model):
     enterprise_url = models.TextField(null=True)
     team_id = models.CharField(null=True, max_length=32)
     team_name = models.TextField(null=True)
-    bot_token = models.TextField(null=True)
+    bot_token = models.TextField(null=True, unique=True)
     bot_refresh_token = models.TextField(null=True)
     bot_token_expires_at = models.DateTimeField(null=True)
     bot_id = models.CharField(null=True, max_length=32)
