@@ -679,6 +679,9 @@ class CommitCoverageTotals(BaseResolver):
         return formatted_data
 class NotificationResolver(BaseResolver):
     """Saves a user's notification preferences for a repository"""
+    def __init__(self, command, client, say, notify = False):
+        super().__init__(command, client, say)
+        self.notify = notify
 
     command_name = EndpointName.NOTIFICATION
 
@@ -686,15 +689,33 @@ class NotificationResolver(BaseResolver):
         bot_token = self.client.token
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
-        
 
-        # Notification already exists 
         notifications = Notification.objects.filter(
         repo=params_dict["repository"],
         owner=params_dict["username"],
         bot_token=bot_token,
         )
 
+        # Disable notifications
+        if not self.notify:
+            if not notifications.exists():
+                return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
+
+            notification = notifications[0]
+            if not (channel_id in notification.channels):
+                return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
+
+            notification.channels.remove(channel_id)
+            notification.save()
+
+            if not notification.channels:
+                # No channels left, delete notification
+                notification.delete()
+            
+            return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
+        
+
+        # Notification already exists 
         if notifications.exists():
             notification = notifications[0]
             if notification.channels and channel_id in notification.channels:

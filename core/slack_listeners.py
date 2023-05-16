@@ -150,6 +150,8 @@ def handle_codecov_commands(ack, command, say, client):
             case "file-coverage-report":
                 FileCoverageReport(client, command, say)()
             case "notify":
+                NotificationResolver(client, command, say, notify=True)()
+            case "notify-off":
                 NotificationResolver(client, command, say)()
             case "help":
                 resolve_help(say)
