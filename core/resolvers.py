@@ -3,8 +3,9 @@ import logging
 
 from slack_sdk.errors import SlackApiError
 
-from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, configure_notification, endpoint_mapping, validate_comparison_params,
+from core.helpers import (configure_notification, endpoint_mapping,
+                          extract_command_params, extract_optional_params,
+                          format_nested_keys, validate_comparison_params,
                           validate_service)
 from core.models import Notification, SlackInstallation
 from service_auth.actions import (authenticate_command,
@@ -679,26 +680,27 @@ class CommitCoverageTotals(BaseResolver):
         return formatted_data
 class NotificationResolver(BaseResolver):
     """Saves a user's notification preferences for a repository"""
-    def __init__(self, command, client, say, notify = False):
-        super().__init__(command, client, say)
+
+    def __init__(self, command, client, say, notify=False):
+        super().__init__(client, command, say)
         self.notify = notify
 
     command_name = EndpointName.NOTIFICATION
 
     def resolve(self, params_dict, optional_params):
-        bot_token = self.client.token
+        print(self.command)
+        bot_token = self.client["token"]
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
 
         installation = SlackInstallation.objects.get(
             bot_token=bot_token,
-            team_id=self.command["team_id"],
         )
 
         notifications = Notification.objects.filter(
-        repo=params_dict["repository"],
-        owner=params_dict["username"],
-        installation=installation,
+            repo=params_dict["repository"],
+            owner=params_dict["username"],
+            installation=installation,
         )
 
         # Disable notifications
@@ -716,11 +718,10 @@ class NotificationResolver(BaseResolver):
             if not notification.channels:
                 # No channels left, delete notification
                 notification.delete()
-            
-            return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
-        
 
-        # Notification already exists 
+            return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
+
+        # Notification already exists
         if notifications.exists():
             notification = notifications[0]
             if notification.channels and channel_id in notification.channels:
@@ -739,12 +740,12 @@ class NotificationResolver(BaseResolver):
 
         if not data:
             msg = (
-                f"Please use `/codecov login` if you are requesting notifications for a private repo."
+                f" Please use `/codecov login` if you are requesting notifications for a private repo."
                 if not user.codecov_access_token
                 else ""
             )
 
-            raise Exception(f"Error: 404 Repo Not Found. {msg}")
+            raise Exception(f"Error: 404 Repo Not Found.{msg}")
 
         params_dict["slack__bot_token"] = bot_token
         params_dict["slack__channel_id"] = channel_id

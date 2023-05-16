@@ -248,7 +248,7 @@ def handle_approve_notification(ack, body, client, logger):
             ],
         },
     )
-   
+
 
 @app.action("decline-notification")
 def handle_decline_notification(ack, body, client, logger):

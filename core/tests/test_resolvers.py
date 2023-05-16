@@ -1,6 +1,7 @@
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from django.test import TestCase
+from django.utils import timezone
 
 from core.enums import EndpointName
 from core.resolvers import (BranchesResolver, BranchResolver,
@@ -10,9 +11,10 @@ from core.resolvers import (BranchesResolver, BranchResolver,
                             CoverageTrendResolver, CoverageTrendsResolver,
                             FileCoverageReport, FlagsResolver, OrgsResolver,
                             OwnerResolver, PullResolver, PullsResolver,
-                            RepoConfigResolver, RepoResolver, ReposResolver,
+                            RepoConfigResolver, RepoResolver, ReposResolver,NotificationResolver,
                             UsersResolver, resolve_help, resolve_service_login,
                             resolve_service_logout)
+from core.models import Notification, SlackInstallation
 from service_auth.models import Service, SlackUser
 
 
@@ -628,3 +630,207 @@ def test_help_resolver():
     say = Mock()
     resolve_help(say=say)
     assert say.call_count == 1
+
+
+class TestNotifications(TestCase):
+    def setUp(self):
+        self.slack_user = SlackUser.objects.create(
+            username="my_slack_user",
+            user_id="random_user_id",
+            email="",
+            codecov_access_token="12345678-1234-5678-1234-567822245672",
+        )
+
+        self.params_dict = {
+            "username": "owner1",
+            "service": "gh",
+            "repository": "repo1",
+        }
+        self.optional_params = {}
+
+        self.client = MagicMock()
+        self.client.users_info.return_value = {
+            "user": {"name": "John Doe", "id": "random_user_id"}
+        }
+        self.client.__getitem__.return_value = "random_token"
+
+        self.command = {
+            "trigger_id": "random_trigger_id",
+            "channel_id": "random_channel_id",
+            "user_id": "random_user_id",
+        }
+        self.say = Mock()
+
+    def test_notification_already_exists(self):
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        notification = Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        notification.channels = [self.command["channel_id"]]
+        notification.save()
+
+        res = NotificationResolver(
+            command=self.command, client=self.client, say=self.say, notify=True
+        ).resolve(self.params_dict, self.optional_params)
+        assert (
+            res
+            == f"Notification already enabled for {self.params_dict['repository']} in this channel 👀"
+        )
+
+    def test_disable_notifications(self):
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        notification = Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        notification.channels = [self.command["channel_id"]]
+        notification.save()
+
+        res = NotificationResolver(
+            command=self.command,
+            client=self.client,
+            say=self.say,
+            notify=False,
+        ).resolve(self.params_dict, self.optional_params)
+        assert (
+            res
+            == f"Notifications disabled for {self.params_dict['repository']} in this channel 📴"
+        )
+
+    def test_notification_already_not_enabled(self):
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        notification = Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        notification.channels = []
+        notification.save()
+
+        res = NotificationResolver(
+            command=self.command,
+            client=self.client,
+            say=self.say,
+            notify=False,
+        ).resolve(self.params_dict, self.optional_params)
+        assert (
+            res
+            == f"Notification is not enabled for {self.params_dict['repository']} in this channel 👀"
+        )
+
+    @patch("requests.get")
+    def test_notification_resolver_public_repo(self, mock_requests_get):
+        Service.objects.create(
+            name="active_service",
+            service_username="my_username",
+            user=self.slack_user,
+            active=True,
+        )
+
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        mock_requests_get.return_value = Mock(
+            status_code=200,
+            json=lambda: {"private": False},
+        )
+
+        res = NotificationResolver(
+            command=self.command, client=self.client, say=self.say, notify=True
+        ).resolve(self.params_dict, self.optional_params)
+        assert (
+            res
+            == f"Notifications for {self.params_dict['repository']} enabled in this channel 📳."
+        )
+
+    @patch("requests.get")
+    def test_notification_resolver_repo_not_found(self, mock_requests_get):
+        Service.objects.create(
+            name="active_service",
+            service_username="my_username",
+            user=self.slack_user,
+            active=True,
+        )
+
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        mock_requests_get.return_value = Mock(
+            status_code=200,
+            json=lambda: {},
+        )
+
+        with self.assertRaises(Exception) as e:
+            NotificationResolver(
+                command=self.command,
+                client=self.client,
+                say=self.say,
+                notify=True,
+            ).resolve(self.params_dict, self.optional_params)
+
+        assert str(e.exception) == f"Error: 404 Repo Not Found."
+
+    @patch("requests.get")
+    def test_notification_resolver_private_repo(self, mock_requests_get):
+        Service.objects.create(
+            name="active_service",
+            service_username="my_username",
+            user=self.slack_user,
+            active=True,
+        )
+
+        installation = SlackInstallation.objects.create(
+            bot_token=self.client["token"],
+            installed_at=timezone.now(),
+        )
+
+        Notification.objects.create(
+            repo=self.params_dict["repository"],
+            owner=self.params_dict["username"],
+            installation=installation,
+        )
+
+        mock_requests_get.return_value = Mock(
+            status_code=200,
+            json=lambda: {"private": True},
+        )
+
+        res = NotificationResolver(
+            command=self.command, client=self.client, say=self.say, notify=True
+        ).resolve(self.params_dict, self.optional_params)
+
+        assert self.client.views_open.call_count == 1
