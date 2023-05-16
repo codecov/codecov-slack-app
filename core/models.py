@@ -87,13 +87,19 @@ class SlackOAuthState(models.Model):
     expire_at = models.DateTimeField(null=False)
 
 
+CHANNEL_ID_LENGTH = 21
 class Notification(models.Model):
-    bot_token = models.TextField(null=True)
+    bot_token = models.ForeignKey(
+        SlackInstallation,
+        on_delete=models.CASCADE,
+        related_name="notification",
+        db_column="bot_token",
+    )
     repo = models.TextField(null=True)
     owner = models.TextField(null=True)
     channels = ArrayField(
         models.CharField(
-            max_length=21,
+            max_length=CHANNEL_ID_LENGTH,
         ),
         blank=True,
         null=True,
