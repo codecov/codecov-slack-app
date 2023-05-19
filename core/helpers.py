@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+from slack_sdk.errors import SlackApiError
+
 from .enums import EndpointName
 
 
@@ -187,3 +189,24 @@ def validate_comparison_params(params_dict):
         raise Exception(
             "Comparison requires both a base and head parameter or a pullid parameter"
         )
+
+
+def validate_notification_params(comparison, repo, owner):
+    if not repo or not owner or not comparison:
+        raise ValueError(
+            "Comparison requires a repository, owner and comparison parameter"
+        )
+
+
+def channel_exists(client, channel_id):
+    try:
+        response = client.conversations_list(
+            types="public_channel,private_channel"
+        )
+        channels = response["channels"]
+        for channel in channels:
+            if channel["id"] == channel_id:
+                return True
+        return False
+    except SlackApiError as e:
+        print(f"Error: {e.response['error']}")

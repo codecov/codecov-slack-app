@@ -5,11 +5,13 @@ import pytest
 from django.test import TestCase
 
 from core.enums import EndpointName
-from service_auth.actions import (authenticate_command,
-                                  create_new_codecov_access_token,
-                                  get_or_create_slack_user,
-                                  handle_codecov_public_api_request,
-                                  verify_codecov_access_token)
+from service_auth.actions import (
+    authenticate_command,
+    create_new_codecov_access_token,
+    get_or_create_slack_user,
+    handle_codecov_public_api_request,
+    verify_codecov_access_token,
+)
 from service_auth.models import Service, SlackUser
 
 

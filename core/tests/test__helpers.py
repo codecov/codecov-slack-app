@@ -1,9 +1,12 @@
+from unittest.mock import Mock, patch
+
 import pytest
 
 from core.enums import EndpointName
-from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, validate_comparison_params,
-                          validate_service)
+from core.helpers import (channel_exists, extract_command_params,
+                          extract_optional_params, format_nested_keys,
+                          validate_comparison_params,
+                          validate_notification_params, validate_service)
 
 
 def test_validate_service():
@@ -87,3 +90,38 @@ def test_validate_comparison_params():
         )
         == None
     )
+
+
+def test_validate_notification_params():
+    with pytest.raises(ValueError) as e:
+        validate_notification_params(
+            comparison=None,
+            repo="rula",
+            owner="gh",
+        )
+
+    assert (
+        str(e.value)
+        == "Comparison requires a repository, owner and comparison parameter"
+    )
+
+    assert (
+        validate_notification_params(
+            comparison="rula",
+            repo="rula",
+            owner="gh",
+        )
+        == None
+    )
+
+
+def test_channel_exists():
+    client = Mock()
+    client.conversations_list.return_value = {
+        "channels": [
+            {"id": "C01B2AB8K3A", "name": "general"},
+            {"id": "C01B2AB8K3B", "name": "random"},
+        ]
+    }
+    assert channel_exists(client, "invalid") == False
+    assert channel_exists(client, "C01B2AB8K3A") == True
