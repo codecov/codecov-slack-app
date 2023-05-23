@@ -1,4 +1,7 @@
+import json
 import logging
+
+from slack_sdk.errors import SlackApiError
 
 from core.helpers import (extract_command_params, extract_optional_params,
                           format_nested_keys, validate_service)
@@ -9,9 +12,11 @@ from service_auth.actions import (authenticate_command,
 from service_auth.models import Service
 
 from .enums import EndpointName
-from .helpers import endpoint_mapping
+from .helpers import endpoint_mapping, validate_comparison_params
 
 logger = logging.getLogger(__name__)
+
+SIZE_THRESHOLD = 4000
 
 
 class BaseResolver:
@@ -43,7 +48,12 @@ class BaseResolver:
                 params_dict["service"] = normalized_service
 
             res = self.resolve(params_dict, optional_params)
-            self.say(res)
+
+            if res:
+                if len(res) > SIZE_THRESHOLD:
+                    self.post_snippet(res)
+                else:
+                    self.say(res)
 
         except Exception as e:
             logger.error(e)
@@ -53,6 +63,18 @@ class BaseResolver:
 
     def resolve(self, *args, **kwargs):
         raise NotImplementedError("must implement resolve in subclass")
+
+    def post_snippet(self, message):
+        try:
+            self.client.files_upload_v2(
+                channel=self.command["channel_id"],
+                content=message,
+                filename="codecov_response.txt",
+                title="Codecov API Snippet",
+            )
+
+        except SlackApiError as e:
+            print(f"Error posting message: {e}")
 
 
 def resolve_service_logout(client, command, say):
@@ -188,6 +210,22 @@ def resolve_help(say):
             "text": {
                 "type": "mrkdwn",
                 "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Comparison commands:*\n `/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
             },
         },
         {"type": "divider"},
@@ -461,6 +499,39 @@ class ComponentsResolver(BaseResolver):
         return formatted_data
 
 
+class ComparisonResolver(BaseResolver):
+    """Gets a comparison for all types of comparisons"""
+
+    def __init__(self, command, client, say, command_name):
+        super().__init__(command, client, say)
+        self.command_name = command_name
+
+    def resolve(self, params_dict, optional_params):
+        validate_comparison_params(optional_params)
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        base = params_dict.get("base")
+        head = params_dict.get("head")
+        pullid = params_dict.get("pullid")
+        repo = params_dict.get("repository")
+
+        if pullid:
+            head = data["head_commit"]
+            base = data["base_commit"]
+
+        if data:
+            title = f"*Comparison of `{base}` and `{head}` for {repo}*\n\n"
+            return title + json.dumps(data, indent=4, sort_keys=True)
+
+        return f"Comparison of {base} and {head} for {repo} not found"
+
+
 class FlagsResolver(BaseResolver):
     """Returns a paginated list of flags for the specified owner and repository"""
 
@@ -489,7 +560,7 @@ class CoverageTrendsResolver(BaseResolver):
     command_name = EndpointName.COVERAGE_TRENDS
 
     def resolve(self, params_dict, optional_params):
-        optional_params["interval"] = "1d" # set a default interval of 1 day
+        optional_params["interval"] = "1d"  # set a default interval of 1 day
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=self.command_name,
@@ -504,3 +575,104 @@ class CoverageTrendsResolver(BaseResolver):
 
         formatted_data = f"*Coverage trends for {flag}*: ({data['count']})\n"
         return format_nested_keys(data, formatted_data)
+
+
+class CoverageTrendResolver(BaseResolver):
+    """Returns a paginated list of timeseries measurements aggregated by the specified interval"""
+
+    command_name = EndpointName.COVERAGE_TREND
+
+    def resolve(self, params_dict, optional_params):
+        optional_params["interval"] = "1d"
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No coverage trend found for {repo}"
+
+        formatted_data = f"*Coverage trend for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class FileCoverageReport(BaseResolver):  # Test this
+    """Returns coverage info for a single file specified by path."""
+
+    command_name = EndpointName.FILE_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        path = params_dict.get("path")
+        if data["count"] == 0:
+            return f"No coverage report found for {path} in {repo}"
+
+        formatted_data = (
+            f"*Coverage report for {path} in {repo}*: ({data['count']})\n"
+        )
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+
+        return formatted_data
+
+
+class CommitCoverageReport(BaseResolver):
+    """returns line-by-line coverage info (hit=0/miss=1/partial=2)."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*:\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data
+
+
+class CommitCoverageTotals(BaseResolver):
+    """Returns the coverage totals for a given commit and the coverage totals broken down by file."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_TOTALS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data

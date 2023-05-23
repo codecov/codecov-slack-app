@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -39,7 +40,7 @@ class SlackInstallation(models.Model):
     enterprise_url = models.TextField(null=True)
     team_id = models.CharField(null=True, max_length=32)
     team_name = models.TextField(null=True)
-    bot_token = models.TextField(null=True)
+    bot_token = models.TextField(null=True, unique=True)
     bot_refresh_token = models.TextField(null=True)
     bot_token_expires_at = models.DateTimeField(null=True)
     bot_id = models.CharField(null=True, max_length=32)
@@ -84,3 +85,35 @@ class SlackOAuthState(models.Model):
 
     state = models.CharField(null=False, max_length=64)
     expire_at = models.DateTimeField(null=False)
+
+
+CHANNEL_ID_LENGTH = 21
+class Notification(models.Model):
+    installation = models.ForeignKey(
+        SlackInstallation,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    repo = models.TextField(null=True)
+    owner = models.TextField(null=True)
+    channels = ArrayField(
+        models.CharField(
+            max_length=CHANNEL_ID_LENGTH,
+        ),
+        blank=True,
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (("installation", "repo", "owner"),)
+        indexes = [
+            models.Index(
+                fields=[
+                    "installation",
+                    "repo",
+                    "owner",
+                ]
+            )
+        ]

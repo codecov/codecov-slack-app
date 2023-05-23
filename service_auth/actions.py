@@ -1,3 +1,4 @@
+import json
 import os
 
 import jwt
@@ -69,7 +70,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         "username": slack_user.active_service.service_username,
         "service": slack_user.active_service.name,
     }
-    response = requests.post(request_url, headers=headers, data=data)
+    response = requests.post(request_url, headers=headers, data=json.dumps(data))
 
     if response.status_code == 200:
         data = response.json()
@@ -145,11 +146,12 @@ def handle_codecov_public_api_request(
         params_dict = {}
 
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
-    _service = service if service else slack_user.active_service.name
+    if slack_user.active_service:
+        service = slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
         endpoint_name,
-        service=_service,
+        service=service,
         optional_params=optional_params,
         params_dict=params_dict,
     )

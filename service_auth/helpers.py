@@ -66,6 +66,7 @@ def get_endpoint_details(
     commit_id = params_dict.get("commitid")
     pull_id = params_dict.get("pullid")
     flag = params_dict.get("flag")
+    file_path = params_dict.get("path")
 
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
@@ -112,6 +113,30 @@ def get_endpoint_details(
         ),
         EndpointName.COVERAGE_TRENDS: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/{flag}/coverage/",
+        ),
+        EndpointName.COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/",
+        ),
+        EndpointName.COMPONENT_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/components/",
+        ),
+        EndpointName.FILE_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/file/{file_path}/",
+        ),
+        EndpointName.FLAG_COMPARISON: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags/",
+        ),
+        EndpointName.COVERAGE_TREND: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/coverage/",
+        ),
+        EndpointName.FILE_COVERAGE_REPORT: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/file_report/{file_path}/",
+        ),
+        EndpointName.COMMIT_COVERAGE_REPORT: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/report/",
+        ),
+        EndpointName.COMMIT_COVERAGE_TOTALS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/totals/",
         ),
     }
 

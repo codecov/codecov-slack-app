@@ -4,9 +4,13 @@ import os
 from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
-from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
-                        CommitsResolver, ComponentsResolver,
-                        CoverageTrendsResolver, FlagsResolver, OrgsResolver,
+from core.enums import EndpointName
+
+from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
+                        CommitCoverageTotals, CommitResolver, CommitsResolver,
+                        ComparisonResolver, ComponentsResolver,
+                        CoverageTrendResolver, CoverageTrendsResolver,
+                        FileCoverageReport, FlagsResolver, OrgsResolver,
                         OwnerResolver, PullResolver, PullsResolver,
                         RepoConfigResolver, RepoResolver, ReposResolver,
                         UsersResolver, resolve_help, resolve_service_login,
@@ -107,8 +111,41 @@ def handle_codecov_commands(ack, command, say, client):
                 ComponentsResolver(client, command, say)()
             case "flags":
                 FlagsResolver(client, command, say)()
-            case "coverage-trends": # use endpoint enum for cases
+            case "coverage-trends":  # use endpoint enum for cases
                 CoverageTrendsResolver(client, command, say)()
+            case "compare":
+                ComparisonResolver(
+                    client, command, say, command_name=EndpointName.COMPARISON
+                )()
+            case "compare-component":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.COMPONENT_COMPARISON,
+                )()
+            case "compare-file":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.FILE_COMPARISON,
+                )()
+            case "compare-flag":
+                ComparisonResolver(
+                    client,
+                    command,
+                    say,
+                    command_name=EndpointName.FLAG_COMPARISON,
+                )()
+            case "coverage-trend":
+                CoverageTrendResolver(client, command, say)()
+            case "commit-coverage-report":
+                CommitCoverageReport(client, command, say)()
+            case "commit-coverage-totals":
+                CommitCoverageTotals(client, command, say)()
+            case "file-coverage-report":
+                FileCoverageReport(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:
