@@ -124,6 +124,7 @@ class GithubViewTest(APITestCase):
             username="slack_user",
             user_id="random_test_id",
             email="",
+            team_id="random_test_team_id",
         )
 
         response = self.client.get(
@@ -133,5 +134,8 @@ class GithubViewTest(APITestCase):
             {"state": slack_user_id_jwt, "code": "test_code"},
         )
 
-        assert response.status_code == 200
-        assert response.json() == {"detail": "You have successfully logged in"}
+        assert response.status_code == 302
+        assert (
+            response.url
+            == "https://slack.com/app_redirect?app=292929292929&team=random_test_team_id"
+        )

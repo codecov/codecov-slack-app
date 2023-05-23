@@ -3,15 +3,15 @@ from unittest.mock import Mock, patch
 from django.test import TestCase
 
 from core.enums import EndpointName
-from core.resolvers import (BranchesResolver, BranchResolver, CommitResolver,
-                            CommitsResolver, ComparisonResolver,
-                            ComponentsResolver, CoverageTrendsResolver,
-                            FlagsResolver, OrgsResolver, OwnerResolver,
-                            PullResolver, PullsResolver, RepoConfigResolver,
-                            RepoResolver, ReposResolver, UsersResolver,
-                            CoverageTrendResolver, CommitCoverageReport,
-                            CommitCoverageTotals, FileCoverageReport,
-                            resolve_help, resolve_service_login,
+from core.resolvers import (BranchesResolver, BranchResolver,
+                            CommitCoverageReport, CommitCoverageTotals,
+                            CommitResolver, CommitsResolver,
+                            ComparisonResolver, ComponentsResolver,
+                            CoverageTrendResolver, CoverageTrendsResolver,
+                            FileCoverageReport, FlagsResolver, OrgsResolver,
+                            OwnerResolver, PullResolver, PullsResolver,
+                            RepoConfigResolver, RepoResolver, ReposResolver,
+                            UsersResolver, resolve_help, resolve_service_login,
                             resolve_service_logout)
 from service_auth.models import Service, SlackUser
 
@@ -498,15 +498,20 @@ class TestBaseResolvers(TestCase):
     def test_coverage_trend_resolver(self, mock_requests_get):
         mock_requests_get.return_value = Mock(
             status_code=200,
-            json=lambda: {"count": 1, "results": [{"coverage_trend1": "coverage_trend1"}]},
+            json=lambda: {
+                "count": 1,
+                "results": [{"coverage_trend1": "coverage_trend1"}],
+            },
         )
 
         res = CoverageTrendResolver(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
-        assert res == "*Coverage trend for repo1*: (1)\n*Coverage_trend1*: coverage_trend1\n------------------\n"
+        assert (
+            res
+            == "*Coverage trend for repo1*: (1)\n*Coverage_trend1*: coverage_trend1\n------------------\n"
+        )
 
-    
     @patch("requests.get")
     def test_coverage_trend_resolver_count_is_zero(self, mock_requests_get):
         mock_requests_get.return_value = Mock(
@@ -518,83 +523,105 @@ class TestBaseResolvers(TestCase):
         ).resolve(self.params_dict, self.optional_params)
         assert res == "No coverage trend found for repo1"
 
-    
     @patch("requests.get")
     def test_commit_coverage_report_resolver(self, mock_requests_get):
         mock_requests_get.return_value = Mock(
             status_code=200,
-            json=lambda: {"count": 1, "results": [{"commit_coverage_report1": "commit_coverage_report1"}]},
+            json=lambda: {
+                "count": 1,
+                "results": [
+                    {"commit_coverage_report1": "commit_coverage_report1"}
+                ],
+            },
         )
 
         res = CommitCoverageReport(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
         assert res.startswith(
-            "*Coverage report for head of the default branch in repo1*:")
-        
+            "*Coverage report for head of the default branch in repo1*:"
+        )
 
     @patch("requests.get")
-    def test_commit_coverage_report_resolver_count_is_zero(self, mock_requests_get):
-        mock_requests_get.return_value = Mock(
-            status_code=200, json=lambda: {}
-        )
+    def test_commit_coverage_report_resolver_count_is_zero(
+        self, mock_requests_get
+    ):
+        mock_requests_get.return_value = Mock(status_code=200, json=lambda: {})
 
         res = CommitCoverageReport(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
-        assert res == "No coverage report found for head of the default branch in repo1"
+        assert (
+            res
+            == "No coverage report found for head of the default branch in repo1"
+        )
 
-    
     @patch("requests.get")
     def test_commit_coverage_totals_resolver(self, mock_requests_get):
         mock_requests_get.return_value = Mock(
             status_code=200,
-            json=lambda: {"count": 1, "results": [{"commit_coverage_totals1": "commit_coverage_totals1"}]},
+            json=lambda: {
+                "count": 1,
+                "results": [
+                    {"commit_coverage_totals1": "commit_coverage_totals1"}
+                ],
+            },
         )
 
         res = CommitCoverageTotals(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
-        assert res == "*Coverage report for head of the default branch in repo1*\nCount: 1\nResults: [{'commit_coverage_totals1': 'commit_coverage_totals1'}]\n"
+        assert (
+            res
+            == "*Coverage report for head of the default branch in repo1*\nCount: 1\nResults: [{'commit_coverage_totals1': 'commit_coverage_totals1'}]\n"
+        )
 
-    
     @patch("requests.get")
-    def test_commit_coverage_totals_resolver_count_is_zero(self, mock_requests_get):
-        mock_requests_get.return_value = Mock(
-            status_code=200, json=lambda: {}
-        )
+    def test_commit_coverage_totals_resolver_count_is_zero(
+        self, mock_requests_get
+    ):
+        mock_requests_get.return_value = Mock(status_code=200, json=lambda: {})
 
         res = CommitCoverageTotals(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
-        assert res == "No coverage report found for head of the default branch in repo1"
+        assert (
+            res
+            == "No coverage report found for head of the default branch in repo1"
+        )
 
-    
     @patch("requests.get")
     def test_file_coverage_report_resolver(self, mock_requests_get):
         mock_requests_get.return_value = Mock(
             status_code=200,
-            json=lambda: {"count": 1, "results": [{"file_coverage_report1": "file_coverage_report1"}]},
+            json=lambda: {
+                "count": 1,
+                "results": [
+                    {"file_coverage_report1": "file_coverage_report1"}
+                ],
+            },
         )
 
         res = FileCoverageReport(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
-        assert res == "*Coverage report for None in repo1*: (1)\nCount: 1\nResults: [{'file_coverage_report1': 'file_coverage_report1'}]\n"
+        assert (
+            res
+            == "*Coverage report for None in repo1*: (1)\nCount: 1\nResults: [{'file_coverage_report1': 'file_coverage_report1'}]\n"
+        )
 
-    
     @patch("requests.get")
-    def test_file_coverage_report_resolver_count_is_zero(self, mock_requests_get):
+    def test_file_coverage_report_resolver_count_is_zero(
+        self, mock_requests_get
+    ):
         mock_requests_get.return_value = Mock(
-            status_code=200, json=lambda: {"count": 0}  
+            status_code=200, json=lambda: {"count": 0}
         )
 
         res = FileCoverageReport(
             client=self.client, command=self.command, say=self.say
         ).resolve(self.params_dict, self.optional_params)
         assert res == "No coverage report found for None in repo1"
-
-        
 
 
 def test_help_resolver():

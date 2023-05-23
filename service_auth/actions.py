@@ -12,7 +12,7 @@ from .models import SlackUser
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_SCOPES = os.environ.get("GITHUB_SCOPES", "repo").split(",")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
-CODECOV_SECRET = os.environ.get("CODECOV_SECRET")
+CODECOV_INTERNAL_TOKEN = os.environ.get("CODECOV_INTERNAL_TOKEN")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
@@ -64,13 +64,15 @@ def create_new_codecov_access_token(slack_user: SlackUser):
     request_url = "http://api.codecov.io/internal/slack/generate-token/"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {CODECOV_SECRET}",
+        "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
     }
     data = {
         "username": slack_user.active_service.service_username,
         "service": slack_user.active_service.name,
     }
-    response = requests.post(request_url, headers=headers, data=json.dumps(data))
+    response = requests.post(
+        request_url, headers=headers, data=json.dumps(data)
+    )
 
     if response.status_code == 200:
         data = response.json()

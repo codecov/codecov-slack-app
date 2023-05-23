@@ -88,6 +88,8 @@ class SlackOAuthState(models.Model):
 
 
 CHANNEL_ID_LENGTH = 21
+
+
 class Notification(models.Model):
     installation = models.ForeignKey(
         SlackInstallation,

@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from slack_bolt.adapter.django import SlackRequestHandler
 
 from .slack_listeners import app
-from .views import health
+from .views import NotificationView, health
 
 handler = SlackRequestHandler(app=app)
 
@@ -22,5 +22,6 @@ urlpatterns = [
     path("slack/events", slack_events_handler, name="handle"),
     path("slack/install", slack_oauth_handler, name="install"),
     path("slack/oauth_redirect", slack_oauth_handler, name="oauth_redirect"),
+    path("notify", NotificationView.as_view(), name="notify"),
     path("health", health, name="health"),
 ]
