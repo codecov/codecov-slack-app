@@ -110,7 +110,7 @@ def view_login_modal(
         # A simple view payload for a modal
         view={
             "type": "modal",
-            "title": {"type": "plain_text", "text": "My App"},
+            "title": {"type": "plain_text", "text": "Codecov App"},
             "close": {"type": "plain_text", "text": "Close"},
             "blocks": [
                 {
@@ -126,6 +126,7 @@ def view_login_modal(
                             "text": "Login via GitHub",
                         },
                         "url": github_auth_url,
+                        "action_id": "close-modal",
                         "style": "primary",
                     },
                 }
