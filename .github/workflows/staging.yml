@@ -3,7 +3,7 @@ name: Staging - Build and Push to GCP Artifact Registry
 on:
   push:
     branches:
-      - master
+      - staging
 
 jobs:
   setup-build-publish:
@@ -42,6 +42,7 @@ jobs:
         env:
           ENV: staging
         run: |-
+          make build-requirements
           make build
 
       # Push the Docker image to Google Artifact Registry

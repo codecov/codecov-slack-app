@@ -1,3 +1,4 @@
+import json
 import os
 
 import jwt
@@ -69,7 +70,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         "username": slack_user.active_service.service_username,
         "service": slack_user.active_service.name,
     }
-    response = requests.post(request_url, headers=headers, data=data)
+    response = requests.post(request_url, headers=headers, data=json.dumps(data))
 
     if response.status_code == 200:
         data = response.json()
