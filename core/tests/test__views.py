@@ -106,6 +106,7 @@ class NotificationViewSetTests(APITestCase):
         )
 
         assert response.status_code == 200
+        
 
 class TestHealth(APITestCase):
     def test_health(self):
