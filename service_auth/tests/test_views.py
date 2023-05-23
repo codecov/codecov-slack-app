@@ -135,6 +135,7 @@ class GithubViewTest(APITestCase):
         )
 
         assert response.status_code == 302
-        assert response.url == "https://slack.com/app_redirect?app=292929292929&team=random_test_team_id"
-
-        
+        assert (
+            response.url
+            == "https://slack.com/app_redirect?app=292929292929&team=random_test_team_id"
+        )

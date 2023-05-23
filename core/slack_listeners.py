@@ -191,6 +191,7 @@ def update_home_tab(client, event, logger):
         user_id=event["user"], view={"type": "home", "blocks": home_tab_blocks}
     )
 
+
 @app.action("close-modal")
 def handle_close_modal(ack, body, client):
     response = {

@@ -1,9 +1,10 @@
+import logging
+
 from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-import logging
 
 from core.authentication import InternalTokenAuthentication
 from core.helpers import channel_exists, validate_notification_params
