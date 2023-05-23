@@ -6,13 +6,14 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
 
-from .resolvers import (BranchesResolver, BranchResolver, CommitResolver,
-                        CommitsResolver, ComparisonResolver,
-                        ComponentsResolver, CoverageTrendsResolver,
-                        FlagsResolver, OrgsResolver, OwnerResolver,
-                        PullResolver, PullsResolver, RepoConfigResolver,
-                        RepoResolver, ReposResolver, UsersResolver,
-                        resolve_help, resolve_service_login,
+from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
+                        CommitCoverageTotals, CommitResolver, CommitsResolver,
+                        ComparisonResolver, ComponentsResolver,
+                        CoverageTrendResolver, CoverageTrendsResolver,
+                        FileCoverageReport, FlagsResolver, OrgsResolver,
+                        OwnerResolver, PullResolver, PullsResolver,
+                        RepoConfigResolver, RepoResolver, ReposResolver,
+                        UsersResolver, resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -137,6 +138,14 @@ def handle_codecov_commands(ack, command, say, client):
                     say,
                     command_name=EndpointName.FLAG_COMPARISON,
                 )()
+            case "coverage-trend":
+                CoverageTrendResolver(client, command, say)()
+            case "commit-coverage-report":
+                CommitCoverageReport(client, command, say)()
+            case "commit-coverage-totals":
+                CommitCoverageTotals(client, command, say)()
+            case "file-coverage-report":
+                FileCoverageReport(client, command, say)()
             case "help":
                 resolve_help(say)
             case _:

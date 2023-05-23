@@ -145,11 +145,12 @@ def handle_codecov_public_api_request(
         params_dict = {}
 
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
-    _service = service if service else slack_user.active_service.name
+    if slack_user.active_service:
+        service = slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
         endpoint_name,
-        service=_service,
+        service=service,
         optional_params=optional_params,
         params_dict=params_dict,
     )

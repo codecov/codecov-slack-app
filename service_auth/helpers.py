@@ -126,6 +126,18 @@ def get_endpoint_details(
         EndpointName.FLAG_COMPARISON: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags/",
         ),
+        EndpointName.COVERAGE_TREND: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/coverage/",
+        ),
+        EndpointName.FILE_COVERAGE_REPORT: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/file_report/{file_path}/",
+        ),
+        EndpointName.COMMIT_COVERAGE_REPORT: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/report/",
+        ),
+        EndpointName.COMMIT_COVERAGE_TOTALS: Endpoint(
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/totals/",
+        ),
     }
 
     endpoint = endpoints_map[endpoint_name]
