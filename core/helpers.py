@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 from slack_sdk.errors import SlackApiError
+
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
@@ -241,6 +242,7 @@ def channel_exists(client, channel_id):
         return False
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
+
 
 def configure_notification(data):
     installation = SlackInstallation.objects.get(

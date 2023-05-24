@@ -678,6 +678,8 @@ class CommitCoverageTotals(BaseResolver):
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
         return formatted_data
+
+
 class NotificationResolver(BaseResolver):
     """Saves a user's notification preferences for a repository"""
 
@@ -691,23 +693,21 @@ class NotificationResolver(BaseResolver):
         bot_token = self.client.token
         user_id = self.command["user_id"]
         channel_id = self.command["channel_id"]
-
         installation = SlackInstallation.objects.get(
             bot_token=bot_token,
         )
 
-        notifications = Notification.objects.filter(
+        notification = Notification.objects.filter(
             repo=params_dict["repository"],
             owner=params_dict["username"],
             installation=installation,
-        )
+        ).first()
 
         # Disable notifications
         if not self.notify:
-            if not notifications.exists():
+            if not notification:
                 return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
 
-            notification = notifications[0]
             if not (channel_id in notification.channels):
                 return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
 
@@ -721,8 +721,7 @@ class NotificationResolver(BaseResolver):
             return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
 
         # Notification already exists
-        if notifications.exists():
-            notification = notifications[0]
+        if notification:
             if notification.channels and channel_id in notification.channels:
                 return f"Notification already enabled for {params_dict['repository']} in this channel 👀"
 

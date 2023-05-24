@@ -12,11 +12,11 @@ from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
                         ComparisonResolver, ComponentsResolver,
                         CoverageTrendResolver, CoverageTrendsResolver,
-                        FileCoverageReport, FlagsResolver, OrgsResolver,
-                        OwnerResolver, PullResolver, PullsResolver,
-                        RepoConfigResolver, RepoResolver, ReposResolver,
-                        NotificationResolver,
-                        UsersResolver, resolve_help, resolve_service_login,
+                        FileCoverageReport, FlagsResolver,
+                        NotificationResolver, OrgsResolver, OwnerResolver,
+                        PullResolver, PullsResolver, RepoConfigResolver,
+                        RepoResolver, ReposResolver, UsersResolver,
+                        resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -226,6 +226,7 @@ def handle_close_modal(ack, body, client):
         view=response["view"],
     )
     ack(response)
+
 
 @app.action("approve-notification")
 def handle_approve_notification(ack, body, client, logger):

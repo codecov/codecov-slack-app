@@ -4,17 +4,18 @@ from django.test import TestCase
 from django.utils import timezone
 
 from core.enums import EndpointName
+from core.models import Notification, SlackInstallation
 from core.resolvers import (BranchesResolver, BranchResolver,
                             CommitCoverageReport, CommitCoverageTotals,
                             CommitResolver, CommitsResolver,
                             ComparisonResolver, ComponentsResolver,
                             CoverageTrendResolver, CoverageTrendsResolver,
-                            FileCoverageReport, FlagsResolver, OrgsResolver,
-                            OwnerResolver, PullResolver, PullsResolver,
-                            RepoConfigResolver, RepoResolver, ReposResolver,NotificationResolver,
-                            UsersResolver, resolve_help, resolve_service_login,
+                            FileCoverageReport, FlagsResolver,
+                            NotificationResolver, OrgsResolver, OwnerResolver,
+                            PullResolver, PullsResolver, RepoConfigResolver,
+                            RepoResolver, ReposResolver, UsersResolver,
+                            resolve_help, resolve_service_login,
                             resolve_service_logout)
-from core.models import Notification, SlackInstallation
 from service_auth.models import Service, SlackUser
 
 
@@ -652,7 +653,7 @@ class TestNotifications(TestCase):
         self.client.users_info.return_value = {
             "user": {"name": "John Doe", "id": "random_user_id"}
         }
-        self.client.__getitem__.return_value = "random_token"
+        self.client.token = "random_token"
 
         self.command = {
             "trigger_id": "random_trigger_id",
@@ -663,7 +664,7 @@ class TestNotifications(TestCase):
 
     def test_notification_already_exists(self):
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
@@ -686,7 +687,7 @@ class TestNotifications(TestCase):
 
     def test_disable_notifications(self):
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
@@ -712,7 +713,7 @@ class TestNotifications(TestCase):
 
     def test_notification_already_not_enabled(self):
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
@@ -746,7 +747,7 @@ class TestNotifications(TestCase):
         )
 
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
@@ -779,7 +780,7 @@ class TestNotifications(TestCase):
         )
 
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
@@ -814,7 +815,7 @@ class TestNotifications(TestCase):
         )
 
         installation = SlackInstallation.objects.create(
-            bot_token=self.client["token"],
+            bot_token=self.client.token,
             installed_at=timezone.now(),
         )
 
