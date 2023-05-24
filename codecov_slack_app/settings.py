@@ -86,7 +86,7 @@ DATABASES = {
         "ENGINE": os.environ.get(
             "SQL_ENGINE", "django.db.backends.postgresql"
         ),
-        "NAME": os.environ.get("POSTGRES_DB", "db.sqlite3"),
+        "NAME": os.environ.get("POSTGRES_DB", "db.postgresql"),
         "USER": os.environ.get("POSTGRES_USER", "user"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
