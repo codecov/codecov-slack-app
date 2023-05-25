@@ -5,6 +5,7 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
+from core.models import SlackBot, SlackInstallation
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
@@ -219,3 +220,18 @@ def handle_close_modal(ack, body, client):
         view=response["view"],
     )
     ack(response)
+
+
+@app.event("app_uninstalled")
+def handle_app_uninstalled(body, logger):
+    logger.info(body)
+    event = body.get("event")
+    if event:
+        logger.info(event)
+        logger.info("App was uninstalled, removing installation data")
+
+        # Delete workspace installation data
+        SlackInstallation.objects.filter(team_id=body["team_id"]).delete()
+
+        # Delete workspace bot data
+        SlackBot.objects.filter(team_id=body["team_id"]).delete()
