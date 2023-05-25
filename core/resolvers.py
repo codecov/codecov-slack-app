@@ -235,6 +235,14 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
+                "text": "*Notifications commands 📳:*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel or channels\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
                 "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
             },
         },
