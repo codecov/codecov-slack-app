@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -5,16 +6,18 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
+from core.helpers import configure_notification
 from core.models import SlackBot, SlackInstallation
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
                         ComparisonResolver, ComponentsResolver,
                         CoverageTrendResolver, CoverageTrendsResolver,
-                        FileCoverageReport, FlagsResolver, OrgsResolver,
-                        OwnerResolver, PullResolver, PullsResolver,
-                        RepoConfigResolver, RepoResolver, ReposResolver,
-                        UsersResolver, resolve_help, resolve_service_login,
+                        FileCoverageReport, FlagsResolver,
+                        NotificationResolver, OrgsResolver, OwnerResolver,
+                        PullResolver, PullsResolver, RepoConfigResolver,
+                        RepoResolver, ReposResolver, UsersResolver,
+                        resolve_help, resolve_service_login,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -147,6 +150,10 @@ def handle_codecov_commands(ack, command, say, client):
                 CommitCoverageTotals(client, command, say)()
             case "file-coverage-report":
                 FileCoverageReport(client, command, say)()
+            case "notify":
+                NotificationResolver(command, client, say, notify=True)()
+            case "notify-off":
+                NotificationResolver(command, client, say)()
             case "help":
                 resolve_help(say)
             case _:
@@ -221,6 +228,51 @@ def handle_close_modal(ack, body, client):
     )
     ack(response)
 
+
+@app.action("approve-notification")
+def handle_approve_notification(ack, body, client, logger):
+    ack()
+    logger.info(body)
+    data = json.loads(body["view"]["private_metadata"])
+    message = configure_notification(data)
+
+    client.views_update(
+        view_id=body["view"]["id"],
+        view={
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Codecov Notification"},
+            "close": {"type": "plain_text", "text": "Close"},
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": message},
+                }
+            ],
+        },
+    )
+
+
+@app.action("decline-notification")
+def handle_decline_notification(ack, body, client, logger):
+    ack()
+    logger.info(body)
+    client.views_update(
+        view_id=body["view"]["id"],
+        view={
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Codecov Notification"},
+            "close": {"type": "plain_text", "text": "Close"},
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Notification declined. You can safely close this modal.",
+                    },
+                }
+            ],
+        },
+    )
 
 @app.event("app_uninstalled")
 def handle_app_uninstalled(body, logger):

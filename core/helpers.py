@@ -3,6 +3,8 @@ from typing import Dict, Optional
 
 from slack_sdk.errors import SlackApiError
 
+from core.models import Notification, SlackInstallation
+
 from .enums import EndpointName
 
 
@@ -147,6 +149,9 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         optional_params=["branch", "component_id", "flag", "path", "sha"],
         is_private=True,
     ),
+    EndpointName.NOTIFICATION: Command(
+        required_params=["username", "service", "repository"],
+    ),
 }
 
 service_mapping = {
@@ -237,3 +242,25 @@ def channel_exists(client, channel_id):
         return False
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
+
+
+def configure_notification(data):
+    installation = SlackInstallation.objects.get(
+        bot_token=data["slack__bot_token"],
+    )
+
+    notification, created = Notification.objects.get_or_create(
+        repo=data["repository"],
+        owner=data["username"],
+        installation=installation,
+    )
+    channel_id = data["slack__channel_id"]
+
+    if notification.channels:
+        notification.channels.append(channel_id)
+
+    else:
+        notification.channels = [channel_id]
+
+    notification.save()
+    return f"Notifications for {data['repository']} enabled in this channel 📳."
