@@ -3,8 +3,11 @@ import logging
 
 from slack_sdk.errors import SlackApiError
 
-from core.helpers import (extract_command_params, extract_optional_params,
-                          format_nested_keys, validate_service)
+from core.helpers import (configure_notification, endpoint_mapping,
+                          extract_command_params, extract_optional_params,
+                          format_nested_keys, validate_comparison_params,
+                          validate_service)
+from core.models import Notification, SlackInstallation
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -12,7 +15,6 @@ from service_auth.actions import (authenticate_command,
 from service_auth.models import Service
 
 from .enums import EndpointName
-from .helpers import endpoint_mapping, validate_comparison_params
 
 logger = logging.getLogger(__name__)
 
@@ -218,6 +220,22 @@ def resolve_help(say):
             "text": {
                 "type": "mrkdwn",
                 "text": "*Comparison commands:*\n `/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Notifications commands 📳:*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel or channels\n",
             },
         },
         {"type": "divider"},
@@ -567,3 +585,237 @@ class CoverageTrendsResolver(BaseResolver):
 
         formatted_data = f"*Coverage trends for {flag}*: ({data['count']})\n"
         return format_nested_keys(data, formatted_data)
+
+
+class CoverageTrendResolver(BaseResolver):
+    """Returns a paginated list of timeseries measurements aggregated by the specified interval"""
+
+    command_name = EndpointName.COVERAGE_TREND
+
+    def resolve(self, params_dict, optional_params):
+        optional_params["interval"] = "1d"
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        if data["count"] == 0:
+            return f"No coverage trend found for {repo}"
+
+        formatted_data = f"*Coverage trend for {repo}*: ({data['count']})\n"
+        return format_nested_keys(data, formatted_data)
+
+
+class FileCoverageReport(BaseResolver):  # Test this
+    """Returns coverage info for a single file specified by path."""
+
+    command_name = EndpointName.FILE_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        path = params_dict.get("path")
+        if data["count"] == 0:
+            return f"No coverage report found for {path} in {repo}"
+
+        formatted_data = (
+            f"*Coverage report for {path} in {repo}*: ({data['count']})\n"
+        )
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+
+        return formatted_data
+
+
+class CommitCoverageReport(BaseResolver):
+    """returns line-by-line coverage info (hit=0/miss=1/partial=2)."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_REPORT
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*:\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data
+
+
+class CommitCoverageTotals(BaseResolver):
+    """Returns the coverage totals for a given commit and the coverage totals broken down by file."""
+
+    command_name = EndpointName.COMMIT_COVERAGE_TOTALS
+
+    def resolve(self, params_dict, optional_params):
+        data = handle_codecov_public_api_request(
+            user_id=self.command["user_id"],
+            endpoint_name=self.command_name,
+            params_dict=params_dict,
+            optional_params=optional_params,
+        )
+
+        repo = params_dict.get("repository")
+        sha = params_dict.get("sha")
+
+        commit = "head of the default branch" if not sha else sha
+        if not data:
+            return f"No coverage report found for {commit} in {repo}"
+
+        formatted_data = f"*Coverage report for {commit} in {repo}*\n"
+        for key in data:
+            formatted_data += f"{key.capitalize()}: {data[key]}\n"
+        return formatted_data
+
+
+class NotificationResolver(BaseResolver):
+    """Saves a user's notification preferences for a repository"""
+
+    def __init__(self, command, client, say, notify=False):
+        super().__init__(client, command, say)
+        self.notify = notify
+
+    command_name = EndpointName.NOTIFICATION
+
+    def resolve(self, params_dict, optional_params):
+        bot_token = self.client.token
+        user_id = self.command["user_id"]
+        channel_id = self.command["channel_id"]
+        installation = SlackInstallation.objects.get(
+            bot_token=bot_token,
+        )
+
+        notification = Notification.objects.filter(
+            repo=params_dict["repository"],
+            owner=params_dict["username"],
+            installation=installation,
+        ).first()
+
+        # Disable notifications
+        if not self.notify:
+            if not notification:
+                return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
+
+            if not (channel_id in notification.channels):
+                return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
+
+            notification.channels.remove(channel_id)
+            notification.save()
+
+            if not notification.channels:
+                # No channels left, delete notification
+                notification.delete()
+
+            return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
+
+        # Notification already exists
+        if notification:
+            if notification.channels and channel_id in notification.channels:
+                return f"Notification already enabled for {params_dict['repository']} in this channel 👀"
+
+        user_info = self.client.users_info(user=user_id)
+        user = get_or_create_slack_user(user_info)
+
+        # Is repo public or private
+        data = handle_codecov_public_api_request(
+            user_id=user_id,
+            endpoint_name=EndpointName.REPO,
+            service=params_dict.get("service"),
+            params_dict=params_dict,
+        )
+
+        if not data:
+            msg = (
+                f" Please use `/codecov login` if you are requesting notifications for a private repo."
+                if not user.codecov_access_token
+                else ""
+            )
+
+            raise Exception(f"Error: 404 Repo Not Found.{msg}")
+
+        params_dict["slack__bot_token"] = bot_token
+        params_dict["slack__channel_id"] = channel_id
+
+        # Configure notifications if repo is public
+        if data["private"] == False:
+            return configure_notification(data=params_dict)
+
+        else:
+            repo_name = params_dict["repository"]
+            # Double check if user approve of notifications for private repo
+            self.client.views_open(
+                trigger_id=self.command["trigger_id"],
+                view={
+                    "type": "modal",
+                    "private_metadata": json.dumps(params_dict),
+                    "title": {
+                        "type": "plain_text",
+                        "text": "Codecov Notifications",
+                    },
+                    "blocks": [
+                        {"type": "divider"},
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f"Are you sure you want to turn notifications on for {repo_name}?",
+                            },
+                        },
+                        {
+                            "type": "context",
+                            "elements": [
+                                {
+                                    "type": "mrkdwn",
+                                    "text": "_Note: This is a private repo_",
+                                }
+                            ],
+                        },
+                        {
+                            "type": "actions",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "text": "Yes",
+                                    },
+                                    "style": "primary",
+                                    "value": "approve",
+                                    "action_id": "approve-notification",
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "text": "Nope",
+                                    },
+                                    "style": "danger",
+                                    "value": "decline",
+                                    "action_id": "decline-notification",
+                                },
+                            ],
+                        },
+                        {"type": "divider"},
+                    ],
+                },
+            )

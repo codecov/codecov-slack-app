@@ -1,3 +1,4 @@
+import json
 import os
 
 import jwt
@@ -11,7 +12,7 @@ from .models import SlackUser
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_SCOPES = os.environ.get("GITHUB_SCOPES", "repo").split(",")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
-CODECOV_SECRET = os.environ.get("CODECOV_SECRET")
+CODECOV_INTERNAL_TOKEN = os.environ.get("CODECOV_INTERNAL_TOKEN")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
@@ -63,13 +64,15 @@ def create_new_codecov_access_token(slack_user: SlackUser):
     request_url = "http://api.codecov.io/internal/slack/generate-token/"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {CODECOV_SECRET}",
+        "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
     }
     data = {
         "username": slack_user.active_service.service_username,
         "service": slack_user.active_service.name,
     }
-    response = requests.post(request_url, headers=headers, data=data)
+    response = requests.post(
+        request_url, headers=headers, data=json.dumps(data)
+    )
 
     if response.status_code == 200:
         data = response.json()
@@ -109,7 +112,7 @@ def view_login_modal(
         # A simple view payload for a modal
         view={
             "type": "modal",
-            "title": {"type": "plain_text", "text": "My App"},
+            "title": {"type": "plain_text", "text": "Codecov App"},
             "close": {"type": "plain_text", "text": "Close"},
             "blocks": [
                 {
@@ -125,6 +128,7 @@ def view_login_modal(
                             "text": "Login via GitHub",
                         },
                         "url": github_auth_url,
+                        "action_id": "close-modal",
                         "style": "primary",
                     },
                 }
@@ -144,11 +148,12 @@ def handle_codecov_public_api_request(
         params_dict = {}
 
     slack_user = SlackUser.objects.filter(user_id=user_id).first()
-    _service = service if service else slack_user.active_service.name
+    if slack_user.active_service:
+        service = slack_user.active_service.name
 
     endpoint_details = get_endpoint_details(
         endpoint_name,
-        service=_service,
+        service=service,
         optional_params=optional_params,
         params_dict=params_dict,
     )

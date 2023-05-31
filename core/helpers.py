@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+from slack_sdk.errors import SlackApiError
+
+from core.models import Notification, SlackInstallation
+
 from .enums import EndpointName
 
 
@@ -118,6 +122,36 @@ endpoint_mapping: Dict[EndpointName, Command] = {
         optional_params=["pullid", "base", "head"],
         is_private=True,
     ),
+    EndpointName.COVERAGE_TREND: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=[
+            "branch",
+            "page",
+            "page_size",
+            "end_date",
+            "start_date",
+            "interval",
+        ],
+        is_private=True,
+    ),
+    EndpointName.FILE_COVERAGE_REPORT: Command(
+        required_params=["username", "service", "repository", "path"],
+        optional_params=["branch", "sha"],
+        is_private=True,
+    ),
+    EndpointName.COMMIT_COVERAGE_REPORT: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "component_id", "flag", "path", "sha"],
+        is_private=True,
+    ),
+    EndpointName.COMMIT_COVERAGE_TOTALS: Command(
+        required_params=["username", "service", "repository"],
+        optional_params=["branch", "component_id", "flag", "path", "sha"],
+        is_private=True,
+    ),
+    EndpointName.NOTIFICATION: Command(
+        required_params=["username", "service", "repository"],
+    ),
 }
 
 service_mapping = {
@@ -187,3 +221,46 @@ def validate_comparison_params(params_dict):
         raise Exception(
             "Comparison requires both a base and head parameter or a pullid parameter"
         )
+
+
+def validate_notification_params(comparison, repo, owner):
+    if not repo or not owner or not comparison:
+        raise ValueError(
+            "Comparison requires a repository, owner and comparison parameter"
+        )
+
+
+def channel_exists(client, channel_id):
+    try:
+        response = client.conversations_list(
+            types="public_channel,private_channel"
+        )
+        channels = response["channels"]
+        for channel in channels:
+            if channel["id"] == channel_id:
+                return True
+        return False
+    except SlackApiError as e:
+        print(f"Error: {e.response['error']}")
+
+
+def configure_notification(data):
+    installation = SlackInstallation.objects.get(
+        bot_token=data["slack__bot_token"],
+    )
+
+    notification, created = Notification.objects.get_or_create(
+        repo=data["repository"],
+        owner=data["username"],
+        installation=installation,
+    )
+    channel_id = data["slack__channel_id"]
+
+    if notification.channels:
+        notification.channels.append(channel_id)
+
+    else:
+        notification.channels = [channel_id]
+
+    notification.save()
+    return f"Notifications for {data['repository']} enabled in this channel 📳."

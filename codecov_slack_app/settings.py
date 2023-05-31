@@ -83,8 +83,10 @@ WSGI_APPLICATION = "codecov_slack_app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("POSTGRES_DB", BASE_DIR / "db.sqlite3"),
+        "ENGINE": os.environ.get(
+            "SQL_ENGINE", "django.db.backends.postgresql"
+        ),
+        "NAME": os.environ.get("POSTGRES_DB", "codecov_slack_app"),
         "USER": os.environ.get("POSTGRES_USER", "user"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),

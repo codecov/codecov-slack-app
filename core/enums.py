@@ -21,3 +21,8 @@ class EndpointName(Enum):
     COMPONENT_COMPARISON = "compare-component"
     FILE_COMPARISON = "compare-file"
     FLAG_COMPARISON = "compare-flag"
+    COVERAGE_TREND = "coverage-trend"
+    FILE_COVERAGE_REPORT = "file-coverage-report"
+    COMMIT_COVERAGE_REPORT = "commit-coverage-report"
+    COMMIT_COVERAGE_TOTALS = "commit-coverage-totals"
+    NOTIFICATION = "notification"
