@@ -7,7 +7,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 from core.authentication import InternalTokenAuthentication
-from core.helpers import channel_exists, validate_notification_params
+from core.helpers import channel_exists, format_comparison, validate_notification_params
 from core.models import Notification
 from core.permissions import InternalTokenPermissions
 
@@ -47,9 +47,11 @@ class NotificationView(APIView):
                     continue
 
                 try:
+                    blocks = format_comparison(comparison)
                     client.chat_postMessage(
                         channel=channel,
-                        text=str(comparison),  # TODO: Format this
+                        text="",  
+                        blocks=blocks,
                     )
                 except SlackApiError as e:
                     print(e, flush=True)

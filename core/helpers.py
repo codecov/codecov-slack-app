@@ -6,7 +6,7 @@ from slack_sdk.errors import SlackApiError
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
-
+from slack_sdk.models.blocks import SectionBlock, DividerBlock, ButtonElement
 
 @dataclass
 class Command:
@@ -264,3 +264,51 @@ def configure_notification(data):
 
     notification.save()
     return f"Notifications for {data['repository']} enabled in this channel 📳."
+
+
+
+def format_comparison(comparison):
+    # Create a list to hold the blocks
+    blocks = []
+
+    if comparison.get("url"):
+        pullid = comparison["url"].split("/")[-1]
+        repo = comparison["url"].split("/")[-3]
+        org = comparison["url"].split("/")[-4]
+
+        blocks.append(
+            SectionBlock(
+                text=f"📳 New PR *#{pullid}* for {org}/{repo}\n\n"
+                f"*Coverage:* {comparison['message']}",
+                accessory=ButtonElement(
+                    text="View PR",
+                    url=comparison["url"],
+                ),
+            )
+        )
+
+    # Add a divider block for visual separation
+    blocks.append(DividerBlock())
+
+    if comparison.get("head_commit"):
+        commitid = comparison["head_commit"]["commitid"]
+        commitSHA = commitid[:7]
+
+
+    blocks.append(SectionBlock(
+        text=f"*Head Commit*\n"
+            f"*Commit ID:* {comparison['head_commit']['commitid']}\n"
+            f"*SHA:* {commitSHA}\n"
+            f"*Branch:* {comparison['head_commit']['branch']}\n"
+            f"*Message:* {comparison['head_commit']['message']}\n"
+            f"*Author:* {comparison['head_commit']['author']}\n"
+            f"*Timestamp:* {comparison['head_commit']['timestamp']}\n"
+            f"*CI Passed:* {comparison['head_commit']['ci_passed']}\n"
+            f"*Totals:* {comparison['head_commit']['totals']}\n"
+            f"*Pull:* {comparison['head_commit']['pull']}"
+    ))
+
+    blocks.append(DividerBlock())
+    blocks.append(SectionBlock(text=f"*Head Totals Coverage:* {comparison['head_totals_c']}"))
+
+    return blocks
