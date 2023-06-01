@@ -16,4 +16,4 @@ reload=""
 if [[ "$RUN_ENV" = "staging" ]]; then
   reload="--reload"
 fi
-$prefix gunicorn codecov.wsgi:application $reload --workers=${GUNICORN_WORKERS:-2} --threads=${GUNICORN_THREADS:-1} --bind 0.0.0.0:8000 --access-logfile '-' --timeout "${GUNICORN_TIMEOUT:-600}" $suffix
+$prefix gunicorn codecov_slack_app.wsgi:application $reload --workers=${GUNICORN_WORKERS:-2} --threads=${GUNICORN_THREADS:-1} --bind 0.0.0.0:8000 --access-logfile '-' --timeout "${GUNICORN_TIMEOUT:-600}" $suffix
