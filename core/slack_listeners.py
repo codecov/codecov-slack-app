@@ -287,3 +287,10 @@ def handle_app_uninstalled(body, logger):
 
         # Delete workspace bot data
         SlackBot.objects.filter(team_id=body["team_id"]).delete()
+
+
+@app.action("view-pr")
+def handle_view_pr(ack, body, client, logger):
+    ack()
+    logger.info(body)
+   

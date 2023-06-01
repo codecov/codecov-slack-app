@@ -146,19 +146,15 @@ def test_format_comparison():
     expected_blocks = [
         DividerBlock(),
         SectionBlock(
-            text="*Head Commit*\n"
-            "*Commit ID:* 1234567890abcdef\n"
-            "*SHA:* 1234567\n"
+            text="*Head Commit* _1234567_\n"
+            "*ID:* 1234567890abcdef\n"
             "*Branch:* main\n"
             "*Message:* Update README\n"
             "*Author:* John Doe\n"
             "*Timestamp:* 2023-05-31T12:34:56\n"
-            "*CI Passed:* True\n"
+            "*CI Passed:* ✅\n"
             "*Totals:* {'C': 0, 'M': 0, 'N': 0}\n"
-            "*Pull:* 123"
         ),
-        DividerBlock(),
-        SectionBlock(text="*Head Totals Coverage:* 0"),
     ]
 
     print(format_comparison(comparison))

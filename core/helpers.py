@@ -278,10 +278,13 @@ def format_comparison(comparison):
         blocks.append(
             SectionBlock(
                 text=f"📳 New PR *#{pullid}* for {org}/{repo}\n\n"
-                f"*Coverage:* {comparison.get('message')}",
+                f"*Compare Coverage:* {comparison.get('coverage')}% | {comparison.get('message')}\n"
+                f"*Head Totals Coverage:* {comparison.get('head_totals_c')}%\n",
                 accessory=ButtonElement(
                     text="View PR",
                     url=comparison["url"],
+                    action_id="view-pr",
+                    style="primary",
                 ),
             )
         )
@@ -294,26 +297,20 @@ def format_comparison(comparison):
         commitid = head_commit.get("commitid")
         commitSHA = commitid[:7]
 
+        ciPassed = head_commit.get("ci_passed")
+        emoji = "✅" if ciPassed == True else "❌"
+
         blocks.append(
             SectionBlock(
-                text=f"*Head Commit*\n"
-                f"*Commit ID:* {head_commit.get('commitid')}\n"
-                f"*SHA:* {commitSHA}\n"
+                text=f"*Head Commit* _{commitSHA}_\n"
+                f"*ID:* {head_commit.get('commitid')}\n"
                 f"*Branch:* {head_commit.get('branch')}\n"
                 f"*Message:* {head_commit.get('message')}\n"
                 f"*Author:* {head_commit.get('author')}\n"
                 f"*Timestamp:* {head_commit.get('timestamp')}\n"
-                f"*CI Passed:* {head_commit.get('ci_passed')}\n"
+                f"*CI Passed:* {emoji if head_commit.get('ci_passed') else None}\n"
                 f"*Totals:* {head_commit.get('totals')}\n"
-                f"*Pull:* {head_commit.get('pull')}"
             )
         )
-
-    blocks.append(DividerBlock())
-    blocks.append(
-        SectionBlock(
-            text=f"*Head Totals Coverage:* {comparison.get('head_totals_c')}"
-        )
-    )
 
     return blocks
