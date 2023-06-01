@@ -1,11 +1,12 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 
 from core.enums import EndpointName
 from core.helpers import (channel_exists, extract_command_params,
-                          extract_optional_params, format_nested_keys,
-                          validate_comparison_params,
+                          extract_optional_params, format_comparison,
+                          format_nested_keys, validate_comparison_params,
                           validate_notification_params, validate_service)
 
 
@@ -125,3 +126,41 @@ def test_channel_exists():
     }
     assert channel_exists(client, "invalid") == False
     assert channel_exists(client, "C01B2AB8K3A") == True
+
+
+def test_format_comparison():
+    comparison = {
+        "head_commit": {
+            "commitid": "1234567890abcdef",
+            "branch": "main",
+            "message": "Update README",
+            "author": "John Doe",
+            "timestamp": "2023-05-31T12:34:56",
+            "ci_passed": True,
+            "totals": {"C": 0, "M": 0, "N": 0},
+            "pull": 123,
+        },
+        "head_totals_c": 0,
+    }
+
+    expected_blocks = [
+        DividerBlock(),
+        SectionBlock(
+            text="*Head Commit*\n"
+            "*Commit ID:* 1234567890abcdef\n"
+            "*SHA:* 1234567\n"
+            "*Branch:* main\n"
+            "*Message:* Update README\n"
+            "*Author:* John Doe\n"
+            "*Timestamp:* 2023-05-31T12:34:56\n"
+            "*CI Passed:* True\n"
+            "*Totals:* {'C': 0, 'M': 0, 'N': 0}\n"
+            "*Pull:* 123"
+        ),
+        DividerBlock(),
+        SectionBlock(text="*Head Totals Coverage:* 0"),
+    ]
+
+    print(format_comparison(comparison))
+
+    assert format_comparison(comparison) == expected_blocks

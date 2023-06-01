@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 from slack_sdk.errors import SlackApiError
+from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
-from slack_sdk.models.blocks import SectionBlock, DividerBlock, ButtonElement
+
 
 @dataclass
 class Command:
@@ -266,9 +267,7 @@ def configure_notification(data):
     return f"Notifications for {data['repository']} enabled in this channel 📳."
 
 
-
 def format_comparison(comparison):
-    # Create a list to hold the blocks
     blocks = []
 
     if comparison.get("url"):
@@ -279,7 +278,7 @@ def format_comparison(comparison):
         blocks.append(
             SectionBlock(
                 text=f"📳 New PR *#{pullid}* for {org}/{repo}\n\n"
-                f"*Coverage:* {comparison['message']}",
+                f"*Coverage:* {comparison.get('message')}",
                 accessory=ButtonElement(
                     text="View PR",
                     url=comparison["url"],
@@ -291,24 +290,30 @@ def format_comparison(comparison):
     blocks.append(DividerBlock())
 
     if comparison.get("head_commit"):
-        commitid = comparison["head_commit"]["commitid"]
+        head_commit = comparison["head_commit"]
+        commitid = head_commit.get("commitid")
         commitSHA = commitid[:7]
 
-
-    blocks.append(SectionBlock(
-        text=f"*Head Commit*\n"
-            f"*Commit ID:* {comparison['head_commit']['commitid']}\n"
-            f"*SHA:* {commitSHA}\n"
-            f"*Branch:* {comparison['head_commit']['branch']}\n"
-            f"*Message:* {comparison['head_commit']['message']}\n"
-            f"*Author:* {comparison['head_commit']['author']}\n"
-            f"*Timestamp:* {comparison['head_commit']['timestamp']}\n"
-            f"*CI Passed:* {comparison['head_commit']['ci_passed']}\n"
-            f"*Totals:* {comparison['head_commit']['totals']}\n"
-            f"*Pull:* {comparison['head_commit']['pull']}"
-    ))
+        blocks.append(
+            SectionBlock(
+                text=f"*Head Commit*\n"
+                f"*Commit ID:* {head_commit.get('commitid')}\n"
+                f"*SHA:* {commitSHA}\n"
+                f"*Branch:* {head_commit.get('branch')}\n"
+                f"*Message:* {head_commit.get('message')}\n"
+                f"*Author:* {head_commit.get('author')}\n"
+                f"*Timestamp:* {head_commit.get('timestamp')}\n"
+                f"*CI Passed:* {head_commit.get('ci_passed')}\n"
+                f"*Totals:* {head_commit.get('totals')}\n"
+                f"*Pull:* {head_commit.get('pull')}"
+            )
+        )
 
     blocks.append(DividerBlock())
-    blocks.append(SectionBlock(text=f"*Head Totals Coverage:* {comparison['head_totals_c']}"))
+    blocks.append(
+        SectionBlock(
+            text=f"*Head Totals Coverage:* {comparison.get('head_totals_c')}"
+        )
+    )
 
     return blocks
