@@ -18,7 +18,7 @@ GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 CODECOV_INTERNAL_TOKEN = os.environ.get("CODECOV_INTERNAL_TOKEN")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
-
+CODECOV_API = os.environ.get("CODECOV_API")
 
 def verify_codecov_access_token(slack_user: SlackUser):
     owner = slack_user.active_service.service_username
@@ -64,7 +64,8 @@ def get_or_create_slack_user(user_info):
 
 
 def create_new_codecov_access_token(slack_user: SlackUser):
-    request_url = "https://stage-api.codecov.dev/internal/slack/generate-token/" # make this an env variable
+    print(CODECOV_API)
+    request_url = f"{CODECOV_API}/internal/slack/generate-token/" # make this an env variable
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
@@ -82,7 +83,6 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         slack_user.codecov_access_token = data.get("token")
         slack_user.save()
     else:
-        logger.error("Error creating codecov access token", response.status_code, response.json())
         raise Exception("Error creating codecov access token")
 
 
