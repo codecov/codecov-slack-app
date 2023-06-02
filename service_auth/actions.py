@@ -82,7 +82,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         slack_user.codecov_access_token = data.get("token")
         slack_user.save()
     else:
-        logger("Error creating codecov access token", response.status_code, response.json())
+        logger.error("Error creating codecov access token", response.status_code, response.json())
         raise Exception("Error creating codecov access token")
 
 
