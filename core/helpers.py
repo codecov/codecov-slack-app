@@ -271,18 +271,19 @@ def format_comparison(comparison):
     blocks = []
 
     if comparison.get("url"):
-        pullid = comparison["url"].split("/")[-1]
-        repo = comparison["url"].split("/")[-3]
-        org = comparison["url"].split("/")[-4]
+        url = comparison.get("url")
+        pullid = url.split("/")[-1]
+        repo = url.split("/")[-3]
+        org = url.split("/")[-4]
 
-        blocks.append(
+        blocks.append( 
             SectionBlock(
-                text=f"📳 New PR *#{pullid}* for {org}/{repo}\n\n"
+                text=f"📳 New PR *<{url}|#{pullid}>* for {org}/{repo}\n\n"
                 f"*Compare Coverage:* {comparison.get('coverage')}% | {comparison.get('message')}\n"
                 f"*Head Totals Coverage:* {comparison.get('head_totals_c')}%\n",
                 accessory=ButtonElement(
-                    text="View PR",
-                    url=comparison["url"],
+                    text="View PR in Codecov",
+                    url=url.replace("github.com", "codecov.io/gh"), # TODO: make this dynamic once we support other services
                     action_id="view-pr",
                     style="primary",
                 ),
