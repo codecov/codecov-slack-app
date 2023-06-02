@@ -105,7 +105,7 @@ class GithubViewTest(APITestCase):
         )
 
         assert response.status_code == 404
-        assert response.json() == {"detail": "Slack user not found"}
+        assert response.json() == {"detail": "Slack user not found random_test_id"}
 
     @patch("requests.get")
     @patch("requests.post")

@@ -64,8 +64,7 @@ def get_or_create_slack_user(user_info):
 
 
 def create_new_codecov_access_token(slack_user: SlackUser):
-    print(CODECOV_API)
-    request_url = f"{CODECOV_API}/internal/slack/generate-token/" # make this an env variable
+    request_url = f"{CODECOV_API}/internal/slack/generate-token/"
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
@@ -108,6 +107,11 @@ def view_login_modal(
     slack_user_id_jwt = jwt.encode(
         {"user_id": slack_user_id}, USER_ID_SECRET, algorithm="HS256"
     )
+
+    # create slack user
+    user_info = client.users_info(user=slack_user_id)
+    get_or_create_slack_user(user_info)
+
     # we support gh flow at first
     github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_user_id_jwt}"
 
