@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import jwt
@@ -8,6 +9,8 @@ from core.enums import EndpointName
 
 from .helpers import _user_info, get_endpoint_details
 from .models import SlackUser
+
+logger = logging.getLogger(__name__)
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_SCOPES = os.environ.get("GITHUB_SCOPES", "repo").split(",")
@@ -79,6 +82,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
         slack_user.codecov_access_token = data.get("token")
         slack_user.save()
     else:
+        logger("Error creating codecov access token", response.status_code, response.json())
         raise Exception("Error creating codecov access token")
 
 
