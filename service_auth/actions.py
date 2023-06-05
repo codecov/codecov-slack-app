@@ -67,7 +67,7 @@ def create_new_codecov_access_token(slack_user: SlackUser):
     request_url = f"{CODECOV_API}/internal/slack/generate-token/"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
+        "Authorization": f"Bearer {CODECOV_INTERNAL_TOKEN}",
     }
     data = {
         "username": slack_user.active_service.service_username,
