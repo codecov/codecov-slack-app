@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 from slack_sdk.errors import SlackApiError
+from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 
 from core.models import Notification, SlackInstallation
 
@@ -264,3 +265,53 @@ def configure_notification(data):
 
     notification.save()
     return f"Notifications for {data['repository']} enabled in this channel 📳."
+
+
+def format_comparison(comparison):
+    blocks = []
+
+    if comparison.get("url"):
+        url = comparison.get("url")
+        pullid = url.split("/")[-1]
+        repo = url.split("/")[-3]
+        org = url.split("/")[-4]
+
+        blocks.append( 
+            SectionBlock(
+                text=f"📳 New PR *<{url}|#{pullid}>* for {org}/{repo}\n\n"
+                f"*Compare Coverage:* {comparison.get('coverage')}% | {comparison.get('message')}\n"
+                f"*Head Totals Coverage:* {comparison.get('head_totals_c')}%\n",
+                accessory=ButtonElement(
+                    text="View PR in Codecov",
+                    url=url.replace("github.com", "codecov.io/gh"), # TODO: make this dynamic once we support other services
+                    action_id="view-pr",
+                    style="primary",
+                ),
+            )
+        )
+
+    # Add a divider block for visual separation
+    blocks.append(DividerBlock())
+
+    if comparison.get("head_commit"):
+        head_commit = comparison["head_commit"]
+        commitid = head_commit.get("commitid")
+        commitSHA = commitid[:7]
+
+        ciPassed = head_commit.get("ci_passed")
+        emoji = "✅" if ciPassed == True else "❌"
+
+        blocks.append(
+            SectionBlock(
+                text=f"*Head Commit* _{commitSHA}_\n"
+                f"*ID:* {head_commit.get('commitid')}\n"
+                f"*Branch:* {head_commit.get('branch')}\n"
+                f"*Message:* {head_commit.get('message')}\n"
+                f"*Author:* {head_commit.get('author')}\n"
+                f"*Timestamp:* {head_commit.get('timestamp')}\n"
+                f"*CI Passed:* {emoji if head_commit.get('ci_passed') else None}\n"
+                f"*Totals:* {head_commit.get('totals')}\n"
+            )
+        )
+
+    return blocks
