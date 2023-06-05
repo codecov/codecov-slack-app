@@ -65,20 +65,16 @@ endpoint_mapping: Dict[EndpointName, Command] = {
     EndpointName.COMMITS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["branch", "page", "page_size"],
-        is_private=True,
     ),
     EndpointName.COMMIT: Command(
         required_params=["username", "service", "repository", "commitid"],
-        is_private=True,
     ),
     EndpointName.PULLS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["ordering", "page", "page_size", "state"],
-        is_private=True,
     ),
     EndpointName.PULL: Command(
         required_params=["username", "service", "repository", "pullid"],
-        is_private=True,
     ),
     EndpointName.COMPONENTS: Command(
         required_params=["username", "service", "repository"],
