@@ -10,3 +10,4 @@ djangorestframework
 pyjwt
 sentry-sdk
 httpx
+gunicorn

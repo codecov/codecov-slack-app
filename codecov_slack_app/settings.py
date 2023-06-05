@@ -29,9 +29,22 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
-ALLOWED_HOSTS = [""]
-
+RUN_ENV = os.environ.get("RUN_ENV", "PRODUCTION")
+THIS_POD_IP = os.environ.get("THIS_POD_IP")
+if RUN_ENV == "STAGING":
+    ALLOWED_HOSTS = [".codecov.dev"]
+elif RUN_ENV == "LOCAL":
+    ALLOWED_HOSTS = [
+        "0.0.0.0",
+        "localhost",
+        "webapp",
+        "django",
+        "app"
+    ]
+else:
+    ALLOWED_HOSTS = [".codecov.io"]
+if THIS_POD_IP:
+    ALLOWED_HOSTS.append(THIS_POD_IP)
 
 # Application definition
 
