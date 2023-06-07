@@ -56,11 +56,9 @@ endpoint_mapping: Dict[EndpointName, Command] = {
     EndpointName.BRANCHES: Command(
         required_params=["username", "service", "repository"],
         optional_params=["author", "ordering", "page", "page_size"],
-        is_private=True,
     ),
     EndpointName.BRANCH: Command(
         required_params=["username", "service", "repository", "branch"],
-        is_private=True,
     ),
     EndpointName.COMMITS: Command(
         required_params=["username", "service", "repository"],
