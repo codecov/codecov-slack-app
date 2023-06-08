@@ -1,6 +1,8 @@
 import logging
+import os
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from slack_sdk import WebClient
@@ -11,6 +13,10 @@ from core.helpers import (channel_exists, format_comparison,
                           validate_notification_params)
 from core.models import Notification
 from core.permissions import InternalTokenPermissions
+
+SLACK_CLIENT_ID = os.environ.get("SLACK_CLIENT_ID")
+SLACK_SCOPES = os.environ.get("SLACK_SCOPES")
+SLACK_REDIRECT_URI = os.environ.get("SLACK_REDIRECT_URI")
 
 Logger = logging.getLogger(__name__)
 
@@ -64,3 +70,13 @@ class NotificationView(APIView):
                     )
 
         return Response({"detail": "Message posted!"}, status=200)
+
+
+def slack_install(request):
+    context = {
+        "client_id": SLACK_CLIENT_ID,
+        "scope": SLACK_SCOPES,
+        "redirect_uri": SLACK_REDIRECT_URI,
+    }
+
+    return render(request, "pages/slack_install.html", context)
