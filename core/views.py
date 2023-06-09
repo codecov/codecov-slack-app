@@ -13,12 +13,13 @@ from core.helpers import (channel_exists, format_comparison,
                           validate_notification_params)
 from core.models import Notification
 from core.permissions import InternalTokenPermissions
+from core.slack_datastores import DjangoOAuthStateStore
 
 SLACK_CLIENT_ID = os.environ.get("SLACK_CLIENT_ID")
 SLACK_SCOPES = os.environ.get("SLACK_SCOPES")
 SLACK_REDIRECT_URI = os.environ.get("SLACK_REDIRECT_URI")
 
-Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 def health(request):
@@ -48,7 +49,7 @@ class NotificationView(APIView):
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
                 if not channel_exists(client, channel_id=channel):
-                    Logger.warning(
+                    logger.warning(
                         f"Channel {channel} does not exist in workspace {notification.installation.bot_token}"
                     )
                     continue
@@ -73,10 +74,16 @@ class NotificationView(APIView):
 
 
 def slack_install(request):
+    store = DjangoOAuthStateStore(
+        expiration_seconds=120,
+        logger=logger,
+    )
+    state = store.issue()
     context = {
         "client_id": SLACK_CLIENT_ID,
         "scope": SLACK_SCOPES,
         "redirect_uri": SLACK_REDIRECT_URI,
+        "state": state,
     }
 
     return render(request, "pages/slack_install.html", context)
