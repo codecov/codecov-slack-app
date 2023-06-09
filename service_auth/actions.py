@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import jwt
@@ -9,13 +10,15 @@ from core.enums import EndpointName
 from .helpers import _user_info, get_endpoint_details
 from .models import SlackUser
 
+logger = logging.getLogger(__name__)
+
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_SCOPES = os.environ.get("GITHUB_SCOPES", "repo").split(",")
 GITHUB_REDIRECT_URI = os.environ.get("GITHUB_REDIRECT_URI")
 CODECOV_INTERNAL_TOKEN = os.environ.get("CODECOV_INTERNAL_TOKEN")
 USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
-
+CODECOV_API_URL = os.environ.get("CODECOV_API_URL")
 
 def verify_codecov_access_token(slack_user: SlackUser):
     owner = slack_user.active_service.service_username
@@ -61,10 +64,10 @@ def get_or_create_slack_user(user_info):
 
 
 def create_new_codecov_access_token(slack_user: SlackUser):
-    request_url = "http://api.codecov.io/internal/slack/generate-token/"
+    request_url = f"{CODECOV_API_URL}/internal/slack/generate-token/"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {CODECOV_INTERNAL_TOKEN}",
+        "Authorization": f"Bearer {CODECOV_INTERNAL_TOKEN}",
     }
     data = {
         "username": slack_user.active_service.service_username,
@@ -104,6 +107,11 @@ def view_login_modal(
     slack_user_id_jwt = jwt.encode(
         {"user_id": slack_user_id}, USER_ID_SECRET, algorithm="HS256"
     )
+
+    # create slack user
+    user_info = client.users_info(user=slack_user_id)
+    get_or_create_slack_user(user_info)
+
     # we support gh flow at first
     github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_user_id_jwt}"
 
