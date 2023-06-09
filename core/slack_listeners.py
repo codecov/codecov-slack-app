@@ -179,19 +179,56 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Welcome to Codecov Slack app! :wave:\n\n"
-                "Use the `/codecov` command to interact with Codecov's public API.\n"
-                "For example, try typing `/codecov repos` to see a list of your repositories.\n",
-            },
+                "text": ":rocket: *Welcome to Codecov Slack App* :rocket:\n\nTake control of your notifications and streamline your workflow. With just a few simple commands, you can enhance collaboration across multiple channels and repositories. Here's what you can do:"
+            }
         },
-        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "1. Interact with Codecov Public API:\n- Explore the full potential of our app by interacting with Codecov public API. Simply use the `/codecov help` command to discover available features and commands."
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "2. Redirect Notifications to Multiple Channels:\n- Use the command `/codecov notify` to effortlessly redirect notifications from multiple repositories to designated channels."
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "3. Public Repo PR Notifications without Authentication:\n- No need to authenticate with external providers! With our app, you can receive notifications for pull requests from public repositories directly in Slack. Stay informed and collaborate seamlessly with your team."
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "4. Access Private Data with Provider Authentication:\n- For more advanced commands that require access to private data, we've got you covered. Currently supporting GitHub authentication, you can securely connect your account to unlock additional functionalities and ensure data privacy using `/codecov login`."
+            }
+        },
+        {
+            "type": "divider"
+        },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
                 "text": "Learn more about the Codecov API here:\n"
                 "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
-            },
+            }
+        },
+        {
+            "type": "context",
+            "elements": [
+                {
+                    "type": "mrkdwn",
+                    "text": "Have questions or need assistance? Reach out to our friendly support team on https://codecov.freshdesk.com/support/home."
+                }
+            ]
         },
     ]
 
@@ -287,3 +324,10 @@ def handle_app_uninstalled(body, logger):
 
         # Delete workspace bot data
         SlackBot.objects.filter(team_id=body["team_id"]).delete()
+
+
+@app.action("view-pr")
+def handle_view_pr(ack, body, client, logger):
+    ack()
+    logger.info(body)
+   

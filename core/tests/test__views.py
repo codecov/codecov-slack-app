@@ -27,7 +27,7 @@ class NotificationViewSetTests(APITestCase):
         self.data = {
             "owner": self.notification.owner,
             "repository": self.notification.repo,
-            "comparison": "random-comparison",
+            "comparison": {"url": ""},
         }
         self.view = NotificationView.as_view()
 
@@ -49,7 +49,6 @@ class NotificationViewSetTests(APITestCase):
                 "notify",
             ),
             HTTP_AUTHORIZATION=f"Bearer random_token",
-            data=self.data,
         )
         assert response.status_code == 401
         assert response.data == {"detail": "Invalid token."}
@@ -102,6 +101,7 @@ class NotificationViewSetTests(APITestCase):
                 "notify",
             ),
             data=self.data,
+            format="json",
             HTTP_AUTHORIZATION=f"Bearer {codecov_internal_token}",
         )
 
