@@ -1,5 +1,5 @@
 from django.db import models
-
+from core.models import SlackInstallation
 
 # Create your models here.
 class ServiceOptions(models.TextChoices):
@@ -13,13 +13,18 @@ class SlackUser(models.Model):
     username = models.CharField(max_length=100, null=True)
     email = models.CharField(max_length=100, null=True)
     display_name = models.CharField(max_length=100, null=True)
-    team_id = models.CharField(max_length=50, null=True)
+    installation = models.ForeignKey(
+        SlackInstallation,
+        on_delete=models.CASCADE,
+        related_name="slackuser",
+        default=1,
+    )
     is_bot = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_owner = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
-    codecov_access_token = models.UUIDField(unique=True, null=True, blank=True)
+    codecov_access_token = models.UUIDField(null=True, blank=True)
 
     def __str__(self):
         return self.display_name or self.username or self.user_id

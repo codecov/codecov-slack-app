@@ -50,11 +50,17 @@ def get_or_create_slack_user(user_info):
             is_admin,
         ) = user_info.values()
 
+        installation = Installation.objects.filter(team_id=team_id).first()
+        if not installation:
+            logger.error(
+                f"Installation not found for team_id: {team_id} and user_id: {user_id}"
+            )
+
         current_user = SlackUser.objects.create(
             user_id=user_id,
             username=username,
             email=email,
-            team_id=team_id,
+            installation=installation,
             is_bot=is_bot,
             display_name=display_name,
             is_owner=is_owner,

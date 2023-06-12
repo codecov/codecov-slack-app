@@ -86,7 +86,7 @@ class GithubCallbackView(APIView):
         create_new_codecov_access_token(user)
 
         # redirect to slack app
-        team_id = user.team_id
+        team_id = user.installation.team_id
         slack_url = (
             f"https://slack.com/app_redirect?app={SLACK_APP_ID}&team={team_id}"
         )
