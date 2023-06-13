@@ -62,4 +62,5 @@ class NotificationView(APIView):
                     return Response(
                         {"detail": f"Error posting message, {e.response["error"]}, {blocks}"}, status=500
                     )
+
         return Response({"detail": "Message posted!"}, status=200)
