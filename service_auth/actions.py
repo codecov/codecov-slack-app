@@ -8,7 +8,7 @@ import requests
 from core.enums import EndpointName
 
 from .helpers import _user_info, get_endpoint_details
-from .models import SlackUser
+from .models import SlackUser, SlackInstallation
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ def get_or_create_slack_user(user_info):
 
     if not current_user:
         user_info = _user_info(user_info)
+
         (
             username,
             email,
@@ -50,7 +51,7 @@ def get_or_create_slack_user(user_info):
             is_admin,
         ) = user_info.values()
 
-        installation = Installation.objects.filter(team_id=team_id).first()
+        installation = SlackInstallation.objects.filter(team_id=team_id).first()
         if not installation:
             logger.error(
                 f"Installation not found for team_id: {team_id} and user_id: {user_id}"
