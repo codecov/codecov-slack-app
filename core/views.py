@@ -60,7 +60,7 @@ class NotificationView(APIView):
                     assert e.response["error"]
                     print(f"Got an error: {e.response['error']}")
                     return Response(
-                        {"detail": f"Error posting message, {e.response["error"]}, {blocks}"}, status=500
+                        {"detail": f"Error posting message {e.response.get("error")} {blocks}"}, status=500
                     )
 
         return Response({"detail": "Message posted!"}, status=200)
