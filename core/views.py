@@ -36,7 +36,7 @@ class NotificationView(APIView):
 
         notifications = Notification.objects.filter(owner=owner, repo=repo)
         if not notifications.exists():
-            return Response({"detail": "No notifications found"}, status=404)
+            return Response({"detail": "No notifications found"}, status=200)
 
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
