@@ -7,7 +7,10 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0003_alter_slackinstallation_bot_token_notification_and_more"),
+        (
+            "core",
+            "0003_alter_slackinstallation_bot_token_notification_and_more",
+        ),
         ("service_auth", "0003_alter_service_unique_together"),
     ]
 

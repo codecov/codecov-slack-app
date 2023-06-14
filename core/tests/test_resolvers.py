@@ -21,7 +21,12 @@ from service_auth.models import Service, SlackUser
 
 class TestServiceAuthResolvers(TestCase):
     def setUp(self):
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="my_slack_user",
             user_id="user_random_id",
             email="",
@@ -102,7 +107,12 @@ class TestBaseResolvers(TestCase):
         }
         self.optional_params = {}
 
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="my_slack_user",
             user_id="random-userid",
             email="",
@@ -635,7 +645,12 @@ def test_help_resolver():
 
 class TestNotifications(TestCase):
     def setUp(self):
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="my_slack_user",
             user_id="random_user_id",
             email="",

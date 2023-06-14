@@ -5,8 +5,11 @@ import pytest
 from rest_framework.exceptions import ValidationError
 
 from core.enums import EndpointName
-from service_auth.helpers import (_user_info, get_endpoint_details,
-                                  validate_gh_call_params)
+from service_auth.helpers import (
+    _user_info,
+    get_endpoint_details,
+    validate_gh_call_params,
+)
 
 
 def test_user_info():

@@ -1,16 +1,19 @@
 import os
 from unittest.mock import Mock, patch
+from django.utils import timezone
 
 import pytest
 from django.test import TestCase
 
 from core.enums import EndpointName
-from service_auth.actions import (authenticate_command,
-                                  create_new_codecov_access_token,
-                                  get_or_create_slack_user,
-                                  handle_codecov_public_api_request,
-                                  verify_codecov_access_token)
-from service_auth.models import Service, SlackUser
+from service_auth.actions import (
+    authenticate_command,
+    create_new_codecov_access_token,
+    get_or_create_slack_user,
+    handle_codecov_public_api_request,
+    verify_codecov_access_token,
+)
+from service_auth.models import Service, SlackUser, SlackInstallation
 
 
 @pytest.mark.django_db
@@ -30,15 +33,21 @@ def test_get_or_create_slack_user():
         }
     }
 
+    installation = SlackInstallation.objects.create(
+        bot_token="xoxb-1234567890",
+        team_id=user_info["user"]["team_id"],
+        installed_at=timezone.now(),
+    )
+
     user = get_or_create_slack_user(user_info)
     assert user.user_id == "U12345"
     assert user.username == "user"
     assert user.email == "user@example.com"
-    assert user.team_id == "T12345"
     assert user.is_bot is False
     assert user.display_name == "Test User"
     assert user.is_owner is True
     assert user.is_admin is False
+    assert installation == user.installation
 
     existing_user = get_or_create_slack_user(user_info)
     assert existing_user == user
@@ -47,8 +56,16 @@ def test_get_or_create_slack_user():
 @pytest.mark.django_db
 @patch("requests.get")
 def test_verify_codecov_access_token(mock_get):
+    installation = SlackInstallation.objects.create(
+        bot_token="xoxb-1234567890",
+        team_id="T12345",
+        installed_at=timezone.now(),
+    )
     slack_user = SlackUser.objects.create(
-        username="my_slack_user", user_id=12, email="my_email@example.com"
+        username="my_slack_user",
+        user_id=12,
+        email="my_email@example.com",
+        installation=installation,
     )
     Service.objects.create(
         name="my_service",
@@ -66,7 +83,13 @@ def test_verify_codecov_access_token(mock_get):
 
 class TestCreateCodecovAccessToken(TestCase):
     def setUp(self):
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            team_id="T12345",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="my_slack_user",
             user_id=12,
             email="",
@@ -104,7 +127,13 @@ class TestCreateCodecovAccessToken(TestCase):
 @patch("service_auth.actions.view_login_modal")
 class TestAuthenticateCommand(TestCase):
     def setUp(self):
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            team_id="T12345",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="my_slack_user",
             user_id=12,
             email="",
@@ -176,7 +205,13 @@ class TestAuthenticateCommand(TestCase):
 @patch("requests.get")
 class TestHandleCodecovPublicAPI(TestCase):
     def setUp(self):
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            team_id="T12345",
+            installed_at=timezone.now(),
+        )
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="Rula",
             user_id="rula99",
             email="",

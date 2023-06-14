@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("service_auth", "0004_remove_slackuser_team_id_slackuser_installation"),
+        (
+            "service_auth",
+            "0004_remove_slackuser_team_id_slackuser_installation",
+        ),
     ]
 
     operations = [

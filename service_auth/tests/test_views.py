@@ -1,11 +1,12 @@
 import os
 from unittest.mock import Mock, patch
+from django.utils import timezone
 
 import jwt
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from service_auth.models import Service, SlackUser
+from service_auth.models import Service, SlackUser, SlackInstallation
 from service_auth.views import GithubCallbackView
 
 slack_user_id_jwt = jwt.encode(
@@ -105,7 +106,9 @@ class GithubViewTest(APITestCase):
         )
 
         assert response.status_code == 404
-        assert response.json() == {"detail": "Slack user not found random_test_id"}
+        assert response.json() == {
+            "detail": "Slack user not found random_test_id"
+        }
 
     @patch("requests.get")
     @patch("requests.post")
@@ -120,11 +123,17 @@ class GithubViewTest(APITestCase):
             json=Mock(return_value={"id": "test_id", "login": "test_name"}),
         )
 
+        installation = SlackInstallation.objects.create(
+            bot_token="xoxb-1234567890",
+            team_id="random_test_team_id",
+            installed_at=timezone.now(),
+        )
+
         self.slack_user = SlackUser.objects.create(
+            installation=installation,
             username="slack_user",
             user_id="random_test_id",
             email="",
-            team_id="random_test_team_id",
         )
 
         response = self.client.get(

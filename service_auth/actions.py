@@ -20,6 +20,7 @@ USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 CODECOV_API_URL = os.environ.get("CODECOV_API_URL")
 
+
 def verify_codecov_access_token(slack_user: SlackUser):
     owner = slack_user.active_service.service_username
     service = slack_user.active_service.name
@@ -51,7 +52,9 @@ def get_or_create_slack_user(user_info):
             is_admin,
         ) = user_info.values()
 
-        installation = SlackInstallation.objects.filter(team_id=team_id).first()
+        installation = SlackInstallation.objects.filter(
+            team_id=team_id
+        ).first()
         if not installation:
             logger.error(
                 f"Installation not found for team_id: {team_id} and user_id: {user_id}"
