@@ -19,7 +19,7 @@ class SlackUser(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_owner = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
-    codecov_access_token = models.UUIDField(unique=True, null=True, blank=True)
+    codecov_access_token = models.UUIDField(null=True, blank=True)
 
     def __str__(self):
         return self.display_name or self.username or self.user_id
