@@ -50,26 +50,27 @@ class NotificationView(APIView):
                 url = comparison.get("url")
                 pullid = url.split("/")[-1]
 
-                notification_status, created = NotificationStatus.objects.get_or_create(
-                notification=notification, pullid=pullid, channel=channel
+                (
+                    notification_status,
+                    created,
+                ) = NotificationStatus.objects.get_or_create(
+                    notification=notification, pullid=pullid, channel=channel
                 )
-                    
+
                 try:
                     blocks = format_comparison(comparison)
                     if not created:
-                        response = client.chat_update(
+                        client.chat_update(
                             channel=channel,
                             ts=notification_status.message_ts,
                             text="",
                             blocks=blocks,
                         )
-                        notification_status.message_ts = response["ts"]
-                        notification_status.save()
 
                         Logger.info(
                             f"Updated message for {pullid} in channel {channel}"
                         )
-                    
+
                     else:
                         response = client.chat_postMessage(
                             channel=channel,

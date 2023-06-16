@@ -120,9 +120,11 @@ class Notification(models.Model):
             )
         ]
 
+
 class StatusOptions(models.TextChoices):
     SUCCESS = "success"
     ERROR = "error"
+
 
 class NotificationStatus(models.Model):
     notification = models.ForeignKey(
@@ -133,22 +135,19 @@ class NotificationStatus(models.Model):
     status = models.CharField(
         max_length=7,
         choices=StatusOptions.choices,
-        default=StatusOptions.SUCCESS,        
+        default=StatusOptions.SUCCESS,
     )
     pullid = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    message_ts = models.TextField(null=True)
+    message_ts = models.TextField(
+        null=True
+    )  # message timestamp https://api.slack.com/methods/chat.update#arg_ts
     channel = models.TextField(null=True)
 
     class Meta:
         indexes = [
             models.Index(
-                fields=[
-                    "notification",
-                    "status",
-                    "pullid",
-                    "channel"
-                ]
+                fields=["notification", "status", "pullid", "channel"]
             )
         ]
