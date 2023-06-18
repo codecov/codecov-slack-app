@@ -62,7 +62,7 @@ class NotificationView(APIView):
                     if not created:
                         client.chat_update(
                             channel=channel,
-                            ts=notification_status.message_ts,
+                            ts=notification_status.message_timestamp,
                             text="",
                             blocks=blocks,
                         )
@@ -77,7 +77,7 @@ class NotificationView(APIView):
                             text="",
                             blocks=blocks,
                         )
-                        notification_status.message_ts = response["ts"]
+                        notification_status.message_timestamp = response["ts"]
                         notification_status.save()
 
                         Logger.info(
