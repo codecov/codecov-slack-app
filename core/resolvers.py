@@ -235,7 +235,7 @@ def resolve_help(say):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Notifications commands 📳*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel or channels\n",
+                "text": "*Notifications commands 📳*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
             },
         },
         {"type": "divider"},
