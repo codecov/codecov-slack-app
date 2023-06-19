@@ -272,14 +272,16 @@ def format_comparison(comparison):
         repo = url.split("/")[-3]
         org = url.split("/")[-4]
 
-        blocks.append( 
+        blocks.append(
             SectionBlock(
                 text=f"📳 New PR *<{url}|#{pullid}>* for {org}/{repo}\n\n"
                 f"*Compare Coverage:* {comparison.get('coverage')}% | {comparison.get('message')}\n"
                 f"*Head Totals Coverage:* {comparison.get('head_totals_c')}%\n",
                 accessory=ButtonElement(
                     text="View PR in Codecov",
-                    url=url.replace("github.com", "codecov.io/gh"), # TODO: make this dynamic once we support other services
+                    url=url.replace(
+                        "github.com", "codecov.io/gh"
+                    ),  # TODO: make this dynamic once we support other services
                     action_id="view-pr",
                     style="primary",
                 ),
@@ -309,5 +311,14 @@ def format_comparison(comparison):
                 f"*Totals:* {head_commit.get('totals')}\n"
             )
         )
+
+    blocks.append(DividerBlock())
+
+    blocks.append(
+        SectionBlock(
+            text="ℹ️ You can use `/codecov compare` to get the full comparison."
+            " Use `/codecov help` to know more."
+        )
+    )
 
     return blocks
