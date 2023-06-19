@@ -9,7 +9,7 @@ from slack_sdk.errors import SlackApiError
 from core.authentication import InternalTokenAuthentication
 from core.helpers import (channel_exists, format_comparison,
                           validate_notification_params)
-from core.models import Notification
+from core.models import Notification, NotificationStatus
 from core.permissions import InternalTokenPermissions
 
 Logger = logging.getLogger(__name__)
@@ -47,18 +47,53 @@ class NotificationView(APIView):
                     )
                     continue
 
+                url = comparison.get("url")
+                pullid = url.split("/")[-1]
+
+                (
+                    notification_status,
+                    created,
+                ) = NotificationStatus.objects.get_or_create(
+                    notification=notification, pullid=pullid, channel=channel
+                )
+
                 try:
                     blocks = format_comparison(comparison)
-                    client.chat_postMessage(
-                        channel=channel,
-                        text="",
-                        blocks=blocks,
-                    )
+                    if not created:
+                        client.chat_update(
+                            channel=channel,
+                            ts=notification_status.message_timestamp,
+                            text="",
+                            blocks=blocks,
+                        )
+
+                        Logger.info(
+                            f"Updated message for {pullid} in channel {channel}"
+                        )
+
+                    else:
+                        response = client.chat_postMessage(
+                            channel=channel,
+                            text="",
+                            blocks=blocks,
+                        )
+                        notification_status.message_timestamp = response["ts"]
+                        notification_status.save()
+
+                        Logger.info(
+                            f"Posted message for {pullid} in channel {channel}"
+                        )
+
                 except SlackApiError as e:
                     print(e, flush=True)
                     assert e.response["ok"] is False
                     assert e.response["error"]
                     print(f"Got an error: {e.response['error']}")
+
+                    # Set notification status to error
+                    notification_status.status = "error"
+                    notification_status.save()
+
                     return Response(
                         {"detail": "Error posting message"}, status=500
                     )
