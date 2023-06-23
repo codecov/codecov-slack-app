@@ -87,15 +87,13 @@ class NotificationView(APIView):
                 except SlackApiError as e:
                     print(e, flush=True)
                     assert e.response["ok"] is False
-                    assert e.response["error"]
-                    print(f"Got an error: {e.response['error']}")
 
                     # Set notification status to error
                     notification_status.status = "error"
                     notification_status.save()
 
                     return Response(
-                        {"detail": "Error posting message"}, status=500
+                        {"detail": f"Error posting message in {channel} for workspace {notification.installation.team_name}"}, status=500
                     )
 
         return Response({"detail": "Message posted!"}, status=200)
