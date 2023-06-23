@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -7,6 +9,9 @@ from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
+
+
+Logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -233,9 +238,13 @@ def channel_exists(client, channel_id):
             types="public_channel,private_channel"
         )
         channels = response["channels"]
+        
+
         for channel in channels:
             if channel["id"] == channel_id:
                 return True
+            Logger.warning(f"Channel {channel_id} not found")
+            Logger.warning(f"Channels: {channels}")
         return False
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
