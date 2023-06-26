@@ -41,12 +41,6 @@ class NotificationView(APIView):
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
-                # if not channel_exists(client, channel_id=channel):
-                #     Logger.warning(
-                #         f"Channel {channel} does not exist in workspace {notification.installation.bot_token}"
-                #     )
-                #     continue
-
                 url = comparison.get("url")
                 pullid = url.split("/")[-1]
 
@@ -83,10 +77,9 @@ class NotificationView(APIView):
                         Logger.info(
                             f"Posted message for {pullid} in channel {channel}"
                         )
-
-                except SlackApiError as e:
+                
+                except Exception as e:
                     print(e, flush=True)
-                    assert e.response["ok"] is False
 
                     # Set notification status to error
                     notification_status.status = "error"
@@ -96,13 +89,4 @@ class NotificationView(APIView):
                         f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
                     )
 
-                    return Response(
-                        {"detail": f"Error posting message in {channel} for workspace {notification.installation.team_name}"}, status=500
-                    )
-                
-                except Exception as e:
-                    Logger.error(f"Something went wrong, {e}")
-
-                    return Response({"detail": f"Something went wrong, {e}"}, status=500)
-
-        return Response({"detail": "Message posted!"}, status=200)
+        return Response({"detail": "Notifications are completed successfully"}, status=200)
