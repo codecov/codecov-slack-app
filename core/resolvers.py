@@ -55,12 +55,19 @@ class BaseResolver:
                 if len(res) > SIZE_THRESHOLD:
                     self.post_snippet(res)
                 else:
-                    self.say(res)
+                    self.client.chat_postEphemeral(
+                        channel=self.command["channel_id"],
+                        user=self.command["user_id"],
+                        text=res,
+                    )
 
         except Exception as e:
             logger.error(e)
-            self.say(
-                f"{e if e else 'There was an error processing your request. Please try again later.'}"
+
+            self.client.chat_postEphemeral(
+                channel=self.command["channel_id"],
+                user=self.command["user_id"],
+                text=f"{e if e else 'There was an error processing your request. Please try again later.'}",
             )
 
     def resolve(self, *args, **kwargs):
@@ -69,7 +76,7 @@ class BaseResolver:
     def post_snippet(self, message):
         try:
             self.client.files_upload_v2(
-                channel=self.command["channel_id"],
+                channel=self.command["user_id"],
                 content=message,
                 filename="codecov_response.txt",
                 title="Codecov API Snippet",
@@ -86,7 +93,11 @@ def resolve_service_logout(client, command, say):
 
     user = get_or_create_slack_user(user_info)
     if user.active_service is None:
-        say("You are not logged in to any service")
+        client.chat_postEphemeral(
+            channel=command["channel_id"],
+            user=slack_user_id,
+            text="You are not logged in to any service",
+        )
         return
 
     service = Service.objects.get(user=user, name=user.active_service)
@@ -96,8 +107,11 @@ def resolve_service_logout(client, command, say):
     user.codecov_access_token = None
     user.save()
 
-    say(f"Successfully logged out of {service.name}")
-
+    client.chat_postEphemeral(
+        channel=command["channel_id"],
+        user=slack_user_id,
+        text=f"Successfully logged out of {service.name}",
+    )
 
 def resolve_service_login(client, command, say):
     """Login to a service -- overrides current active service"""
@@ -143,7 +157,7 @@ class OwnerResolver(BaseResolver):
         return formatted_data
 
 
-def resolve_help(say):
+def resolve_help(channel_id, user_id, client):
     """Get help"""
     message_payload = [
         {
@@ -248,7 +262,9 @@ def resolve_help(say):
         },
     ]
 
-    say(
+    client.chat_postEphemeral(
+        channel=channel_id,
+        user=user_id,
         text="",
         blocks=message_payload,
     )
