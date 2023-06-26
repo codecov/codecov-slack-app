@@ -245,9 +245,14 @@ def channel_exists(client, channel_id):
                 return True
             Logger.warning(f"Channel {channel_id} not found")
             Logger.warning(f"Channels: {channels}")
+    
         return False
+    
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
+    
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def configure_notification(data):

@@ -92,8 +92,17 @@ class NotificationView(APIView):
                     notification_status.status = "error"
                     notification_status.save()
 
+                    Logger.error(
+                        f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
+                    )
+
                     return Response(
                         {"detail": f"Error posting message in {channel} for workspace {notification.installation.team_name}"}, status=500
                     )
+                
+                except Exception as e:
+                    Logger.error(f"Something went wrong, {e}")
+
+                    return Response({"detail": f"Something went wrong, {e}"}, status=500)
 
         return Response({"detail": "Message posted!"}, status=200)
