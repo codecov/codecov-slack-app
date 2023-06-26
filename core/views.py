@@ -44,6 +44,9 @@ class NotificationView(APIView):
                 url = comparison.get("url")
                 pullid = url.split("/")[-1]
 
+                if pullid >= 40:
+                    continue
+
                 (
                     notification_status,
                     created,
@@ -53,6 +56,7 @@ class NotificationView(APIView):
 
                 try:
                     blocks = format_comparison(comparison)
+
                     if not created:
                         client.chat_update(
                             channel=channel,
