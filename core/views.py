@@ -41,11 +41,11 @@ class NotificationView(APIView):
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
-                if not channel_exists(client, channel_id=channel):
-                    Logger.warning(
-                        f"Channel {channel} does not exist in workspace {notification.installation.bot_token}"
-                    )
-                    continue
+                # if not channel_exists(client, channel_id=channel):
+                #     Logger.warning(
+                #         f"Channel {channel} does not exist in workspace {notification.installation.bot_token}"
+                #     )
+                #     continue
 
                 url = comparison.get("url")
                 pullid = url.split("/")[-1]
