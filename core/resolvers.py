@@ -79,9 +79,8 @@ class BaseResolver:
             response = self.client.files_upload(
                 channels=self.command["user_id"],
                 content=message,
-                filetype="javascript",
-                filename="codecov.json",
-                title="Codecov JSON",
+                filename="codecov_snippet.txt",
+                title="Codecov Snippet",
             )
 
             if response["ok"]:
