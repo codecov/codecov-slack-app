@@ -155,21 +155,35 @@ def handle_codecov_commands(ack, command, say, client):
             case "notify-off":
                 NotificationResolver(command, client, say)()
             case "help":
-                resolve_help(say)
+                channel_id = command["channel_id"]
+                user_id = command["user_id"]
+                
+                resolve_help(channel_id, user_id, client)
             case _:
-                say(text="", blocks=message_payload)
+                client.chat_postEphemeral(
+                    channel=command["channel_id"],
+                    user=command["user_id"],
+                    blocks=message_payload,
+                )
 
     except Exception as e:
         logger.error(e)
-        say(
-            "There was an error processing your request. Please try again later."
+
+        client.chat_postEphemeral(
+            channel=command["channel_id"],
+            user=command["user_id"],
+            text=f"There was an error processing your request. Please try again later {e}."
         )
 
 
 @app.action("help-message")
-def handle_help_message(ack, say):
+def handle_help_message(ack, body, client):
     ack()
-    resolve_help(say)
+
+    channel_id = body["channel"]["id"]
+    user_id = body["user"]["id"]
+
+    resolve_help(channel_id, user_id ,client)
 
 
 @app.event("app_home_opened")
