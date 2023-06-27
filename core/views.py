@@ -44,7 +44,7 @@ class NotificationView(APIView):
                 url = comparison.get("url")
                 pullid = url.split("/")[-1]
 
-                if pullid >= 40:
+                if len(pullid) >= 40:
                     continue
 
                 (
