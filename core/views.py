@@ -57,7 +57,7 @@ class NotificationView(APIView):
                 try:
                     blocks = format_comparison(comparison)
 
-                    if not created:
+                    if not created and notification_status.status == "success":
                         client.chat_update(
                             channel=channel,
                             ts=notification_status.message_timestamp,
