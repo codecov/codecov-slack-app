@@ -75,12 +75,21 @@ class BaseResolver:
 
     def post_snippet(self, message):
         try:
-            self.client.files_upload_v2(
-                channel=self.command["user_id"],
+            # Upload the file to bot's direct message
+            response = self.client.files_upload(
+                channels=self.command["user_id"],
                 content=message,
-                filename="codecov_response.txt",
-                title="Codecov API Snippet",
+                filetype="javascript",
+                filename="codecov.json",
+                title="Codecov JSON",
             )
+
+            if response["ok"]:
+                file_id = response["file"]["id"]
+                print(f"File {file_id} uploaded successfully!")
+            else:
+                print(f"Failed to upload the file. Error: {response['error']} {file_id}")
+
 
         except SlackApiError as e:
             print(f"Error posting message: {e}")
