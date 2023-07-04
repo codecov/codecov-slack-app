@@ -322,7 +322,6 @@ def format_comparison(comparison):
                 f"*Author:* {head_commit.get('author')}\n"
                 f"*Timestamp:* {head_commit.get('timestamp')}\n"
                 f"*CI Passed:* {emoji if head_commit.get('ci_passed') else None}\n"
-                f"*Totals:* {head_commit.get('totals')}\n"
             )
         )
 
