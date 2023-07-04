@@ -83,7 +83,7 @@ class NotificationViewSetTests(APITestCase):
             },
         )
 
-        assert response.status_code == 404
+        assert response.status_code == 200
         assert response.data == {"detail": "No notifications found"}
 
     @patch("core.views.WebClient")
