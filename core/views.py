@@ -41,7 +41,13 @@ class NotificationView(APIView):
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
-                url = comparison.get("url")
+                url = comparison.get("url") # TODO: we should not depend on the url being present to fetch the pullid
+                if not url:
+                    Logger.info(
+                        "Comparison url is not present. Skipping notification"
+                    )
+                    continue
+
                 pullid = url.split("/")[-1]
 
                 if len(pullid) >= 40:
@@ -63,6 +69,7 @@ class NotificationView(APIView):
                             ts=notification_status.message_timestamp,
                             text="",
                             blocks=blocks,
+                            unfurl_media=False
                         )
 
                         Logger.info(
@@ -74,6 +81,7 @@ class NotificationView(APIView):
                             channel=channel,
                             text="",
                             blocks=blocks,
+                            unfurl_media=False
                         )
                         notification_status.message_timestamp = response["ts"]
                         notification_status.save()
