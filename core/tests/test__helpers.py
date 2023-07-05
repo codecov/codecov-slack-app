@@ -153,10 +153,11 @@ def test_format_comparison():
             "*Author:* John Doe\n"
             "*Timestamp:* 2023-05-31T12:34:56\n"
             "*CI Passed:* ✅\n"
-            "*Totals:* {'C': 0, 'M': 0, 'N': 0}\n"
+        ),
+        DividerBlock(),
+        SectionBlock(
+            text="ℹ️ You can use `/codecov compare` to get the full comparison. Use `/codecov help` to know more."
         ),
     ]
-
-    print(format_comparison(comparison))
 
     assert format_comparison(comparison) == expected_blocks
