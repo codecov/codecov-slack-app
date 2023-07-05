@@ -31,6 +31,7 @@ class TestServiceAuthResolvers(TestCase):
         self.command = {
             "user_id": "user_random_id",
             "trigger_id": "random_trigger_id",
+            "channel_id": "random_channel_id",
         }
         self.say = Mock()
 
@@ -47,10 +48,12 @@ class TestServiceAuthResolvers(TestCase):
         resolve_service_logout(
             client=self.client, command=self.command, say=self.say
         )
-        assert self.say.call_count == 1
-        assert self.say.call_args[0] == (
-            "You are not logged in to any service",
-        )
+        assert self.client.chat_postEphemeral.call_count == 1
+        assert self.client.chat_postEphemeral.call_args[1] == {
+            "channel": "random_channel_id",
+            "text": "You are not logged in to any service",
+            "user": "user_random_id",
+        }
 
     @patch("service_auth.actions.get_or_create_slack_user")
     def test_resolve_service_logout(self, mock_get_or_create_slack_user):
@@ -71,10 +74,12 @@ class TestServiceAuthResolvers(TestCase):
         resolve_service_logout(
             client=self.client, command=self.command, say=self.say
         )
-        assert self.say.call_count == 1
-        assert self.say.call_args[0] == (
-            "Successfully logged out of active_service",
-        )
+        assert self.client.chat_postEphemeral.call_count == 1
+        assert self.client.chat_postEphemeral.call_args[1] == {
+            "channel": "random_channel_id",
+            "text": "Successfully logged out of active_service",
+            "user": "user_random_id",
+        }
 
     @patch("service_auth.actions.get_or_create_slack_user")
     def test_resolve_service_login(self, mock_get_or_create_slack_user):
@@ -628,9 +633,14 @@ class TestBaseResolvers(TestCase):
 
 
 def test_help_resolver():
-    say = Mock()
-    resolve_help(say=say)
-    assert say.call_count == 1
+    client=MagicMock()
+
+    resolve_help(
+        channel_id="random_channel_id",
+        user_id="random_user_id",
+        client=client,
+    )
+    assert client.chat_postEphemeral.call_count == 1
 
 
 class TestNotifications(TestCase):
