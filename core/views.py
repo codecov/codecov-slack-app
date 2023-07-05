@@ -69,7 +69,8 @@ class NotificationView(APIView):
                             ts=notification_status.message_timestamp,
                             text="",
                             blocks=blocks,
-                            unfurl_media=False
+                            unfurl_media=False,
+                            unfurl_links=False,
                         )
 
                         Logger.info(
@@ -81,7 +82,8 @@ class NotificationView(APIView):
                             channel=channel,
                             text="",
                             blocks=blocks,
-                            unfurl_media=False
+                            unfurl_media=False,
+                            unfurl_links=False,
                         )
                         notification_status.message_timestamp = response["ts"]
                         notification_status.save()
