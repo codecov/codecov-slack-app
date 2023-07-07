@@ -157,7 +157,7 @@ def handle_codecov_commands(ack, command, say, client):
             case "help":
                 channel_id = command["channel_id"]
                 user_id = command["user_id"]
-                
+
                 resolve_help(channel_id, user_id, client)
             case _:
                 client.chat_postEphemeral(
@@ -172,7 +172,7 @@ def handle_codecov_commands(ack, command, say, client):
         client.chat_postEphemeral(
             channel=command["channel_id"],
             user=command["user_id"],
-            text=f"There was an error processing your request. Please try again later {e}."
+            text=f"There was an error processing your request. Please try again later {e}.",
         )
 
 
@@ -183,7 +183,7 @@ def handle_help_message(ack, body, client):
     channel_id = body["channel"]["id"]
     user_id = body["user"]["id"]
 
-    resolve_help(channel_id, user_id ,client)
+    resolve_help(channel_id, user_id, client)
 
 
 @app.event("app_home_opened")
@@ -193,56 +193,154 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": ":rocket: *Welcome to Codecov Slack App* :rocket:\n\nTake control of your notifications and streamline your workflow. With just a few simple commands, you can enhance collaboration across multiple channels and repositories. Here's what you can do:"
-            }
+                "text": ":rocket: *Welcome to Codecov Slack App* :rocket:\n\nTake control of your notifications and streamline your workflow. With just a few simple commands, you can enhance collaboration across multiple channels and repositories. Here's what you can do:",
+            },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "1. Interact with Codecov Public API:\n- Explore the full potential of our app by interacting with Codecov public API. Simply use the `/codecov help` command to discover available features and commands."
-            }
+                "text": "1. Interact with Codecov Public API:\n- Explore the full potential of our app by interacting with Codecov public API. Simply use the `/codecov help` command to discover available features and commands.",
+            },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "2. Redirect Notifications to Multiple Channels:\n- Use the command `/codecov notify` to effortlessly redirect notifications from multiple repositories to designated channels."
-            }
+                "text": "2. Redirect Notifications to Multiple Channels:\n- Use the command `/codecov notify` to effortlessly redirect notifications from multiple repositories to designated channels.",
+            },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "3. Public Repo PR Notifications without Authentication:\n- No need to authenticate with external providers! With our app, you can receive notifications for pull requests from public repositories directly in Slack. Stay informed and collaborate seamlessly with your team."
-            }
+                "text": "3. Public Repo PR Notifications without Authentication:\n- No need to authenticate with external providers! With our app, you can receive notifications for pull requests from public repositories directly in Slack. Stay informed and collaborate seamlessly with your team.",
+            },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "4. Access Private Data with Provider Authentication:\n- For more advanced commands that require access to private data, we've got you covered. Currently supporting GitHub authentication, you can securely connect your account to unlock additional functionalities and ensure data privacy using `/codecov login`."
-            }
+                "text": "4. Access Private Data with Provider Authentication:\n- For more advanced commands that require access to private data, we've got you covered. Currently supporting GitHub authentication, you can securely connect your account to unlock additional functionalities and ensure data privacy using `/codecov login`.",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "👇 Here are the list of the commands you can use:",
+            },
         },
         {
-            "type": "divider"
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Auth commands:*\n`/codecov login` - Login to a service\n`/codecov logout` - Logout of current active service\n",
+            },
         },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n",
+            },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Commits commands:*\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n`/codecov commit repository=<repository> username=<username> service=<service> commitid=<commitid>` - Get commit information\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Pulls commands:*\n`/codecov pulls username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n`/codecov pull repository=<repository> username=<username> service=<service> pullid=<pullid>` - Get pull information\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Components commands:*\n`/codecov components username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> sha=<sha>` - Gets a list of components for the specified repository\n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Comparison commands:*\n `/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Notifications commands 📳*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
+            },
+        },
+        {"type": "divider"},
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
                 "text": "Learn more about the Codecov API here:\n"
                 "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
-            }
+            },
         },
         {
             "type": "context",
             "elements": [
                 {
                     "type": "mrkdwn",
-                    "text": "Have questions or need assistance? Reach out to our friendly support team on https://codecov.freshdesk.com/support/home."
+                    "text": "Have questions or need assistance? Reach out to our friendly support team on https://codecov.freshdesk.com/support/home.",
                 }
-            ]
+            ],
         },
     ]
 
@@ -325,6 +423,7 @@ def handle_decline_notification(ack, body, client, logger):
         },
     )
 
+
 @app.event("app_uninstalled")
 def handle_app_uninstalled(body, logger):
     logger.info(body)
@@ -344,4 +443,3 @@ def handle_app_uninstalled(body, logger):
 def handle_view_pr(ack, body, client, logger):
     ack()
     logger.info(body)
-   

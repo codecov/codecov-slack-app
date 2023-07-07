@@ -88,8 +88,9 @@ class BaseResolver:
                 file_id = response["file"]["id"]
                 print(f"File {file_id} uploaded successfully!")
             else:
-                print(f"Failed to upload the file. Error: {response['error']} {file_id}")
-
+                print(
+                    f"Failed to upload the file. Error: {response['error']} {file_id}"
+                )
 
         except SlackApiError as e:
             print(f"Error posting message: {e}")
@@ -121,6 +122,7 @@ def resolve_service_logout(client, command, say):
         user=slack_user_id,
         text=f"Successfully logged out of {service.name}",
     )
+
 
 def resolve_service_login(client, command, say):
     """Login to a service -- overrides current active service"""
@@ -188,69 +190,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n",
-            },
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n",
-            },
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Commits commands:*\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n`/codecov commit repository=<repository> username=<username> service=<service> commitid=<commitid>` - Get commit information\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Pulls commands:*\n`/codecov pulls username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n`/codecov pull repository=<repository> username=<username> service=<service> pullid=<pullid>` - Get pull information\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Components commands:*\n`/codecov components username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> sha=<sha>` - Gets a list of components for the specified repository\n\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Comparison commands:*\n `/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+                "text": "`/codecov organizations` - Get a list of organizations that user has access to\n\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n\n`/codecov pulls username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n\n`/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
             },
         },
         {"type": "divider"},
@@ -266,7 +206,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
+                "text": "`/codecov help` - Get help\n*Note* that some of commands require you to login to a service first. \n\n",
             },
         },
     ]
