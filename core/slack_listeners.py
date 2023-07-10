@@ -321,14 +321,6 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "`/codecov help` - Get help\n*Note* that some of commands requires you to login to a service first. \n\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
                 "text": "Learn more about the Codecov API here:\n"
                 "<https://docs.codecov.io/reference|https://docs.codecov.io/reference>",
             },
