@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -7,6 +9,9 @@ from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
+
+
+Logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -66,20 +71,16 @@ endpoint_mapping: Dict[EndpointName, Command] = {
     EndpointName.COMMITS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["branch", "page", "page_size"],
-        is_private=True,
     ),
     EndpointName.COMMIT: Command(
         required_params=["username", "service", "repository", "commitid"],
-        is_private=True,
     ),
     EndpointName.PULLS: Command(
         required_params=["username", "service", "repository"],
         optional_params=["ordering", "page", "page_size", "state"],
-        is_private=True,
     ),
     EndpointName.PULL: Command(
         required_params=["username", "service", "repository", "pullid"],
-        is_private=True,
     ),
     EndpointName.COMPONENTS: Command(
         required_params=["username", "service", "repository"],
@@ -237,12 +238,21 @@ def channel_exists(client, channel_id):
             types="public_channel,private_channel"
         )
         channels = response["channels"]
+        
+
         for channel in channels:
             if channel["id"] == channel_id:
                 return True
+            Logger.warning(f"Channel {channel_id} not found")
+            Logger.warning(f"Channels: {channels}")
+    
         return False
+    
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
+    
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def configure_notification(data):
@@ -276,14 +286,16 @@ def format_comparison(comparison):
         repo = url.split("/")[-3]
         org = url.split("/")[-4]
 
-        blocks.append( 
+        blocks.append(
             SectionBlock(
                 text=f"📳 New PR *<{url}|#{pullid}>* for {org}/{repo}\n\n"
                 f"*Compare Coverage:* {comparison.get('coverage')}% | {comparison.get('message')}\n"
                 f"*Head Totals Coverage:* {comparison.get('head_totals_c')}%\n",
                 accessory=ButtonElement(
                     text="View PR in Codecov",
-                    url=url.replace("github.com", "codecov.io/gh"), # TODO: make this dynamic once we support other services
+                    url=url.replace(
+                        "github.com", "codecov.io/gh"
+                    ),  # TODO: make this dynamic once we support other services
                     action_id="view-pr",
                     style="primary",
                 ),
@@ -310,8 +322,16 @@ def format_comparison(comparison):
                 f"*Author:* {head_commit.get('author')}\n"
                 f"*Timestamp:* {head_commit.get('timestamp')}\n"
                 f"*CI Passed:* {emoji if head_commit.get('ci_passed') else None}\n"
-                f"*Totals:* {head_commit.get('totals')}\n"
             )
         )
+
+    blocks.append(DividerBlock())
+
+    blocks.append(
+        SectionBlock(
+            text="ℹ️ You can use `/codecov compare` to get the full comparison."
+            " Use `/codecov help` to know more."
+        )
+    )
 
     return blocks

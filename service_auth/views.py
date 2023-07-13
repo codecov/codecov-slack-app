@@ -67,7 +67,7 @@ class GithubCallbackView(APIView):
 
         user = SlackUser.objects.filter(user_id=user_id).first()
         if not user:
-            return Response({"detail": "Slack user not found"}, status=404)
+            return Response({"detail": f"Slack user not found {user_id}"}, status=404)
 
         service = Service.objects.filter(user=user, name=provider).first()
         if not service:
