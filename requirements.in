@@ -11,3 +11,4 @@ pyjwt
 sentry-sdk
 httpx
 gunicorn
+django-csp
