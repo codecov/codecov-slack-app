@@ -2,14 +2,13 @@ import logging
 import os
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from slack_sdk import WebClient
-from django.shortcuts import render
 
 from core.authentication import InternalTokenAuthentication
-from core.helpers import (format_comparison,
-                          validate_notification_params)
+from core.helpers import format_comparison, validate_notification_params
 from core.models import Notification, NotificationStatus
 from core.permissions import InternalTokenPermissions
 from core.slack_datastores import DjangoOAuthStateStore
@@ -47,7 +46,9 @@ class NotificationView(APIView):
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
-                url = comparison.get("url") # TODO: we should not depend on the url being present to fetch the pullid
+                url = comparison.get(
+                    "url"
+                )  # TODO: we should not depend on the url being present to fetch the pullid
                 if not url:
                     Logger.info(
                         "Comparison url is not present. Skipping notification"
@@ -97,7 +98,7 @@ class NotificationView(APIView):
                         Logger.info(
                             f"Posted message for {pullid} in channel {channel}"
                         )
-                
+
                 except Exception as e:
                     print(e, flush=True)
 
@@ -109,7 +110,9 @@ class NotificationView(APIView):
                         f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
                     )
 
-        return Response({"detail": "Notifications are completed successfully"}, status=200)
+        return Response(
+            {"detail": "Notifications are completed successfully"}, status=200
+        )
 
 
 def slack_install(request):
