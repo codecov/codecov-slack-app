@@ -128,4 +128,13 @@ def slack_install(request):
         "state": state,
     }
 
-    return render(request, "pages/slack_install.html", context)
+    response = render(request, "pages/slack_install.html", context)
+    response.set_cookie(
+        "state",
+        state,
+        max_age=120,
+        secure=True,
+        httponly=True,
+    )
+
+    return response
