@@ -13,7 +13,7 @@ from core.models import Notification, NotificationStatus
 from core.permissions import InternalTokenPermissions
 from core.slack_datastores import DjangoOAuthStateStore
 
-Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 SLACK_CLIENT_ID = os.environ.get("SLACK_CLIENT_ID")
 SLACK_SCOPES = os.environ.get("SLACK_SCOPES")
@@ -50,7 +50,7 @@ class NotificationView(APIView):
                     "url"
                 )  # TODO: we should not depend on the url being present to fetch the pullid
                 if not url:
-                    Logger.info(
+                    logger.info(
                         "Comparison url is not present. Skipping notification"
                     )
                     continue
@@ -80,7 +80,7 @@ class NotificationView(APIView):
                             unfurl_links=False,
                         )
 
-                        Logger.info(
+                        logger.info(
                             f"Updated message for {pullid} in channel {channel}"
                         )
 
@@ -95,7 +95,7 @@ class NotificationView(APIView):
                         notification_status.message_timestamp = response["ts"]
                         notification_status.save()
 
-                        Logger.info(
+                        logger.info(
                             f"Posted message for {pullid} in channel {channel}"
                         )
 
@@ -106,7 +106,7 @@ class NotificationView(APIView):
                     notification_status.status = "error"
                     notification_status.save()
 
-                    Logger.error(
+                    logger.error(
                         f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
                     )
 
@@ -118,7 +118,7 @@ class NotificationView(APIView):
 def slack_install(request):
     store = DjangoOAuthStateStore(
         expiration_seconds=120,
-        logger=Logger,
+        logger=logger,
     )
     state = store.issue()
     context = {
