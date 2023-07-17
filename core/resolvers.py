@@ -78,7 +78,7 @@ class BaseResolver:
             self.client.chat_postEphemeral(
                 channel=self.command["channel_id"],
                 user=self.command["user_id"],
-                text=f"Response too long to display here. you can find it in the Codecov app's DMs",
+                text=f"Response too large to display here. you can find it in the Codecov app's DMs",
             )
 
             # Upload the file to bot's direct message
