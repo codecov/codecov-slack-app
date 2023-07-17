@@ -190,7 +190,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "`/codecov organizations` - Get a list of organizations that user has access to\n\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n\n`/codecov pulls username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n\n`/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+                "text": "`/codecov organizations` - Get a list of organizations that user has access to\n\n`/codecov commits username=<owner_username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n\n`/codecov pulls username=<owner_username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n\n`/codecov repos username=<owner_username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n\n`/codecov compare username=<owner_username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
             },
         },
         {"type": "divider"},
@@ -198,7 +198,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Notifications commands 📳*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
+                "text": "*Notifications commands 📳*:\n`/codecov notify username=<owner_username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<owner_username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
             },
         },
         {"type": "divider"},
