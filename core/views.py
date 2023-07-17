@@ -1,18 +1,23 @@
 import logging
+import os
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
 
 from core.authentication import InternalTokenAuthentication
-from core.helpers import (channel_exists, format_comparison,
-                          validate_notification_params)
+from core.helpers import format_comparison, validate_notification_params
 from core.models import Notification, NotificationStatus
 from core.permissions import InternalTokenPermissions
+from core.slack_datastores import DjangoOAuthStateStore
 
-Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
+SLACK_CLIENT_ID = os.environ.get("SLACK_CLIENT_ID")
+SLACK_SCOPES = os.environ.get("SLACK_SCOPES")
+SLACK_REDIRECT_URI = os.environ.get("SLACK_REDIRECT_URI")
 
 # Create your views here.
 def health(request):
@@ -41,9 +46,11 @@ class NotificationView(APIView):
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
             for channel in notification.channels:
-                url = comparison.get("url") # TODO: we should not depend on the url being present to fetch the pullid
+                url = comparison.get(
+                    "url"
+                )  # TODO: we should not depend on the url being present to fetch the pullid
                 if not url:
-                    Logger.info(
+                    logger.info(
                         "Comparison url is not present. Skipping notification"
                     )
                     continue
@@ -73,7 +80,7 @@ class NotificationView(APIView):
                             unfurl_links=False,
                         )
 
-                        Logger.info(
+                        logger.info(
                             f"Updated message for {pullid} in channel {channel}"
                         )
 
@@ -88,10 +95,10 @@ class NotificationView(APIView):
                         notification_status.message_timestamp = response["ts"]
                         notification_status.save()
 
-                        Logger.info(
+                        logger.info(
                             f"Posted message for {pullid} in channel {channel}"
                         )
-                
+
                 except Exception as e:
                     print(e, flush=True)
 
@@ -99,8 +106,35 @@ class NotificationView(APIView):
                     notification_status.status = "error"
                     notification_status.save()
 
-                    Logger.error(
+                    logger.error(
                         f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
                     )
 
-        return Response({"detail": "Notifications are completed successfully"}, status=200)
+        return Response(
+            {"detail": "Notifications are completed successfully"}, status=200
+        )
+
+
+def slack_install(request):
+    store = DjangoOAuthStateStore(
+        expiration_seconds=120,
+        logger=logger,
+    )
+    state = store.issue()
+    context = {
+        "client_id": SLACK_CLIENT_ID,
+        "scope": SLACK_SCOPES,
+        "redirect_uri": SLACK_REDIRECT_URI,
+        "state": state,
+    }
+
+    response = render(request, "pages/slack_install.html", context)
+    response.set_cookie(
+        "state",
+        state,
+        max_age=120,
+        secure=True,
+        httponly=True,
+    )
+
+    return response

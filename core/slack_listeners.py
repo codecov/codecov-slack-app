@@ -48,6 +48,7 @@ app = App(
             expiration_seconds=120,
             logger=logger,
         ),
+        state_cookie_name="state",
     ),
 )
 
