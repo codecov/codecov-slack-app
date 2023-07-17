@@ -8,6 +8,7 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 from core.enums import EndpointName
 from core.helpers import configure_notification
 from core.models import SlackBot, SlackInstallation
+from service_auth.models import SlackUser
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
@@ -429,6 +430,9 @@ def handle_app_uninstalled(body, logger):
 
         # Delete workspace bot data
         SlackBot.objects.filter(team_id=body["team_id"]).delete()
+
+        # Delete users data
+        SlackUser.objects.filter(team_id=body["team_id"]).delete()
 
 
 @app.action("view-pr")
