@@ -8,6 +8,7 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 from core.enums import EndpointName
 from core.helpers import configure_notification
 from core.models import SlackBot, SlackInstallation
+from service_auth.models import SlackUser
 
 from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         CommitCoverageTotals, CommitResolver, CommitsResolver,
@@ -244,29 +245,21 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<username> service=<service>` - Get owner's information\n`/codecov users username=<username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n",
+                "text": "*Users commands:*\n`/codecov organizations` - Get a list of organizations that user has access to\n`/codecov owner username=<owner_username> service=<service>` - Get owner's information\n`/codecov users username=<owner_username> service=<service>` Optional params: `is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size>` - Get a list of users for the specified owner\n",
             },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Repositories commands:*\n`/codecov repos username=<username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<username> service=<service>` - Get repo information\n`/codecov repo-config username=<username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n",
+                "text": "*Repositories commands:*\n`/codecov repos username=<owner_username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n`/codecov repo repository=<repository> username=<owner_username> service=<service>` - Get repo information\n`/codecov repo-config username=<owner_username> service=<service> repository=<repository>` - Get the repository configuration for the specified owner and repository\n",
             },
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Branches commands:*\n`/codecov branches username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<username> service=<service> branch=<branch>` - Get branch information\n",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Commits commands:*\n`/codecov commits username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n`/codecov commit repository=<repository> username=<username> service=<service> commitid=<commitid>` - Get commit information\n",
+                "text": "*Branches commands:*\n`/codecov branches username=<owner_username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> author=<author> page=<page> page_size=<page_size>` - Get a list of branches for the repository\n`/codecov branch repository=<repository> username=<owner_username> service=<service> branch=<branch>` - Get branch information\n",
             },
         },
         {"type": "divider"},
@@ -274,7 +267,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Pulls commands:*\n`/codecov pulls username=<username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n`/codecov pull repository=<repository> username=<username> service=<service> pullid=<pullid>` - Get pull information\n",
+                "text": "*Commits commands:*\n`/codecov commits username=<owner_username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n`/codecov commit repository=<repository> username=<owner_username> service=<service> commitid=<commitid>` - Get commit information\n",
             },
         },
         {"type": "divider"},
@@ -282,7 +275,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Components commands:*\n`/codecov components username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> sha=<sha>` - Gets a list of components for the specified repository\n\n",
+                "text": "*Pulls commands:*\n`/codecov pulls username=<owner_username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n`/codecov pull repository=<repository> username=<owner_username> service=<service> pullid=<pullid>` - Get pull information\n",
             },
         },
         {"type": "divider"},
@@ -290,7 +283,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Flags commands:*\n`/codecov flags username=<username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
+                "text": "*Components commands:*\n`/codecov components username=<owner_username> service=<service> repository=<repository>` Optional params: `branch=<branch> sha=<sha>` - Gets a list of components for the specified repository\n\n",
             },
         },
         {"type": "divider"},
@@ -298,7 +291,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Comparison commands:*\n `/codecov compare username=<username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+                "text": "*Flags commands:*\n`/codecov flags username=<owner_username> service=<service> repository=<repository>` Optional params: `page=<page> page_size=<page_size>` - Gets a paginated list of flags for the specified repository\n`/codecov coverage-trends username=<owner_username> service=<service> repository=<repository> flag=<flag>` Optional params: `page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d>`- Gets a paginated list of timeseries measurements aggregated by the specified interval\n\n",
             },
         },
         {"type": "divider"},
@@ -306,7 +299,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+                "text": "*Comparison commands:*\n `/codecov compare username=<owner_username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n`/codecov compare-component username=<owner_username> service=<service> repository=<repository>` - Gets a component comparison\n`/codecov compare-file username=<owner_username> service=<service> repository=<repository> path=<path>` - Gets a comparison for a specific file path\n`/codecov compare-flag username=<owner_username> service=<service> repository=<repository>` - Get a flag comparison\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
             },
         },
         {"type": "divider"},
@@ -314,7 +307,15 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Notifications commands 📳*:\n`/codecov notify username=<username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
+                "text": "*Coverage commands:*\n`/codecov coverage-trend username=<owner_username> service=<service> repository=<repository>` Optional params: `branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size>` - Get a paginated list of timeseries measurements aggregated by the specified interval\n`/codecov file-coverage-report repository=<repository> username=<owner_username> service=<service> path=<path>` Optional params: `branch=<branch> sha=<sha>` - Get coverage info for a single file specified by path\n`/codecov commit-coverage-report repository=<repository> username=<owner_username> service=<service>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get line-by-line coverage info (hit=0/miss=1/partial=2)\n`/codecov commit-coverage-totals repository=<repository> username=<owner_username> service=<service> path=<path>` Optional params: `path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag>` - Get the coverage totals for a given commit and the coverage totals broken down by file\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Notifications commands 📳*:\n`/codecov notify username=<owner_username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<owner_username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
             },
         },
         {"type": "divider"},
@@ -430,6 +431,9 @@ def handle_app_uninstalled(body, logger):
 
         # Delete workspace bot data
         SlackBot.objects.filter(team_id=body["team_id"]).delete()
+
+        # Delete users data
+        SlackUser.objects.filter(team_id=body["team_id"]).delete()
 
 
 @app.action("view-pr")
