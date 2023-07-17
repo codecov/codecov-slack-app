@@ -75,6 +75,12 @@ class BaseResolver:
 
     def post_snippet(self, message):
         try:
+            self.client.chat_postEphemeral(
+                channel=self.command["channel_id"],
+                user=self.command["user_id"],
+                text=f"Response too long to display here. you can find it in the Codecov app's DMs",
+            )
+
             # Upload the file to bot's direct message
             response = self.client.files_upload(
                 channels=self.command["user_id"],
