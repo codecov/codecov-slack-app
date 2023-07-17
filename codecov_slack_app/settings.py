@@ -130,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 #CSP Configuration
 CSP_IMG_SRC = ("'self'", 'https://platform.slack-edge.com', 'data:')
 
-CSP_STYLE_SRC = ("'self'", 'sha256-G9kZzyN24irmY+hg/rWbW9P5DYILFdr63wXKRPMJlCc=')
+CSP_STYLE_SRC = ("'self'", "'sha256-G9kZzyN24irmY+hg/rWbW9P5DYILFdr63wXKRPMJlCc='")
 
 CSP_SCRIPT_SRC = ("'self'")
 
