@@ -75,7 +75,12 @@ class BaseResolver:
 
     def post_snippet(self, message):
         try:
-            self.client.chat_postEphemeral(
+            response = self.client.conversations_info(channel=self.command["channel_id"])
+            channel = response['channel']
+
+            # Check if it's not a DM with App
+            if not channel['is_im']:
+                self.client.chat_postEphemeral(
                 channel=self.command["channel_id"],
                 user=self.command["user_id"],
                 text=f"Response too large to display here. you can find it in the Codecov app's DMs",
