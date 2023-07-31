@@ -18,7 +18,7 @@ certifi==2023.5.7
     #   sentry-sdk
 charset-normalizer==3.1.0
     # via requests
-django==4.2.1
+django==4.2.3
     # via
     #   -r requirements.in
     #   django-csp
@@ -27,10 +27,6 @@ django-csp==3.7
     # via -r requirements.in
 djangorestframework==3.14.0
     # via -r requirements.in
-exceptiongroup==1.1.1
-    # via
-    #   anyio
-    #   pytest
 gunicorn==20.1.0
     # via -r requirements.in
 h11==0.14.0
@@ -79,10 +75,6 @@ sqlparse==0.4.4
     # via
     #   -r requirements.in
     #   django
-tomli==2.0.1
-    # via pytest
-typing-extensions==4.6.2
-    # via asgiref
 urllib3==1.26.16
     # via
     #   requests
