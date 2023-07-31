@@ -75,6 +75,17 @@ class BaseResolver:
 
     def post_snippet(self, message):
         try:
+            response = self.client.conversations_info(channel=self.command["channel_id"])
+            channel = response['channel']
+
+            # Check if it's not a DM with App
+            if not channel['is_im']:
+                self.client.chat_postEphemeral(
+                channel=self.command["channel_id"],
+                user=self.command["user_id"],
+                text=f"Response too large to display here. you can find it in the Codecov app's DMs",
+            )
+
             # Upload the file to bot's direct message
             response = self.client.files_upload(
                 channels=self.command["user_id"],
@@ -190,7 +201,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "`/codecov organizations` - Get a list of organizations that user has access to\n\n`/codecov commits username=<owner_username> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n\n`/codecov pulls username=<owner_username> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n\n`/codecov repos username=<owner_username> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n\n`/codecov compare username=<owner_username> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
+                "text": "`/codecov organizations` - Get a list of organizations that user has access to\n\n`/codecov commits username=<org_name> service=<service> repository=<repository>` Optional params: `branch=<branch> page=<page> page_size=<page_size>` - Get a list of commits for the repository\n\n`/codecov pulls username=<org_name> service=<service> repository=<repository>` Optional params: `ordering=<ordering> page=<page> page_size=<page_size> state=<closed,open,merged>` - Get a list of pulls for the repository\n\n`/codecov repos username=<org_name> service=<service>` Optional params: `names=<names> active=<active> page=<page> page_size=<page_size>` - Get a list of repos for the specified owner\n\n`/codecov compare username=<org_name> service=<service> repository=<repository>` - Get a comparison between two commits or a pull and its base\n\n _*NOTE*_\n _You must either pass `pullid=<pullid>` or both of `head=<head> base=<base>` in the comparison commands_\n",
             },
         },
         {"type": "divider"},
@@ -198,7 +209,7 @@ def resolve_help(channel_id, user_id, client):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Notifications commands 📳*:\n`/codecov notify username=<owner_username> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<owner_username> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
+                "text": "*Notifications commands 📳*:\n`/codecov notify username=<org_name> service=<service> repository=<repository>` - Direct Notifications for a specific repo to a specific channel\n`/codecov notify-off username=<org_name> service=<service> repository=<repository>` - Turn off Notifications for a specific repo in a specific channel\n",
             },
         },
         {"type": "divider"},
