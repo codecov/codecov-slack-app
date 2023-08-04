@@ -585,7 +585,7 @@ class CoverageTrendResolver(BaseResolver):
         return format_nested_keys(data, formatted_data)
 
 
-class FileCoverageReport(BaseResolver):  # Test this
+class FileCoverageReport(BaseResolver):
     """Returns coverage info for a single file specified by path."""
 
     command_name = EndpointName.FILE_COVERAGE_REPORT
@@ -600,7 +600,7 @@ class FileCoverageReport(BaseResolver):  # Test this
 
         repo = params_dict.get("repository")
         path = params_dict.get("path")
-        if data["count"] == 0:
+        if not data:
             return f"No coverage report found for {path} in {repo}"
 
         formatted_data = (
