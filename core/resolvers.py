@@ -604,7 +604,7 @@ class FileCoverageReport(BaseResolver):
             return f"No coverage report found for {path} in {repo}"
 
         formatted_data = (
-            f"*Coverage report for {path} in {repo}*: ({data['count']})\n"
+            f"*Coverage report for {path} in {repo}*:\n"
         )
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
