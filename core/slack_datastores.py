@@ -52,14 +52,16 @@ class DjangoInstallationStore(InstallationStore):
                 user_token_expires_at = make_aware(user_token_expires_at)
 
         slack_installation = SlackInstallation.objects.filter(
-            client_id=self.client_id,
-            enterprise_id=installation.enterprise_id,
-            team_id=installation.team_id,
-            installed_at=installed_at,
+            bot_token=installation.bot_token
         ).first()
 
-        if slack_installation is None:
-            slack_installation = SlackInstallation()
+        if slack_installation:
+            raise Exception(
+                f"Codecov Slack App installation for {installation.team_name} already exists, please remove app before installing again"
+            )
+
+
+        slack_installation = SlackInstallation()
 
         slack_installation.client_id = self.client_id
         slack_installation.app_id = installation.app_id

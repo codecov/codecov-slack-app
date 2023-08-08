@@ -1,5 +1,6 @@
 from logging import Logger
 from uuid import uuid4
+import pytest
 
 from django.test import TestCase
 from django.utils import timezone
@@ -100,17 +101,18 @@ class TestDjangoInstallationStore(TestCase):
         self.assertEqual(row.team_id, self.installation.team_id)
         self.assertEqual(row.user_id, self.installation.user_id)
 
-    def test_update_if_exists(self):
+    def test_save_if_exists(self):
         self.store.save(self.installation)
-        self.store.save(self.second_installation)
-        row = SlackInstallation.objects.filter(
-            client_id=self.store.client_id
-        ).first()
 
-        self.assertEqual(row.bot_user_id, self.second_installation.bot_user_id)
-        self.assertNotEqual(row.bot_user_id, self.installation.bot_user_id)
-        self.assertEqual(row.team_id, self.installation.team_id)
-        self.assertEqual(row.user_id, self.installation.user_id)
+        with pytest.raises(Exception) as e:
+            self.store.save(self.second_installation)
+
+        self.assertEqual(
+            str(e.value),
+            "Codecov Slack App installation for None already exists, please remove app before installing again"
+        )
+
+       
 
     def test_save_bot(self):
         self.store.save_bot(self.bot)
