@@ -121,7 +121,7 @@ def get_endpoint_details(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/components/",
         ),
         EndpointName.FILE_COMPARISON: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/file/{file_path}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/file/{file_path}",
         ),
         EndpointName.FLAG_COMPARISON: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags/",
@@ -130,7 +130,7 @@ def get_endpoint_details(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/coverage/",
         ),
         EndpointName.FILE_COVERAGE_REPORT: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/file_report/{file_path}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/file_report/{file_path}",
         ),
         EndpointName.COMMIT_COVERAGE_REPORT: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/report/",
