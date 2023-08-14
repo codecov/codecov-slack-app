@@ -65,7 +65,7 @@ class NotificationView(APIView):
                 notification_status,
                 created,
             ) = NotificationConfigStatus.objects.get_or_create(
-                notification_config=notification, pullid=pullid, channel=channel
+                notification_config=notification, pullid=pullid
             )
 
             try:

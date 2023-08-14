@@ -207,11 +207,10 @@ class NotificationConfigStatus(models.Model):
     message_timestamp = models.TextField(
         null=True
     )  # message timestamp https://api.slack.com/methods/chat.update#arg_ts
-    channel = models.TextField(null=True)
 
     class Meta:
         indexes = [
             models.Index(
-                fields=["notification_config", "status", "pullid", "channel"]
+                fields=["notification_config", "status", "pullid"]
             )
         ]
