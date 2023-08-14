@@ -18,7 +18,7 @@ from .resolvers import (BranchesResolver, BranchResolver, CommitCoverageReport,
                         NotificationResolver, OrgsResolver, OwnerResolver,
                         PullResolver, PullsResolver, RepoConfigResolver,
                         RepoResolver, ReposResolver, UsersResolver,
-                        resolve_help, resolve_service_login,
+                        resolve_help, resolve_service_login,resolve_migrate,
                         resolve_service_logout)
 from .slack_datastores import DjangoInstallationStore, DjangoOAuthStateStore
 
@@ -161,6 +161,10 @@ def handle_codecov_commands(ack, command, say, client):
                 user_id = command["user_id"]
 
                 resolve_help(channel_id, user_id, client)
+
+            case "secret-migrate-notifications":
+                resolve_migrate(client, command, say)
+
             case _:
                 client.chat_postEphemeral(
                     channel=command["channel_id"],

@@ -7,7 +7,7 @@ from core.helpers import (configure_notification, endpoint_mapping,
                           extract_command_params, extract_optional_params,
                           format_nested_keys, validate_comparison_params,
                           validate_service)
-from core.models import Notification, SlackInstallation
+from core.models import Notification, SlackInstallation, NotificationConfig, NotificationStatus, NotificationConfigStatus
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -795,3 +795,44 @@ class NotificationResolver(BaseResolver):
                     ],
                 },
             )
+
+
+def resolve_migrate(client, command, say):
+    """Migrates all notifications from the old to the new format."""
+
+    notifications = Notification.objects.all()
+    for notification in notifications:
+        for channel in notification.channels:
+            new_notification = NotificationConfig(
+                installation=notification.installation,
+                repo=notification.repo,
+                owner=notification.owner,
+                channel=channel,
+                created_at=notification.created_at,
+                updated_at=notification.updated_at,
+            )
+
+            new_notification.save()
+
+            notification_channel_statuses = NotificationStatus.objects.filter(
+                notification=notification,
+                channel=channel,
+            )
+
+            if not notification_channel_statuses:
+                continue
+
+            for notification_status in notification_channel_statuses:
+                new_status = NotificationConfigStatus(
+                    notification_config=new_notification,
+                    pullid=notification_status.pullid,
+                )
+                new_status.save()
+
+            
+    say(f"Successfully migrated all channels")
+
+
+
+
+
