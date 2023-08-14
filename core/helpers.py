@@ -1,15 +1,14 @@
 import logging
-
 from dataclasses import dataclass
 from typing import Dict, Optional
 
 from slack_sdk.errors import SlackApiError
 from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 
-from core.models import Notification, SlackInstallation
+from core.models import (NotificationConfig, NotificationFilters, NotificationFilters,
+                         SlackInstallation)
 
 from .enums import EndpointName
-
 
 Logger = logging.getLogger(__name__)
 
@@ -153,6 +152,7 @@ endpoint_mapping: Dict[EndpointName, Command] = {
     ),
     EndpointName.NOTIFICATION: Command(
         required_params=["username", "service", "repository"],
+        optional_params=["branch", "author"],
     ),
 }
 
@@ -238,40 +238,52 @@ def channel_exists(client, channel_id):
             types="public_channel,private_channel"
         )
         channels = response["channels"]
-        
 
         for channel in channels:
             if channel["id"] == channel_id:
                 return True
             Logger.warning(f"Channel {channel_id} not found")
             Logger.warning(f"Channels: {channels}")
-    
+
         return False
-    
+
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
-    
+
     except Exception as e:
         print(f"Error: {e}")
 
 
-def configure_notification(data):
+def configure_notification(data, optional_params):
     installation = SlackInstallation.objects.get(
         bot_token=data["slack__bot_token"],
     )
 
-    notification, created = Notification.objects.get_or_create(
+    channel_id = data["slack__channel_id"]
+    notification, created = NotificationConfig.objects.get_or_create(
         repo=data["repository"],
         owner=data["username"],
+        channel=channel_id,
         installation=installation,
     )
-    channel_id = data["slack__channel_id"]
 
-    if notification.channels:
-        notification.channels.append(channel_id)
+    if not created:
+        return f"Notifications for {data['repository']} already enabled in this channel 📳."
 
-    else:
-        notification.channels = [channel_id]
+    if optional_params:
+        filters = []
+        if optional_params.get(NotificationFilters.branch.value):
+            filters.append({
+                "branch": optional_params.get(NotificationFilters.branch.value)
+            })
+
+        if optional_params.get(NotificationFilters.author.value):
+            filters.append({
+                "author": optional_params.get(NotificationFilters.author.value)
+            })
+
+        if filters:
+            notification.filters = filters
 
     notification.save()
     return f"Notifications for {data['repository']} enabled in this channel 📳."
@@ -335,3 +347,18 @@ def format_comparison(comparison):
     )
 
     return blocks
+
+
+def should_send_notification(comparison, filters):
+    head_commit = comparison.get("head_commit")
+
+    if head_commit:
+        for filter in filters:
+            if filter.get("branch") and filter.get("branch") != head_commit.get("branch"):
+                return False
+
+            if filter.get("author") and filter.get("author") != head_commit.get("author"):
+                return False
+    
+    return True
+    

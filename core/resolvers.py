@@ -7,7 +7,7 @@ from core.helpers import (configure_notification, endpoint_mapping,
                           extract_command_params, extract_optional_params,
                           format_nested_keys, validate_comparison_params,
                           validate_service)
-from core.models import Notification, SlackInstallation
+from core.models import NotificationConfig, SlackInstallation
 from service_auth.actions import (authenticate_command,
                                   get_or_create_slack_user,
                                   handle_codecov_public_api_request,
@@ -681,9 +681,10 @@ class NotificationResolver(BaseResolver):
             bot_token=bot_token,
         )
 
-        notification = Notification.objects.filter(
+        notification = NotificationConfig.objects.filter(
             repo=params_dict["repository"],
             owner=params_dict["username"],
+            channel=channel_id,
             installation=installation,
         ).first()
 
@@ -691,23 +692,13 @@ class NotificationResolver(BaseResolver):
         if not self.notify:
             if not notification:
                 return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
-
-            if not (channel_id in notification.channels):
-                return f"Notification is not enabled for {params_dict['repository']} in this channel 👀"
-
-            notification.channels.remove(channel_id)
-            notification.save()
-
-            if not notification.channels:
-                # No channels left, delete notification
-                notification.delete()
-
+            
+            notification.delete()
             return f"Notifications disabled for {params_dict['repository']} in this channel 📴"
 
         # Notification already exists
         if notification:
-            if notification.channels and channel_id in notification.channels:
-                return f"Notification already enabled for {params_dict['repository']} in this channel 👀"
+            return f"Notification already enabled for {params_dict['repository']} in this channel 👀"
 
         user_info = self.client.users_info(user=user_id)
         user = get_or_create_slack_user(user_info)
@@ -734,7 +725,7 @@ class NotificationResolver(BaseResolver):
 
         # Configure notifications if repo is public
         if data["private"] == False:
-            return configure_notification(data=params_dict)
+            return configure_notification(data=params_dict, optional_params=optional_params)
 
         else:
             repo_name = params_dict["repository"]

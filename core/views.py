@@ -8,8 +8,8 @@ from rest_framework.views import APIView
 from slack_sdk import WebClient
 
 from core.authentication import InternalTokenAuthentication
-from core.helpers import format_comparison, validate_notification_params
-from core.models import Notification, NotificationStatus
+from core.helpers import format_comparison, validate_notification_params, should_send_notification
+from core.models import NotificationConfig, NotificationConfigStatus
 from core.permissions import InternalTokenPermissions
 from core.slack_datastores import DjangoOAuthStateStore
 
@@ -39,76 +39,85 @@ class NotificationView(APIView):
 
         validate_notification_params(comparison, repo, owner)
 
-        notifications = Notification.objects.filter(owner=owner, repo=repo)
+        notifications = NotificationConfig.objects.filter(owner=owner, repo=repo)
         if not notifications.exists():
             return Response({"detail": "No notifications found"}, status=200)
 
         for notification in notifications:
             client = WebClient(token=notification.installation.bot_token)
-            for channel in notification.channels:
-                url = comparison.get(
-                    "url"
-                )  # TODO: we should not depend on the url being present to fetch the pullid
-                if not url:
-                    logger.info(
-                        "Comparison url is not present. Skipping notification"
-                    )
-                    continue
-
-                pullid = url.split("/")[-1]
-
-                if len(pullid) >= 40:
-                    continue
-
-                (
-                    notification_status,
-                    created,
-                ) = NotificationStatus.objects.get_or_create(
-                    notification=notification, pullid=pullid, channel=channel
+            channel = notification.channel
+            
+            url = comparison.get(
+                "url"
+            )  # TODO: we should not depend on the url being present to fetch the pullid
+            if not url:
+                logger.info(
+                    "Comparison url is not present. Skipping notification"
                 )
+                continue
 
-                try:
-                    blocks = format_comparison(comparison)
+            pullid = url.split("/")[-1]
 
-                    if not created and notification_status.status == "success":
-                        client.chat_update(
-                            channel=channel,
-                            ts=notification_status.message_timestamp,
-                            text="",
-                            blocks=blocks,
-                            unfurl_media=False,
-                            unfurl_links=False,
-                        )
+            if len(pullid) >= 40:
+                continue
 
+            (
+                notification_status,
+                created,
+            ) = NotificationConfigStatus.objects.get_or_create(
+                notification_config=notification, pullid=pullid, channel=channel
+            )
+
+            try:
+                blocks = format_comparison(comparison)
+
+                if notification.filters:
+                    if not should_send_notification(comparison=comparison, filters=notification.filters):
                         logger.info(
-                            f"Updated message for {pullid} in channel {channel}"
+                            f"Skipping notification for {pullid} in channel {channel}"
                         )
+                        continue
 
-                    else:
-                        response = client.chat_postMessage(
-                            channel=channel,
-                            text="",
-                            blocks=blocks,
-                            unfurl_media=False,
-                            unfurl_links=False,
-                        )
-                        notification_status.message_timestamp = response["ts"]
-                        notification_status.save()
+                if not created and notification_status.status == "success":
+                    client.chat_update(
+                        channel=channel,
+                        ts=notification_status.message_timestamp,
+                        text="",
+                        blocks=blocks,
+                        unfurl_media=False,
+                        unfurl_links=False,
+                    )
 
-                        logger.info(
-                            f"Posted message for {pullid} in channel {channel}"
-                        )
+                    logger.info(
+                        f"Updated message for {pullid} in channel {channel}"
+                    )
 
-                except Exception as e:
-                    print(e, flush=True)
-
-                    # Set notification status to error
-                    notification_status.status = "error"
+                else:
+                    response = client.chat_postMessage(
+                        channel=channel,
+                        text="",
+                        blocks=blocks,
+                        unfurl_media=False,
+                        unfurl_links=False,
+                    )
+                    notification_status.message_timestamp = response["ts"]
+                    notification_status.status = "success"
                     notification_status.save()
 
-                    logger.error(
-                        f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
+                    logger.info(
+                        f"Posted message for {pullid} in channel {channel}"
                     )
+
+            except Exception as e:
+                print(e, flush=True)
+
+                # Set notification status to error
+                notification_status.status = "error"
+                notification_status.save()
+
+                logger.error(
+                    f"Error posting message in {channel} for workspace {notification.installation.bot_token} {notification.installation.team_name}"
+                )
 
         return Response(
             {"detail": "Notifications are completed successfully"}, status=200
