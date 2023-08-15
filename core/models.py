@@ -68,6 +68,7 @@ class SlackInstallation(models.Model):
                     "team_id",
                     "user_id",
                     "installed_at",
+                    "bot_token",
                 ]
             ),
         ]
