@@ -146,7 +146,7 @@ def test_format_comparison():
     expected_blocks = [
         DividerBlock(),
         SectionBlock(
-            text="*Head Commit* 1234567890abcdef\n"
+            text="*Head Commit ID* 1234567890abcdef\n"
             "*Branch:* main\n"
             "*Message:* Update README\n"
             "*Author:* John Doe\n"
