@@ -315,8 +315,7 @@ def format_comparison(comparison):
 
         blocks.append(
             SectionBlock(
-                text=f"*Head Commit* _{commitSHA}_\n"
-                f"*ID:* {head_commit.get('commitid')}\n"
+                text=f"*Head Commit ID* _{head_commit.get('commitid')}_\n"
                 f"*Branch:* {head_commit.get('branch')}\n"
                 f"*Message:* {head_commit.get('message')}\n"
                 f"*Author:* {head_commit.get('author')}\n"
