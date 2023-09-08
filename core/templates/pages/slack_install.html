@@ -9,6 +9,9 @@
             margin: 0;
             padding: 0;
             background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .container {
@@ -26,7 +29,7 @@
             text-align: center;
         }
 
-        p {
+        .container p {
             font-size: 16px;
             margin-bottom: 30px;
             text-align: center;
@@ -51,6 +54,43 @@
         button:hover {
             background-color: #ca1866;
         }
+
+        footer{
+            position: fixed;
+            bottom: 0;
+            width: 80%;
+            font-size: 13px;
+            color: #68737e;
+            border-top: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ul{
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul li{
+            display: inline-block;
+            margin-left: 9px;
+        }
+
+        .left-ul{
+            display: flex;
+            align-items: center;
+        }
+
+        ul li a{
+            color: #0071c2;
+            text-decoration: none;
+        }
+
+        ul li a:hover{
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -66,6 +106,44 @@
             <button type="submit">Install Codecov Slack App</button>
         </form>
     </div>
+    <footer>
+        <div class="left-ul">
+            <p id="sentry-copy"></p>
+            <ul>
+                <li>
+                    <a href="https://codecov.io/privacy">Privacy</a>
+                </li>
+                <li>
+                    <a href="https://codecov.io/terms">Terms</a>
+                </li>
+                <li>
+                    <a href="https://codecov.io/security">Security</a>
+                </li>
+                <li>
+                    <a href="https://about.codecov.io/gdpr">GDPR</a>
+                </li>
+            </ul>
+        </div>
+    {% load static %}
+   <img src="{% static 'assets/codecov.svg' %}" alt="Codecov Logo" width="100" height="20">
+   <ul>
+        <li>
+            <a href="https://about.codecov.io/pricing">Pricing</a>
+        </li>
+        <li>
+            <a href="https://codecovpro.zendesk.com/hc/en-us">Support</a>
+        </li>
+        <li>
+            <a href="https://docs.codecov.com/docs">Docs</a>
+        </li>
+        <li>
+            <a href="https://github.com/codecov/feedback/issues/44">Feedback</a>
+        </li>
+   </ul>
+    </footer>
 </body>
-
+<script>
+    const year = new Date().getFullYear();
+    document.getElementById("sentry-copy").innerHTML = `© ${year} Sentry`;
+</script>
 </html>
