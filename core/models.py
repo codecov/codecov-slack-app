@@ -1,11 +1,15 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 
+class DateTimeWithoutTZField(models.DateTimeField):
+    def db_type(self, connection):
+        return "timestamp"
 
 class NotificationFilters(models.TextChoices):
-    author = "author"
-    branch = "branch"
-    reviewer = "reviewer"
+    AUTHOR = "author"
+    BRANCH = "branch"
+    REVIEWER = "reviewer"
 
 
 # Create your models here.
@@ -141,11 +145,10 @@ class NotificationStatus(models.Model):
     status = models.CharField(
         max_length=7,
         choices=StatusOptions.choices,
-        default=StatusOptions.SUCCESS,
     )
     pullid = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = DateTimeWithoutTZField(auto_now_add=True)
+    updated_at = DateTimeWithoutTZField(auto_now=True)
     message_timestamp = models.TextField(
         null=True
     )  # message timestamp https://api.slack.com/methods/chat.update#arg_ts
