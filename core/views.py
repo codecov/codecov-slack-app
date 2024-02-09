@@ -93,6 +93,7 @@ class NotificationView(APIView):
                             unfurl_links=False,
                         )
                         notification_status.message_timestamp = response["ts"]
+                        notification_status.status = "success"
                         notification_status.save()
 
                         logger.info(
