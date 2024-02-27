@@ -51,13 +51,11 @@ class DjangoInstallationStore(InstallationStore):
             if is_naive(user_token_expires_at):
                 user_token_expires_at = make_aware(user_token_expires_at)
 
+        # can have one installation per team id 
         slack_installation = SlackInstallation.objects.filter(
-            client_id=self.client_id,
-            enterprise_id=installation.enterprise_id,
             team_id=installation.team_id,
-            installed_at=installed_at,
         ).first()
-
+        
         if slack_installation is None:
             slack_installation = SlackInstallation()
 
@@ -96,9 +94,14 @@ class DjangoInstallationStore(InstallationStore):
         )
         slack_installation.token_type = installation.token_type
         slack_installation.installed_at = installed_at
+        
+        try:
+            slack_installation.save()
+            self.save_bot(installation.to_bot())
+        
+        except Exception as e:
+            self._logger.error(f"Error saving installation: {e}")
 
-        slack_installation.save()
-        self.save_bot(installation.to_bot())
 
     def save_bot(self, bot: Bot):
         installed_at = bot.installed_at
