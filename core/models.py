@@ -1,5 +1,15 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
+
+class DateTimeWithoutTZField(models.DateTimeField):
+    def db_type(self, connection):
+        return "timestamp"
+
+class NotificationFilters(models.TextChoices):
+    AUTHOR = "author"
+    BRANCH = "branch"
+    REVIEWER = "reviewer"
 
 
 # Create your models here.
@@ -135,11 +145,10 @@ class NotificationStatus(models.Model):
     status = models.CharField(
         max_length=7,
         choices=StatusOptions.choices,
-        default=StatusOptions.SUCCESS,
     )
     pullid = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = DateTimeWithoutTZField(auto_now_add=True)
+    updated_at = DateTimeWithoutTZField(auto_now=True)
     message_timestamp = models.TextField(
         null=True
     )  # message timestamp https://api.slack.com/methods/chat.update#arg_ts
@@ -150,4 +159,52 @@ class NotificationStatus(models.Model):
             models.Index(
                 fields=["notification", "status", "pullid", "channel"]
             )
+        ]
+
+
+class NotificationConfig(models.Model):
+    installation = models.ForeignKey(
+        SlackInstallation,
+        on_delete=models.CASCADE,
+        related_name="notification_config",
+    )
+    repo = models.TextField(null=True)
+    owner = models.TextField(null=True)
+    channel = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    filters = ArrayField(
+        models.JSONField(null=True),
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        unique_together = (("installation", "repo", "owner", "channel"),)
+        indexes = [
+            models.Index(fields=["installation", "repo", "owner", "channel"])
+        ]
+
+
+class NotificationConfigStatus(models.Model):
+    notification_config = models.ForeignKey(
+        NotificationConfig,
+        on_delete=models.CASCADE,
+        related_name="notification_config_statuses",
+    )
+    status = models.CharField(
+        max_length=7,
+        choices=StatusOptions.choices,
+        default=StatusOptions.SUCCESS,
+    )
+    pullid = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    message_timestamp = models.TextField(
+        null=True
+    )  # unique identifier for the message in slack https://api.slack.com/methods/chat.update#arg_ts
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["notification_config", "status", "pullid"])
         ]
