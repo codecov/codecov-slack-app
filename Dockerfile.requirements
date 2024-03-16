@@ -3,7 +3,8 @@
 # BUILD STAGE - Download dependencies
 FROM            python:3.11-alpine as build
 
-RUN             apk add --update --no-cache \
+RUN             apk update \
+                && apk add --update --no-cache \
                 git \
                 openssh \
                 postgresql-dev \
@@ -28,7 +29,7 @@ RUN             pip wheel -r /requirements.txt
 # RUNTIME STAGE - Copy packages from build stage and install runtime dependencies
 FROM            python:3.11-alpine
 
-RUN             apk -U upgrade binutils busybox libretls expat && \
+RUN             apk -U upgrade binutils busybox expat libretls && \
                 apk add --no-cache postgresql-libs && \
                 apk add --no-cache --virtual .build-deps gcc \
                 musl-dev \
