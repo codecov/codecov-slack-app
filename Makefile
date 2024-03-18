@@ -2,7 +2,7 @@ BLACK = black
 BLACK_ARGS = --line-length 79
 
 ISORT = isort
-ISORT_ARGS = -rc 
+ISORT_ARGS = -rc
 
 image := us-docker.pkg.dev/genuine-polymer-165712/codecov/codecov-slack-app
 release_version := `cat VERSION`

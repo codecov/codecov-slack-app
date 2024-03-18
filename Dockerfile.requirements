@@ -26,7 +26,6 @@ WORKDIR         /pip-packages/
 
 RUN             pip wheel -r /requirements.txt
 
-
 # RUNTIME STAGE - Copy packages from build stage and install runtime dependencies
 FROM            python:3.11-alpine
 
@@ -44,9 +43,12 @@ RUN             apk -U upgrade binutils busybox expat libretls && \
                 curl-dev \
                 libcurl
 
-
 WORKDIR         /pip-packages/
 COPY            --from=build /pip-packages/ /pip-packages/
 
 RUN             rm -rf /pip-packages/src
 RUN             pip install --no-deps --no-index --find-links=/pip-packages/ /pip-packages/*
+
+# Currently expat will not bump to latest if this upgrade is done earlier
+# https://unix.stackexchange.com/questions/769209/unable-to-install-or-upgrade-to-specific-version-of-alpine-expat-2-6-0-r0-in-alp
+RUN             apk add --upgrade expat
