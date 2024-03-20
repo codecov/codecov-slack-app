@@ -1,0 +1,197 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block; }
+
+
+body {
+  line-height: 1; }
+
+
+ol, ul {
+  list-style: none; }
+
+
+blockquote, q {
+  quotes: none; }
+
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none; }
+
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+
+* {
+  box-sizing: border-box;
+  box-sizing: content-box; }
+
+html {
+    background: #f8d1e8;
+    background: -moz-linear-gradient(162deg, #f8d1e8 0%, #ece6fc 36%, #f9f9ff 95%);
+    background: -webkit-linear-gradient(162deg, #f8d1e8 0%, #ece6fc 36%, #f9f9ff 95%);
+    background: linear-gradient(162deg, #f8d1e8 0%, #ece6fc 36%, #f9f9ff 95%);
+    background-size: cover;
+    background-attachment: fixed;
+    height: 100%;
+    min-height: 100vh;
+}
+
+html body {
+    margin: 0 auto;
+    width: 90%;
+    max-width: 1100px;
+    font-family: "Poppins", sans-serif;
+    color: #0E1B29;
+}
+
+html body h1,
+html body h2,
+html body h3,
+html body h4,
+html body h5,
+html body h6 {
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.25;
+}
+
+html body h1 {
+    font-size: 2.5em;
+}
+
+html body h2 {
+    font-size: 2em;
+}
+
+html body h3 {
+    font-size: 1.75em;
+}
+
+html body h4 {
+    font-size: 1.5em;
+}
+
+html body h5 {
+    font-size: 1.25em;
+}
+
+html body h6 {
+    font-size: 1em;
+}
+
+html body header {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding: 7em 0;
+}
+
+html body header p {
+    font-size: 1.5em;
+    line-height: 1.35;
+    font-weight: 300;
+    text-align: center;
+    max-width: 850px;
+    margin: .5em auto 0 auto;
+}
+
+html body header img.header_pic {
+    margin: 0 auto;
+    max-width: 300px;
+    padding-bottom: .5em;
+    padding-left: 5em;
+}
+
+html body header form {
+    display: flex;
+    justify-content: center;
+}
+
+html body header form .gradient-button {
+    padding: 1.5em;
+    margin: 2.5em auto 0 auto;
+    width: 100%;
+    max-width: 200px;
+    font-size: 1em;
+    font-weight: 700;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    background-image: linear-gradient(to right, #F01F7A, #F762A1);
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+html body header form .gradient-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 5px 12px 0px rgba(0, 0, 0, 0.2);
+}
+
+html body header form .gradient-button:focus {
+    outline: none;
+}
+
+html body footer {
+    margin-top: 14em;
+    width: 100%;
+    max-width: 1100px;
+    font-size: .75em;
+    color: #68737e;
+    border-top: 1px solid #eaeaea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2em;
+}
+
+html body footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+html body footer ul li {
+    display: inline-block;
+    margin-left: 9px;
+}
+
+html body footer .left-ul {
+    display: flex;
+    align-items: center;
+}
+
+html body footer ul li a {
+    color: #0071c2;
+    text-decoration: none;
+}
+
+html body footer ul li a:hover {
+    text-decoration: underline;
+}

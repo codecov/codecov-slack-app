@@ -1,131 +1,40 @@
+
 <!DOCTYPE html>
 <html>
 
 <head>
     <title>Install Codecov Slack App</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f7fa;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
 
-        .container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .container p {
-            font-size: 16px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        form {
-            display: flex;
-            justify-content: center;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #f01f7a;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #ca1866;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 80%;
-            font-size: 13px;
-            color: #68737e;
-            border-top: 1px solid #eaeaea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        ul li {
-            display: inline-block;
-            margin-left: 9px;
-        }
-
-        .left-ul {
-            display: flex;
-            align-items: center;
-        }
-
-        ul li a {
-            color: #0071c2;
-            text-decoration: none;
-        }
-
-        ul li a:hover {
-            text-decoration: underline;
-        }
     </style>
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="main.css"> </head>
 
 <body>
-    <div class="container">
-        <h1>Install Codecov App for Slack</h1>
-        <p>Click the button below to install the app in your Slack workspace:</p>
+    <header> <img src="images/slack_codecov.svg" class="header_pic">
+        <h1>Streamline Code Coverage with Slack</h1>
+        <p>Codecov's Slack integration brings the power of code coverage directly into your Slack channels, enabling you and your team to stay informed and proactive about your code's quality without ever leaving Slack.</p>
         <form action="https://slack.com/oauth/v2/authorize" method="GET">
             <input type="hidden" name="client_id" value="{{ client_id }}">
             <input type="hidden" name="scope" value="{{ scope }}">
             <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
             <input type="hidden" name="state" value="{{ state }}">
-            <button type="submit">Install Codecov App for Slack</button>
+            <button class="gradient-button">Add to Slack</button>
         </form>
-    </div>
+    </header>
     <footer>
         <div class="left-ul">
             <p id="sentry-copy"></p>
             <ul>
-                <li>
-                    <a href="https://codecov.io/privacy">Privacy</a>
-                </li>
-                <li>
-                    <a href="https://codecov.io/terms">Terms</a>
-                </li>
+                <li> <a href="https://codecov.io/privacy">Privacy</a> </li>
+                <li> <a href="https://codecov.io/terms">Terms</a> </li>
             </ul>
-        </div>
-        <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo" width="100" height="20">
+        </div> <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo" width="100" height="20">
         <ul>
-            <li>
-                <a href="https://codecovpro.zendesk.com/hc/en-us">Support</a>
-            </li>
-            <li>
-                <a href="https://github.com/codecov/feedback/issues/44">Feedback</a>
-            </li>
+            <li> <a href="https://codecovpro.zendesk.com/hc/en-us">Support</a> </li>
+            <li> <a href="https://github.com/codecov/feedback/issues/44">Feedback</a> </li>
         </ul>
     </footer>
 </body>
