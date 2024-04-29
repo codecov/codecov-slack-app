@@ -134,6 +134,8 @@ CSP_STYLE_SRC = ("'self'", "'sha256-AOvatN1zbevXu86FuiKCrZsAX85CK5HI7toSinbJ7rY=
 
 CSP_SCRIPT_SRC = ("'self'", "'sha256-bRshlyP6k3QGX2IqYLKFxJzV5neO8GwydiNKAi6jOYo='", "'sha256-AOvatN1zbevXu86FuiKCrZsAX85CK5HI7toSinbJ7rY='")
 
+CSP_FONT_SRC = ("'self'", 'fonts.googleapis.com')
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
