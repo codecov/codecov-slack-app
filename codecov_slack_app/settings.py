@@ -128,9 +128,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 #CSP Configuration
-CSP_IMG_SRC = ("'self'", 'https://platform.slack-edge.com', 'data:', 'https://storage.googleapis.com/codecov-cdn/codecov.svg')
+CSP_IMG_SRC = ("'self'", 'https://platform.slack-edge.com', 'data:', 'https://storage.googleapis.com/codecov-cdn/codecov.svg', 'https://storage.googleapis.com/codecov-cdn/comparison.png', 'https://storage.googleapis.com/codecov-cdn/pulls.png', 'https://storage.googleapis.com/codecov-cdn/slack_onboarding.png')
 
-CSP_STYLE_SRC = ("'self'", "'sha256-AOvatN1zbevXu86FuiKCrZsAX85CK5HI7toSinbJ7rY='","'sha256-fl4UiyjtwTNPKQOAUx8Hyu9jKJbAnbDbOsUwF1T59is='", 'fonts.googleapis.com')
+CSP_STYLE_SRC = ("'self'", "'sha256-Q6Nrs/a2gyvDuRMmvhi+/lqDdnNPfU7OYW9Lxh7Qe1I='", 'fonts.googleapis.com')
 
 CSP_SCRIPT_SRC = ("'self'", "'sha256-bRshlyP6k3QGX2IqYLKFxJzV5neO8GwydiNKAi6jOYo='", "'sha256-AOvatN1zbevXu86FuiKCrZsAX85CK5HI7toSinbJ7rY='")
 
