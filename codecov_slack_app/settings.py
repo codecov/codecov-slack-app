@@ -134,6 +134,7 @@ CSP_STYLE_SRC = (
     "'self'",
     "'sha256-XUpurJYPfudnKesBwHWGnVTMcFyg5inchJcdAppSMcY='",
     "'sha256-xuBr9YVS7V3hqBkhwLDtyohNbGFdO8PSWO/QDH0orxk='",
+    "'sha256-G9kZzyN24irmY+hg/rWbW9P5DYILFdr63wXKRPMJlCc='",
     "fonts.googleapis.com",
 )
 
