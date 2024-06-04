@@ -34,13 +34,7 @@ THIS_POD_IP = os.environ.get("THIS_POD_IP")
 if RUN_ENV == "STAGING":
     ALLOWED_HOSTS = [".codecov.dev"]
 elif RUN_ENV == "LOCAL":
-    ALLOWED_HOSTS = [
-        "0.0.0.0",
-        "localhost",
-        "webapp",
-        "django",
-        "app"
-    ]
+    ALLOWED_HOSTS = ["0.0.0.0", "localhost", "webapp", "django", "app"]
 else:
     ALLOWED_HOSTS = [".codecov.io"]
 if THIS_POD_IP:
@@ -97,9 +91,7 @@ WSGI_APPLICATION = "codecov_slack_app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get(
-            "SQL_ENGINE", "django.db.backends.postgresql"
-        ),
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql"),
         "NAME": os.environ.get("POSTGRES_DB", "codecov_slack_app"),
         "USER": os.environ.get("POSTGRES_USER", "user"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
@@ -127,12 +119,31 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#CSP Configuration
-CSP_IMG_SRC = ("'self'", 'https://platform.slack-edge.com', 'data:', 'https://storage.googleapis.com/codecov-cdn/codecov.svg')
+# CSP Configuration
+CSP_IMG_SRC = (
+    "'self'",
+    "https://platform.slack-edge.com",
+    "data:",
+    "https://storage.googleapis.com/codecov-cdn/codecov.svg",
+    "https://storage.googleapis.com/codecov-cdn/comparison.png",
+    "https://storage.googleapis.com/codecov-cdn/pulls.png",
+    "https://storage.googleapis.com/codecov-cdn/slack_onboarding.png",
+)
 
-CSP_STYLE_SRC = ("'self'", "'sha256-D+iNaQqqton9W916d40qgS+X8nOP2VHjDjx0w3cEujI='","'sha256-u5UAC0Jr1hm3lANIezHbaLlVsjmh/8jbWf7rIYw3Rso='", "'sha256-G9kZzyN24irmY+hg/rWbW9P5DYILFdr63wXKRPMJlCc='")
+CSP_STYLE_SRC = (
+    "'self'",
+    "'sha256-XUpurJYPfudnKesBwHWGnVTMcFyg5inchJcdAppSMcY='",
+    "'sha256-xuBr9YVS7V3hqBkhwLDtyohNbGFdO8PSWO/QDH0orxk='",
+    "fonts.googleapis.com",
+)
 
-CSP_SCRIPT_SRC = ("'self'", "'sha256-bRshlyP6k3QGX2IqYLKFxJzV5neO8GwydiNKAi6jOYo='")
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'sha256-XUpurJYPfudnKesBwHWGnVTMcFyg5inchJcdAppSMcY='",
+    "'sha256-AOvatN1zbevXu86FuiKCrZsAX85CK5HI7toSinbJ7rY='",
+)
+
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
