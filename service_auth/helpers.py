@@ -5,8 +5,10 @@ from typing import Dict
 
 import requests
 from rest_framework.exceptions import ValidationError
+from slack_sdk import WebClient
 
 from core.enums import EndpointName
+from core.models import SlackInstallation
 
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
@@ -147,3 +149,33 @@ def get_endpoint_details(
         endpoint.url = f"{endpoint.url}?{params_str}"
 
     return endpoint
+
+
+def notify_user_of_error(user, channel_id=None):
+    team_id = user.team_id
+    installation = SlackInstallation.objects.filter(team_id=team_id).first()
+    if not installation:
+        return Response(
+            {"detail": f"Slack installation not found {team_id}"}, status=404
+        )
+
+    client = WebClient(token=installation.bot_token)
+    client.chat_postMessage(
+        channel=channel_id or user.user_id,
+        text=f"Error creating Codecov access token for {user.username}, are you sure you have a Codecov account?",
+    )
+
+
+def notify_user_of_successful_auth(user, channel_id=None):
+    team_id = user.team_id
+    installation = SlackInstallation.objects.filter(team_id=team_id).first()
+    if not installation:
+        return Response(
+            {"detail": f"Slack installation not found {team_id}"}, status=404
+        )
+
+    client = WebClient(token=installation.bot_token)
+    client.chat_postMessage(
+        channel=channel_id or user.user_id,
+        text=f"Successfully authenticated with Codecov",
+    )

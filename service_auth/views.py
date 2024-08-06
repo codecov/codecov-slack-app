@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .actions import create_new_codecov_access_token
-from .helpers import get_github_user, validate_gh_call_params
+from .helpers import (get_github_user, notify_user_of_error,
+                      notify_user_of_successful_auth, validate_gh_call_params)
 from .models import Service, SlackUser
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
@@ -27,9 +28,11 @@ class GithubCallbackView(APIView):
         # Get the authorization code from the GitHub's callback request
         code = request.GET.get("code")
         state = request.GET.get("state")
-        user_id = jwt.decode(state, USER_ID_SECRET, algorithms=["HS256"])[
-            "user_id"
-        ]
+        user_id_state = state.split("-")[0]
+        user_id = jwt.decode(
+            user_id_state, USER_ID_SECRET, algorithms=["HS256"]
+        )["user_id"]
+        channel_id = state.split("-")[1]
 
         validate_gh_call_params(code, state)
 
@@ -67,7 +70,9 @@ class GithubCallbackView(APIView):
 
         user = SlackUser.objects.filter(user_id=user_id).first()
         if not user:
-            return Response({"detail": f"Slack user not found {user_id}"}, status=404)
+            return Response(
+                {"detail": f"Slack user not found {user_id}"}, status=404
+            )
 
         service = Service.objects.filter(user=user, name=provider).first()
         if not service:
@@ -83,12 +88,20 @@ class GithubCallbackView(APIView):
         service.save()
 
         # create new codecov access token
-        create_new_codecov_access_token(user)
+        try:
+            create_new_codecov_access_token(user)
+        except Exception as e:
+            notify_user_of_error(user, channel_id)
+            return Response(
+                {
+                    "detail": "Error creating Codecov access token, are you sure you have a Codecov account?"
+                },
+                status=400,
+            )
 
         # redirect to slack app
         team_id = user.team_id
-        slack_url = (
-            f"https://slack.com/app_redirect?app={SLACK_APP_ID}&team={team_id}"
-        )
+        slack_url = f"https://slack.com/app_redirect?app={SLACK_APP_ID}&channel={channel_id}&team={team_id}"
 
+        notify_user_of_successful_auth(user, channel_id)
         return redirect(slack_url)
