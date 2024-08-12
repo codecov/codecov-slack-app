@@ -92,3 +92,5 @@ class GithubCallbackView(APIView):
         )
 
         return redirect(slack_url)
+
+
