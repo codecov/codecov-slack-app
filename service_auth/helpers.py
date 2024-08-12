@@ -5,8 +5,10 @@ from typing import Dict
 
 import requests
 from rest_framework.exceptions import ValidationError
+from slack_sdk import WebClient
 
 from core.enums import EndpointName
+from core.models import SlackInstallation
 
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 
@@ -36,6 +38,8 @@ def validate_gh_call_params(code, state):
         raise ValidationError("Missing code parameter")
     if not state:
         raise ValidationError("Missing state parameter")
+    if "-" not in state or len(state.split("-")) != 2:
+        raise ValidationError("Invalid state parameter")
 
 
 def get_github_user(access_token):
@@ -147,3 +151,18 @@ def get_endpoint_details(
         endpoint.url = f"{endpoint.url}?{params_str}"
 
     return endpoint
+
+
+def notify_user(user, channel_id=None, message=""):
+    team_id = user.team_id
+    installation = SlackInstallation.objects.filter(team_id=team_id).first()
+    if not installation:
+        return Response(
+            {"detail": f"Slack installation not found {team_id}"}, status=404
+        )
+
+    client = WebClient(token=installation.bot_token)
+    client.chat_postMessage(
+        channel=channel_id or user.user_id,
+        text=message,
+    )

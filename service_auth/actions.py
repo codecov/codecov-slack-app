@@ -20,6 +20,7 @@ USER_ID_SECRET = os.environ.get("USER_ID_SECRET")
 CODECOV_PUBLIC_API = os.environ.get("CODECOV_PUBLIC_API")
 CODECOV_API_URL = os.environ.get("CODECOV_API_URL")
 
+
 def verify_codecov_access_token(slack_user: SlackUser):
     owner = slack_user.active_service.service_username
     service = slack_user.active_service.name
@@ -111,9 +112,10 @@ def view_login_modal(
     # create slack user
     user_info = client.users_info(user=slack_user_id)
     get_or_create_slack_user(user_info)
+    channel_id = command["channel_id"]
 
     # we support gh flow at first
-    github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_user_id_jwt}"
+    github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_user_id_jwt}-{channel_id}"
 
     client.views_open(
         trigger_id=command["trigger_id"],
@@ -177,13 +179,11 @@ def handle_codecov_public_api_request(
     codecov_access_token = slack_user.codecov_access_token
 
     if codecov_access_token:
-        codecov_access_token = slack_user.codecov_access_token
         headers["Authorization"] = f"Bearer {codecov_access_token}"
 
     response = requests.get(request_url, headers=headers)
     if response.status_code == 200:
-        data = response.json()
-        return data
+        return response.json()
     elif response.status_code == 404:
         msg = (
             f"Please use `/codecov login` if you are accessing private data."
@@ -191,5 +191,9 @@ def handle_codecov_public_api_request(
             else ""
         )
         raise Exception("Error: Not found." + msg)
+    elif response.status_code == 401:
+        raise Exception(
+            "Error: Unauthorized access, are you sure you have a Codecov account?"
+        )
     else:
-        raise Exception(f"Error: {response.status_code}, {response.text}")
+        raise Exception("Error: Could not get data from Codecov")
