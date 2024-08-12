@@ -2,6 +2,7 @@ import os
 
 import jwt
 import requests
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -95,9 +96,7 @@ class GithubCallbackView(APIView):
             if error:
                 return error
 
-            return Response(
-                {"detail": "Error creating Codecov access token"}, status=400
-            )
+            return HttpResponse(message, content_type="application/json")
 
         # redirect to slack app
         team_id = user.team_id
