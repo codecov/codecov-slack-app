@@ -103,6 +103,6 @@ class GithubCallbackView(APIView):
         team_id = user.team_id
         slack_url = f"https://slack.com/app_redirect?app={SLACK_APP_ID}&channel={channel_id}&team={team_id}"
 
-        message = "Successfully connected your GitHub account to Codecov"
+        message = "Successfully connected your GitHub account to Codecov!"
         notify_user(user, channel_id, message=message)
         return redirect(slack_url)
