@@ -38,6 +38,8 @@ def validate_gh_call_params(code, state):
         raise ValidationError("Missing code parameter")
     if not state:
         raise ValidationError("Missing state parameter")
+    if "-" not in state or len(state.split("-")) != 2:
+        raise ValidationError("Invalid state parameter")
 
 
 def get_github_user(access_token):
@@ -151,7 +153,7 @@ def get_endpoint_details(
     return endpoint
 
 
-def notify_user_of_error(user, channel_id=None):
+def notify_user(user, channel_id=None, message=""):
     team_id = user.team_id
     installation = SlackInstallation.objects.filter(team_id=team_id).first()
     if not installation:
@@ -162,20 +164,5 @@ def notify_user_of_error(user, channel_id=None):
     client = WebClient(token=installation.bot_token)
     client.chat_postMessage(
         channel=channel_id or user.user_id,
-        text=f"Error creating Codecov access token for {user.username}, are you sure you have a Codecov account?",
-    )
-
-
-def notify_user_of_successful_auth(user, channel_id=None):
-    team_id = user.team_id
-    installation = SlackInstallation.objects.filter(team_id=team_id).first()
-    if not installation:
-        return Response(
-            {"detail": f"Slack installation not found {team_id}"}, status=404
-        )
-
-    client = WebClient(token=installation.bot_token)
-    client.chat_postMessage(
-        channel=channel_id or user.user_id,
-        text=f"Successfully authenticated with Codecov",
+        text=message,
     )

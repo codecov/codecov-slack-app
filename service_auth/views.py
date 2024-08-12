@@ -7,8 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .actions import create_new_codecov_access_token
-from .helpers import (get_github_user, notify_user_of_error,
-                      notify_user_of_successful_auth, validate_gh_call_params)
+from .helpers import get_github_user, notify_user, validate_gh_call_params
 from .models import Service, SlackUser
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
@@ -28,13 +27,13 @@ class GithubCallbackView(APIView):
         # Get the authorization code from the GitHub's callback request
         code = request.GET.get("code")
         state = request.GET.get("state")
+        validate_gh_call_params(code, state)
+
         user_id_state = state.split("-")[0]
         user_id = jwt.decode(
             user_id_state, USER_ID_SECRET, algorithms=["HS256"]
         )["user_id"]
         channel_id = state.split("-")[1]
-
-        validate_gh_call_params(code, state)
 
         # Exchange the authorization code for an access token
         headers = {"Accept": "application/json"}
@@ -91,17 +90,19 @@ class GithubCallbackView(APIView):
         try:
             create_new_codecov_access_token(user)
         except Exception as e:
-            notify_user_of_error(user, channel_id)
+            message = "Error creating Codecov access token, are you sure you have a Codecov account?"
+            error = notify_user(user, channel_id, message=message)
+            if error:
+                return error
+
             return Response(
-                {
-                    "detail": "Error creating Codecov access token, are you sure you have a Codecov account?"
-                },
-                status=400,
+                {"detail": "Error creating Codecov access token"}, status=400
             )
 
         # redirect to slack app
         team_id = user.team_id
         slack_url = f"https://slack.com/app_redirect?app={SLACK_APP_ID}&channel={channel_id}&team={team_id}"
 
-        notify_user_of_successful_auth(user, channel_id)
+        message = "Successfully connected your GitHub account to Codecov! You can now use Codecov commands in this channel."
+        notify_user(user, channel_id, message=message)
         return redirect(slack_url)
