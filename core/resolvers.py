@@ -75,16 +75,18 @@ class BaseResolver:
 
     def post_snippet(self, message):
         try:
-            response = self.client.conversations_info(channel=self.command["channel_id"])
-            channel = response['channel']
+            response = self.client.conversations_info(
+                channel=self.command["channel_id"]
+            )
+            channel = response["channel"]
 
             # Check if it's not a DM with App
-            if not channel['is_im']:
+            if not channel["is_im"]:
                 self.client.chat_postEphemeral(
-                channel=self.command["channel_id"],
-                user=self.command["user_id"],
-                text=f"Response too large to display here. you can find it in the Codecov app's DMs",
-            )
+                    channel=self.command["channel_id"],
+                    user=self.command["user_id"],
+                    text=f"Response too large to display here. you can find it in the Codecov app's DMs",
+                )
 
             # Upload the file to bot's direct message
             response = self.client.files_upload(
@@ -218,6 +220,14 @@ def resolve_help(channel_id, user_id, client):
             "text": {
                 "type": "mrkdwn",
                 "text": "`/codecov help` - Get help\n*Note* that some of commands require you to login to a service first. \n\n",
+            },
+        },
+        {"type": "divider"},
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "✨ *Want to see more commands?* ✨\n\nClick on the bot's name and check out the *Home* tab for additional options and features!",
             },
         },
     ]
@@ -603,9 +613,7 @@ class FileCoverageReport(BaseResolver):
         if not data:
             return f"No coverage report found for {path} in {repo}"
 
-        formatted_data = (
-            f"*Coverage report for {path} in {repo}*:\n"
-        )
+        formatted_data = f"*Coverage report for {path} in {repo}*:\n"
         for key in data:
             formatted_data += f"{key.capitalize()}: {data[key]}\n"
 

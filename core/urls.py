@@ -1,4 +1,5 @@
 from django.http import HttpRequest
+from django.shortcuts import redirect
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 from slack_bolt.adapter.django import SlackRequestHandler
@@ -15,6 +16,9 @@ def slack_events_handler(request: HttpRequest):
 
 
 def slack_oauth_handler(request: HttpRequest):
+    if "error" in request.GET:
+        return redirect("/slack/install")
+
     return handler.handle(request)
 
 
