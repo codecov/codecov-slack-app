@@ -6,7 +6,8 @@ from slack_bolt import App
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from core.enums import EndpointName
-from core.helpers import configure_notification
+from core.helpers import (bot_is_member_of_channel, configure_notification,
+                          send_not_member_response)
 from core.models import SlackBot, SlackInstallation
 from service_auth.models import SlackUser
 
@@ -56,14 +57,21 @@ app = App(
 @app.command("/codecov")
 def handle_codecov_commands(ack, command, say, client):
     ack()
-    command_text = command["text"].split(" ")[0]
+
+    command_text = command["text"].strip().split(" ")[0]
+    response_url = command["response_url"]
+
+    is_member = bot_is_member_of_channel(client, command["channel_id"])
+
+    if not is_member:
+        send_not_member_response(response_url)
 
     message_payload = [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Invalid command.\n*Need some help?*",
+                "text": "Invalid command or no input provided.\n*Need some help?*",
             },
         },
         {
@@ -117,7 +125,7 @@ def handle_codecov_commands(ack, command, say, client):
                 ComponentsResolver(client, command, say)()
             case "flags":
                 FlagsResolver(client, command, say)()
-            case "coverage-trends":  # use endpoint enum for cases
+            case "coverage-trends":
                 CoverageTrendsResolver(client, command, say)()
             case "compare":
                 ComparisonResolver(
@@ -157,10 +165,7 @@ def handle_codecov_commands(ack, command, say, client):
             case "notify-off":
                 NotificationResolver(command, client, say)()
             case "help":
-                channel_id = command["channel_id"]
-                user_id = command["user_id"]
-
-                resolve_help(channel_id, user_id, client)
+                resolve_help(command["channel_id"], command["user_id"], client)
             case _:
                 client.chat_postEphemeral(
                     channel=command["channel_id"],
@@ -169,12 +174,11 @@ def handle_codecov_commands(ack, command, say, client):
                 )
 
     except Exception as e:
-        logger.error(e)
-
+        logger.error(f"Error processing command: {e}")
         client.chat_postEphemeral(
             channel=command["channel_id"],
             user=command["user_id"],
-            text=f"There was an error processing your request. Please try again later {e}.",
+            text="There was an error processing your request. Please try again later.",
         )
 
 

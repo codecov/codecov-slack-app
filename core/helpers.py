@@ -1,15 +1,14 @@
 import logging
-
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+import requests
 from slack_sdk.errors import SlackApiError
 from slack_sdk.models.blocks import ButtonElement, DividerBlock, SectionBlock
 
 from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
-
 
 Logger = logging.getLogger(__name__)
 
@@ -238,19 +237,18 @@ def channel_exists(client, channel_id):
             types="public_channel,private_channel"
         )
         channels = response["channels"]
-        
 
         for channel in channels:
             if channel["id"] == channel_id:
                 return True
             Logger.warning(f"Channel {channel_id} not found")
             Logger.warning(f"Channels: {channels}")
-    
+
         return False
-    
+
     except SlackApiError as e:
         print(f"Error: {e.response['error']}")
-    
+
     except Exception as e:
         print(f"Error: {e}")
 
@@ -334,3 +332,27 @@ def format_comparison(comparison):
     )
 
     return blocks
+
+
+def bot_is_member_of_channel(client, channel_id):
+    try:
+        auth_response = client.auth_test()
+        bot_user_id = auth_response["user_id"]
+
+        response = client.conversations_members(channel=channel_id)
+        members = response["members"]
+
+        return bot_user_id in members
+    except SlackApiError as e:
+        logger.error(
+            f"Error checking channel membership: {e.response['error']}"
+        )
+        return False
+
+
+def send_not_member_response(response_url):
+    message = {
+        "response_type": "ephemeral",
+        "text": "I'm not a member of this channel and can't send messages here. Please invite me to the channel using `/invite @Codecov`, or you can interact with me via direct message.",
+    }
+    requests.post(response_url, json=message)
