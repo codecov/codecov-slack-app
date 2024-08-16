@@ -105,17 +105,17 @@ def view_login_modal(
     client, command
 ):  # this will be used to override the active provider using /login
     slack_user_id = command["user_id"]
-    slack_user_id_jwt = jwt.encode(
-        {"user_id": slack_user_id}, USER_ID_SECRET, algorithm="HS256"
+    channel_id = command["channel_id"]
+    slack_state_jwt = jwt.encode(
+        {"user_id": slack_user_id, "channel_id": channel_id}, USER_ID_SECRET, algorithm="HS256"
     )
 
     # create slack user
     user_info = client.users_info(user=slack_user_id)
     get_or_create_slack_user(user_info)
-    channel_id = command["channel_id"]
 
     # we support gh flow at first
-    github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_user_id_jwt}-{channel_id}"
+    github_auth_url = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&redirect_uri={GITHUB_REDIRECT_URI}&scope={GITHUB_SCOPES}&state={slack_state_jwt}"
 
     client.views_open(
         trigger_id=command["trigger_id"],
