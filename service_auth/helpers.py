@@ -38,8 +38,6 @@ def validate_gh_call_params(code, state):
         raise ValidationError("Missing code parameter")
     if not state:
         raise ValidationError("Missing state parameter")
-    if "-" not in state:
-        raise ValidationError("Invalid state parameter")
 
 
 def get_github_user(access_token):
