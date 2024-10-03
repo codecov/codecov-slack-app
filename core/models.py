@@ -2,9 +2,11 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
+
 class DateTimeWithoutTZField(models.DateTimeField):
     def db_type(self, connection):
         return "timestamp"
+
 
 class NotificationFilters(models.TextChoices):
     AUTHOR = "author"
