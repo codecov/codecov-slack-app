@@ -10,7 +10,7 @@ from core.models import Notification, SlackInstallation
 
 from .enums import EndpointName
 
-Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -241,8 +241,8 @@ def channel_exists(client, channel_id):
         for channel in channels:
             if channel["id"] == channel_id:
                 return True
-            Logger.warning(f"Channel {channel_id} not found")
-            Logger.warning(f"Channels: {channels}")
+            logger.warning(f"Channel {channel_id} not found")
+            logger.warning(f"Channels: {channels}")
 
         return False
 
