@@ -29,13 +29,13 @@ class GithubCallbackView(APIView):
         state = request.GET.get("state")
         validate_gh_call_params(code, state)
 
-        user_id = jwt.decode(
-            state, USER_ID_SECRET, algorithms=["HS256"]
-        )["user_id"]
+        user_id = jwt.decode(state, USER_ID_SECRET, algorithms=["HS256"])[
+            "user_id"
+        ]
 
-        channel_id =  jwt.decode(
-            state, USER_ID_SECRET, algorithms=["HS256"]
-        )["channel_id"]
+        channel_id = jwt.decode(state, USER_ID_SECRET, algorithms=["HS256"])[
+            "channel_id"
+        ]
 
         # Exchange the authorization code for an access token
         headers = {"Accept": "application/json"}

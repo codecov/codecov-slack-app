@@ -107,7 +107,9 @@ def view_login_modal(
     slack_user_id = command["user_id"]
     channel_id = command["channel_id"]
     slack_state_jwt = jwt.encode(
-        {"user_id": slack_user_id, "channel_id": channel_id}, USER_ID_SECRET, algorithm="HS256"
+        {"user_id": slack_user_id, "channel_id": channel_id},
+        USER_ID_SECRET,
+        algorithm="HS256",
     )
 
     # create slack user

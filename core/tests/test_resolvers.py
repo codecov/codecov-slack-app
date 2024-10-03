@@ -633,7 +633,7 @@ class TestBaseResolvers(TestCase):
 
 
 def test_help_resolver():
-    client=MagicMock()
+    client = MagicMock()
 
     resolve_help(
         channel_id="random_channel_id",
