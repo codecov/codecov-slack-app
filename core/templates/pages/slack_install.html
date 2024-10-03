@@ -1,52 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Install Codecov App for Slack</title>
   <style>
     body {
       font-family: "Poppins", sans-serif;
-      background: linear-gradient(162deg,
-          #f8d1e8 0%,
-          #ece6fc 36%,
-          #f9f9ff 95%);
-
+      background: linear-gradient(162deg, #ece6fc 0%, #f8d1e8 95%);
       text-align: center;
-      margin-top: 80px;
+      margin: 0;
+      padding-top: 80px;
       font-weight: 300;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: none;
-      background-size: cover;
       min-height: 100vh;
+      background-size: cover;
+    }
 
-      h1 {
-        font-weight: 500;
-        font-size: 2rem;
-        margin: 0;
-      }
+    h1 {
+      font-weight: 500;
+      font-size: 2rem;
+      margin: 0;
+    }
 
-      .main-body {
-        max-width: 900px;
-        font-size: 1.4em;
-        margin: 0;
-      }
+    .main-body {
+      max-width: 900px;
+      font-size: 1.4em;
+      margin: 0;
+    }
 
-      button {
-        background: linear-gradient(162deg,
-            rgba(240, 31, 122, 1) 0%,
-            rgba(138, 18, 70, 0.5) 200%);
-        border: none;
-        color: white;
-        padding: 15px 60px;
-        font-size: 1.5em;
-        border-radius: 3px;
-        cursor: pointer;
-        margin: 30px 0px;
-        transition: 0.3s;
-        font-family: "Poppins", sans-serif;
-      }
+    .gradient-button {
+      background: linear-gradient(162deg, rgba(240, 31, 122, 1) 0%, rgba(138, 18, 70, 0.5) 200%);
+      border: none;
+      color: white;
+      padding: 15px 60px;
+      font-size: 1.5em;
+      border-radius: 3px;
+      cursor: pointer;
+      margin: 30px 0;
+      transition: 0.3s;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .login-link {
+      color: #c91866;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
     }
 
     a {
@@ -61,37 +67,40 @@
     footer {
       width: 80%;
       font-size: 13px;
-      color: #68737e;
+      color: #c91866;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: solid 1px rgba(216, 220, 226, 1);
+      border-top: solid 1px white;
       padding-top: 20px;
+      margin-top: auto;
+      margin-bottom: 20px;
     }
 
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
+    }
 
-      li {
-        display: inline-block;
-        margin-left: 9px;
+    ul li {
+      display: inline-block;
+      margin-left: 9px;
+    }
 
-        a {
-          color: #0071c2;
-          text-decoration: none;
-        }
-      }
+    ul li a {
+      color: #c91866;
+      text-decoration: none;
     }
 
     .left-ul {
       display: flex;
       align-items: center;
+    }
 
-      p {
-        font-size: 13px;
-      }
+    .left-ul p {
+      font-size: 13px;
+      margin: 0;
     }
 
     .features {
@@ -100,47 +109,95 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
 
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-      }
+    .features h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
 
-      p {
-        font-size: 16px;
-        width: 600px;
-        margin: 0;
-      }
+    .features p {
+      font-size: 16px;
+      width: 600px;
+      margin: 0;
+    }
 
-      img {
-        width: 600px;
-        border-radius: 5px;
-      }
+    .features img {
+      width: 600px;
+      border-radius: 5px;
+    }
+
+    .note, .config-card {
+      font-weight: 400;
+      color: #333;
+      background-color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: inline-block;
+      border: 2px solid #ffd1e6;
+      box-shadow: 0 2px 4px rgba(240, 31, 122, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .note:hover, .config-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(240, 31, 122, 0.15);
+    }
+
+    .config-card {
+      width: 600px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .config-card h2 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+
+    .config-card ol {
+      padding-left: 20px;
+    }
+
+    .config-card li {
+      margin-bottom: 10px;
     }
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-    rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 </head>
 
 <body>
-  <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo" width="120" />
+  <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo" width="120">
   <h1>Streamline Code Coverage with Slack</h1>
   <p class="main-body">
     Codecov App for Slack brings the power of code coverage directly
     into your Slack channels, enabling you and your team to stay informed and
     proactive about your code's quality without ever leaving Slack.
   </p>
+  <div class="note">
+    <p>A Codecov account is required to configure and use this app. <a href="https://codecov.io/login" target="_blank" rel="noopener noreferrer" class="login-link">Login to Codecov</a></p>
+  </div>
   <form action="https://slack.com/oauth/v2/authorize" method="GET">
-    <input type="hidden" name="client_id" value="{{ client_id }}" />
-    <input type="hidden" name="scope" value="{{ scope }}" />
-    <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}" />
-    <input type="hidden" name="state" value="{{ state }}" />
+    <input type="hidden" name="client_id" value="{{ client_id }}">
+    <input type="hidden" name="scope" value="{{ scope }}">
+    <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+    <input type="hidden" name="state" value="{{ state }}">
     <button class="gradient-button">Add to Slack</button>
   </form>
+  <div class="config-card">
+    <h2>Configuration Steps</h2>
+    <ol>
+      <li>Ensure you have a Codecov account. If not, <a href="https://codecov.io/signup" target="_blank" rel="noopener noreferrer" class="login-link">sign up here</a>.</li>
+      <li>Click the "Add to Slack" button to install the app to your Slack workspace.</li>
+      <li>Once installed, use the "/codecov login" command in Slack to link your Codecov account.</li>
+      <li>Follow the prompts to authorize the connection between Slack and Codecov.</li>
+      <li>After successful connection, you can start using Codecov commands in your Slack channels.</li>
+    </ol>
+  </div>
   <div class="features">
     <h2>Code Coverage Changes at a Glance</h2>
     <p>
@@ -149,7 +206,7 @@
       Slack, allowing you to address coverage decreases or celebrate increases
       without waiting around for PR calculations.
     </p>
-    <img src="https://storage.googleapis.com/codecov-cdn/slack_onboarding.png" alt="Codecov Logo" />
+    <img src="https://storage.googleapis.com/codecov-cdn/slack_onboarding.png" alt="Slack onboarding screenshot">
   </div>
   <div class="features">
     <h2>Efficiently Compare Commits</h2>
@@ -159,7 +216,7 @@
       codebase's coverage. It's a direct line to understanding and improving
       your project's code quality.
     </p>
-    <img src="https://storage.googleapis.com/codecov-cdn/comparison.png" alt="Codecov Logo" />
+    <img src="https://storage.googleapis.com/codecov-cdn/comparison.png" alt="Commit comparison screenshot">
   </div>
   <div class="features">
     <h2>Comprehensive PR List</h2>
@@ -169,7 +226,7 @@
       commits, and branches for a full spectrum view on your project's health,
       directly in your Slack workspace.
     </p>
-    <img src="https://storage.googleapis.com/codecov-cdn/pulls.png" alt="Codecov Logo" />
+    <img src="https://storage.googleapis.com/codecov-cdn/pulls.png" alt="PR list screenshot">
   </div>
   <footer>
     <div class="left-ul">
@@ -179,18 +236,16 @@
         <li><a href="https://codecov.io/terms">Terms</a></li>
       </ul>
     </div>
-    <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo" />
+    <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo">
     <ul>
       <li><a href="https://codecovpro.zendesk.com/hc/en-us">Support</a></li>
-      <li>
-        <a href="https://github.com/codecov/feedback/issues/44">Feedback</a>
-      </li>
+      <li><a href="https://github.com/codecov/feedback/issues/44">Feedback</a></li>
     </ul>
   </footer>
+  <script>
+    const year = new Date().getFullYear();
+    document.getElementById("sentry-copy").innerHTML = `© ${year} Sentry`;
+  </script>
 </body>
-<script>
-  const year = new Date().getFullYear();
-  document.getElementById("sentry-copy").innerHTML = `© ${year} Sentry`;
-</script>
 
 </html>

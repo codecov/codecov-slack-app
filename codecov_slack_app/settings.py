@@ -91,7 +91,9 @@ WSGI_APPLICATION = "codecov_slack_app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql"),
+        "ENGINE": os.environ.get(
+            "SQL_ENGINE", "django.db.backends.postgresql"
+        ),
         "NAME": os.environ.get("POSTGRES_DB", "codecov_slack_app"),
         "USER": os.environ.get("POSTGRES_USER", "user"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
@@ -134,7 +136,7 @@ CSP_STYLE_SRC = (
     "'self'",
     "'sha256-XUpurJYPfudnKesBwHWGnVTMcFyg5inchJcdAppSMcY='",
     "'sha256-xuBr9YVS7V3hqBkhwLDtyohNbGFdO8PSWO/QDH0orxk='",
-    "'sha256-G9kZzyN24irmY+hg/rWbW9P5DYILFdr63wXKRPMJlCc='",
+    "'sha256-ExOD6A/CQOU7d45q21u5lKTtYGch1RstdJ8N85wSbwA='",
     "fonts.googleapis.com",
 )
 
