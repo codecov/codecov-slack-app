@@ -72,80 +72,79 @@ def get_endpoint_details(
 
     endpoints_map: Dict[EndpointName, Endpoint] = {
         EndpointName.SERVICE_OWNERS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}",
         ),
         EndpointName.OWNER: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}",
         ),
         EndpointName.USERS_LIST: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/users",
         ),
         EndpointName.REPO_CONFIG: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/config/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/config",
         ),
         EndpointName.REPOS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos",
         ),
         EndpointName.REPO: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}",
         ),
         EndpointName.BRANCHES: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches",
         ),
         EndpointName.BRANCH: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/{branch}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/branches/{branch}",
         ),
         EndpointName.COMMITS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits",
         ),
         EndpointName.COMMIT: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits/{commit_id}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/commits/{commit_id}",
         ),
         EndpointName.PULLS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls",
         ),
         EndpointName.PULL: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/{pull_id}/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/pulls/{pull_id}",
         ),
         EndpointName.COMPONENTS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/components/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/components",
         ),
         EndpointName.FLAGS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags",
         ),
         EndpointName.COVERAGE_TRENDS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/{flag}/coverage/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/flags/{flag}/coverage",
         ),
         EndpointName.COMPARISON: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare",
         ),
         EndpointName.COMPONENT_COMPARISON: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/components/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/components",
         ),
         EndpointName.FILE_COMPARISON: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/file/{file_path}",
         ),
         EndpointName.FLAG_COMPARISON: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/compare/flags",
         ),
         EndpointName.COVERAGE_TREND: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/coverage/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/coverage",
         ),
         EndpointName.FILE_COVERAGE_REPORT: Endpoint(
             url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/file_report/{file_path}",
         ),
         EndpointName.COMMIT_COVERAGE_REPORT: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/report/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/report",
         ),
         EndpointName.COMMIT_COVERAGE_TOTALS: Endpoint(
-            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/totals/",
+            url=f"{CODECOV_PUBLIC_API}/{service}/{owner_username}/repos/{repository}/totals",
         ),
     }
 
     endpoint = endpoints_map[endpoint_name]
 
     if optional_params:
-        endpoint.url = endpoint.url.rstrip("/")
         params_str = urllib.parse.urlencode(optional_params)
         endpoint.url = f"{endpoint.url}?{params_str}"
 
