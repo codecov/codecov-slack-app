@@ -145,6 +145,7 @@ def get_endpoint_details(
     endpoint = endpoints_map[endpoint_name]
 
     if optional_params:
+        endpoint.url = endpoint.url.rstrip("/")
         params_str = urllib.parse.urlencode(optional_params)
         endpoint.url = f"{endpoint.url}?{params_str}"
 

@@ -556,7 +556,9 @@ class CoverageTrendsResolver(BaseResolver):
     command_name = EndpointName.COVERAGE_TRENDS
 
     def resolve(self, params_dict, optional_params):
-        optional_params["interval"] = "1d"  # set a default interval of 1 day
+        if not optional_params.get("interval"):
+            optional_params["interval"] = "1d"  # set a default interval of 1 day
+
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=self.command_name,
