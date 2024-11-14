@@ -518,15 +518,14 @@ class ComparisonResolver(BaseResolver):
         repo = params_dict.get("repository")
 
         if pullid:
-            head = data["head_commit"]
-            base = data["base_commit"]
+            title = f"*Comparison of pull request {pullid} for {repo}*"
+        else:
+            title = f"*Comparison of `{base}` and `{head}` for {repo}*"
 
-        if data:
-            title = f"*Comparison of `{base}` and `{head}` for {repo}*\n\n"
-            return title + json.dumps(data, indent=4, sort_keys=True)
+        if not data:
+            return f"{title} is not found"
 
-        return f"Comparison of {base} and {head} for {repo} not found"
-
+        return f"{title}\n\n{json.dumps(data, indent=4, sort_keys=True)}"
 
 class FlagsResolver(BaseResolver):
     """Returns a paginated list of flags for the specified owner and repository"""
@@ -556,7 +555,9 @@ class CoverageTrendsResolver(BaseResolver):
     command_name = EndpointName.COVERAGE_TRENDS
 
     def resolve(self, params_dict, optional_params):
-        optional_params["interval"] = "1d"  # set a default interval of 1 day
+        if not optional_params.get("interval"):
+            optional_params["interval"] = "1d"  # set a default interval of 1 day
+
         data = handle_codecov_public_api_request(
             user_id=self.command["user_id"],
             endpoint_name=self.command_name,
