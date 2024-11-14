@@ -92,3 +92,4 @@ Codecov Slack App Implementation for a Slack app intended to serve Codecov custo
 That's it! 🎉 Your Slack app should now be set up and running locally.
 
 ℹ️ Please note that you need to replace `YOUR_APP_ID` and `NGROK_TUNNEL_URL` with the appropriate values for your application.
+
