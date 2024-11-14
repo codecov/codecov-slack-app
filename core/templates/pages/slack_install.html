@@ -164,10 +164,48 @@
     .config-card li {
       margin-bottom: 10px;
     }
+
+    .commands-section {
+      text-align: left;
+      width: 600px;
+      margin-top: 40px;
+    }
+
+    .commands-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .command-category {
+      margin-bottom: 20px;
+      border: 1px solid #c91866;
+      border-radius: 5px;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+
+    .command-category h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .command-category pre {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 5px 0;
+      overflow-x: auto;
+    }
+
+    .command-category p {
+      font-size: 14px; /* Smaller font size for descriptions */
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -228,6 +266,97 @@
     </p>
     <img src="https://storage.googleapis.com/codecov-cdn/pulls.png" alt="PR list screenshot">
   </div>
+  <div class="commands-section">
+    <h2>Check out supported commands</h2>
+    <div class="command-category">
+      <h3>Auth Commands</h3>
+      <pre>/codecov login - Login to a service</pre>
+      <p>Authenticate your Codecov account within Slack.</p>
+      <pre>/codecov logout - Logout of current active service</pre>
+      <p>Log out of your current Codecov session.</p>
+    </div>
+    <div class="command-category">
+      <h3>User Commands</h3>
+      <pre>/codecov organizations - Get a list of organizations that user has access to</pre>
+      <p>Retrieve a list of organizations associated with your Codecov account.</p>
+      <pre>/codecov owner username=<org_name> service=<service> - Get owner's information</pre>
+      <p>Fetch details about the owner of a specific organization.</p>
+      <pre>/codecov users username=<org_name> service=<service> Optional params: is_admin=<is_admin> activated=<activated> page=<page> page_size=<page_size> - Get a list of users for the specified owner</pre>
+      <p>Get a list of users associated with the specified organization.</p>
+    </div>
+    <div class="command-category">
+      <h3>Repositories Commands</h3>
+      <pre>/codecov repos username=<org_name> service=<service> Optional params: names=<names> active=<active> page=<page> page_size=<page_size> - Get a list of repos for the specified owner</pre>
+      <p>Retrieve a list of repositories for the specified organization.</p>
+      <pre>/codecov repo repository=<repository> username=<org_name> service=<service> - Get repo information</pre>
+      <p>Fetch detailed information about a specific repository.</p>
+      <pre>/codecov repo-config username=<org_name> service=<service> repository=<repository> - Get the repository configuration for the specified owner and repository</pre>
+      <p>Access the configuration settings for a specific repository.</p>
+    </div>
+    <div class="command-category">
+      <h3>Branches Commands</h3>
+      <pre>/codecov branches username=<org_name> service=<service> repository=<repository> Optional params: ordering=<ordering> author=<author> page=<page> page_size=<page_size> - Get a list of branches for the repository</pre>
+      <p>Retrieve a list of branches associated with a specific repository.</p>
+      <pre>/codecov branch repository=<repository> username=<org_name> service=<service> branch=<branch> - Get branch information</pre>
+      <p>Fetch detailed information about a specific branch.</p>
+    </div>
+    <div class="command-category">
+      <h3>Commits Commands</h3>
+      <pre>/codecov commits username=<org_name> service=<service> repository=<repository> Optional params: branch=<branch> page=<page> page_size=<page_size> - Get a list of commits for the repository</pre>
+      <p>Retrieve a list of commits associated with a specific repository.</p>
+      <pre>/codecov commit repository=<repository> username=<org_name> service=<service> commitid=<commitid> - Get commit information</pre>
+      <p>Fetch detailed information about a specific commit.</p>
+    </div>
+    <div class="command-category">
+      <h3>Pulls Commands</h3>
+      <pre>/codecov pulls username=<org_name> service=<service> repository=<repository> Optional params: ordering=<ordering> page=<page> page_size=<page> state=<closed,open,merged> - Get a list of pulls for the repository</pre>
+      <p>Retrieve a list of pull requests associated with a specific repository.</p>
+      <pre>/codecov pull repository=<repository> username=<org_name> service=<service> pullid=<pullid> - Get pull information</pre>
+      <p>Fetch detailed information about a specific pull request.</p>
+    </div>
+    <div class="command-category">
+      <h3>Components Commands</h3>
+      <pre>/codecov components username=<org_name> service=<service> repository=<repository> Optional params: branch=<branch> sha=<sha> - Gets a list of components for the specified repository</pre>
+      <p>Retrieve a list of components associated with a specific repository.</p>
+    </div>
+    <div class="command-category">
+      <h3>Flags Commands</h3>
+      <pre>/codecov flags username=<org_name> service=<service> repository=<repository> Optional params: page=<page> page_size=<page_size> - Gets a paginated list of flags for the specified repository</pre>
+      <p>Access a list of flags associated with a specific repository.</p>
+      <pre>/codecov coverage-trends username=<org_name> service=<service> repository=<repository> flag=<flag> Optional params: page=<page> page_size=<page_size> start_date=<start_date> end_date=<end_date> branch=<branch> interval=<1d,30d,7d> - Gets a paginated list of timeseries measurements aggregated by the specified interval</pre>
+      <p>Retrieve coverage trends over time for a specific repository.</p>
+    </div>
+    <div class="command-category">
+      <h3>Comparison Commands</h3>
+      <pre>/codecov compare username=<org_name> service=<service> repository=<repository> - Get a comparison between two commits or a pull and its base</pre>
+      <p>Fetch a comparison of coverage between two commits or a pull request.</p>
+      <pre>/codecov compare-component username=<org_name> service=<service> repository=<repository> - Gets a component comparison</pre>
+      <p>Retrieve a comparison of components between two commits.</p>
+      <pre>/codecov compare-file username=<org_name> service=<service> repository=<repository> path=<path> - Gets a comparison for a specific file path</pre>
+      <p>Fetch a comparison of coverage for a specific file.</p>
+      <pre>/codecov compare-flag username=<org_name> service=<service> repository=<repository> - Get a flag comparison</pre>
+      <p>Retrieve a comparison of flags between two commits.</p>
+      <p><strong>NOTE:</strong> You must either pass pullid=<pullid> or both of head=<head> base=<base> in the comparison commands.</p>
+    </div>
+    <div class="command-category">
+      <h3>Coverage Commands</h3>
+      <pre>/codecov coverage-trend username=<org_name> service=<service> repository=<repository> Optional params: branch=<branch> end_date=<end_date> start_date=<start_date> interval=<1d,30d,7d> page=<page> page_size=<page_size> - Get a paginated list of timeseries measurements aggregated by the specified interval</pre>
+      <p>Retrieve coverage trends over time for a specific repository.</p>
+      <pre>/codecov file-coverage-report repository=<repository> username=<org_name> service=<service> path=<path> Optional params: branch=<branch> sha=<sha> - Get coverage info for a single file specified by path</pre>
+      <p>Fetch coverage information for a specific file in the repository.</p>
+      <pre>/codecov commit-coverage-report repository=<repository> username=<org_name> service=<service> Optional params: path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag> - Get line-by-line coverage info (hit=0/miss=1/partial=2)</pre>
+      <p>Retrieve detailed line-by-line coverage information for a specific commit.</p>
+      <pre>/codecov commit-coverage-totals repository=<repository> username=<org_name> service=<service> path=<path> Optional params: path=<path> branch=<branch> sha=<sha> component_id=<component_id> flag=<flag> - Get the coverage totals for a given commit and the coverage totals broken down by file</pre>
+      <p>Access the total coverage information for a specific commit.</p>
+    </div>
+    <div class="command-category">
+      <h3>Notifications Commands</h3>
+      <pre>/codecov notify username=<org_name> service=<service> repository=<repository> - Direct Notifications for a specific repo to a specific channel</pre>
+      <p>Set up direct notifications for a specific repository in your Slack channel.</p>
+      <pre>/codecov notify-off username=<org_name> service=<service> repository=<repository> - Turn off Notifications for a specific repo in a specific channel</pre>
+      <p>Disable notifications for a specific repository in your Slack channel.</p>
+    </div>
+  </div>
   <footer>
     <div class="left-ul">
       <p id="sentry-copy"></p>
@@ -238,6 +367,7 @@
     </div>
     <img src="https://storage.googleapis.com/codecov-cdn/codecov.svg" alt="Codecov Logo">
     <ul>
+      <li><a href="https://about.codecov.io/pricing/">Pricing</a></li>
       <li><a href="https://codecovpro.zendesk.com/hc/en-us">Support</a></li>
       <li><a href="https://github.com/codecov/feedback/issues/44">Feedback</a></li>
     </ul>
