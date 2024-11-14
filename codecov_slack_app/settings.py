@@ -134,8 +134,7 @@ CSP_IMG_SRC = (
 
 CSP_STYLE_SRC = (
     "'self'",
-    "'sha256-XUpurJYPfudnKesBwHWGnVTMcFyg5inchJcdAppSMcY='",
-    "'sha256-xuBr9YVS7V3hqBkhwLDtyohNbGFdO8PSWO/QDH0orxk='",
+    "'sha256-vomAyC/42DMjH+WSomJjI0StRHe03vo8EjVymmDeJi4='",
     "'sha256-ExOD6A/CQOU7d45q21u5lKTtYGch1RstdJ8N85wSbwA='",
     "fonts.googleapis.com",
 )
