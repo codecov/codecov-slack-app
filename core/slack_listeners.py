@@ -199,7 +199,7 @@ def update_home_tab(client, event, logger):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": ":rocket: *Welcome to Codecov Slack App* :rocket:\n\nTake control of your notifications and streamline your workflow. With just a few simple commands, you can enhance collaboration across multiple channels and repositories. Here's what you can do:",
+                "text": ":rocket: *Welcome to Codecov App for Slack* :rocket:\n\nTake control of your notifications and streamline your workflow. With just a few simple commands, you can enhance collaboration across multiple channels and repositories. Here's what you can do:",
             },
         },
         {
