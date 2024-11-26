@@ -49,7 +49,7 @@ build-requirements:
 .PHONY: build
 build: # Used to build the app
 build:
-	DOCKER_BUILDKIT=1 docker build -f Dockerfile . -t ${image}:${ENV}-${release_version}-${sha} \
+	DOCKER_BUILDKIT=1 docker build -f Dockerfile . -t ${image}:${ENV}-${sha} \
 	--build-arg REQUIREMENTS_IMAGE=${image}:${REQUIREMENTS_TAG} \
 	--label "org.label-schema.build-date"="$(build_date)" \
 	--label "org.label-schema.name"="Codecov Slack App" \
