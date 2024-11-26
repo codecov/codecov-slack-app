@@ -75,6 +75,6 @@ up:
 .PHONY: push
 push: # Used to build the app
 push:
-	docker tag ${image}:${ENV}-${release_version}-${sha} ${image}:${ENV}-${release_version}-latest
-	docker push ${image}:${ENV}-${release_version}-${sha}
-	docker push ${image}:${ENV}-${release_version}-latest
+	docker tag ${image}:${ENV}-${sha} ${image}:${ENV}-latest
+	docker push ${image}:${ENV}-${sha}
+	docker push ${image}:${ENV}-latest
