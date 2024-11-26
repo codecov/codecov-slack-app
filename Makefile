@@ -69,12 +69,12 @@ local:
 up: # Used to bring up the local app
 up:
 	touch .env
-	docker image inspect ${image}:${ENV}-${release_version}-${sha} &>/dev/null || $(MAKE) local
+	docker image inspect ${image}:${ENV}-release-${sha} &>/dev/null || $(MAKE) local
 	docker-compose up -d
 
 .PHONY: push
 push: # Used to build the app
 push:
-	docker tag ${image}:${ENV}-${sha} ${image}:${ENV}-release-latest
-	docker push ${image}:${ENV}-${sha}
+	docker tag ${image}:${ENV}-release-${sha} ${image}:${ENV}-release-latest
+	docker push ${image}:${ENV}-release-${sha}
 	docker push ${image}:${ENV}-latest
