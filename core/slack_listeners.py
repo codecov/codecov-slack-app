@@ -444,3 +444,44 @@ def handle_app_uninstalled(body, logger):
 def handle_view_pr(ack, body, client, logger):
     ack()
     logger.info(body)
+
+
+@app.event("message")
+def handle_dm_messages(event, client, logger):
+    # Check if the message is from a user and not the bot itself
+    if event.get("subtype") == "bot_message":
+        return
+    
+    channel_id = event["channel"]
+
+    try:
+        client.chat_postMessage(
+            channel=channel_id,
+            text=f"Hi there! I didn't understand that. Try using `/codecov` for supported commands or click the Help button below.",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"Hi there! I didn't understand that. Try using `/codecov` for supported commands or click the Help button below.",
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Help",
+                                "emoji": True,
+                            },
+                            "value": "help",
+                            "action_id": "help-message",
+                        }
+                    ],
+                },
+            ],
+        )
+    except Exception as e:
+        logger.error(f"Error sending DM response: {e}")
