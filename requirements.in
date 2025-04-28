@@ -1,5 +1,5 @@
 asgiref
-Django
+Django==5.1.4
 psycopg2-binary
 sqlparse
 slack-sdk
@@ -12,3 +12,4 @@ sentry-sdk
 httpx
 gunicorn
 django-csp
+setuptools>=70.0.0
