@@ -19,7 +19,7 @@ RUN             apk update \
                 build-base \
                 cargo \
                 curl-dev \
-                py3-setuptools \
+                "py3-setuptools>=80.8.0" \
                 && pip install --upgrade pip
 
 COPY            requirements.txt /
@@ -42,7 +42,7 @@ RUN             apk -U upgrade binutils busybox expat libretls && \
                 openssl-dev \
                 make \
                 curl-dev \
-                py3-setuptools \
+                "py3-setuptools>=80.8.0" \
                 libcurl
 
 WORKDIR         /pip-packages/
