@@ -19,13 +19,13 @@ RUN             apk update \
                 build-base \
                 cargo \
                 curl-dev \
-                py3-setuptools \
                 && pip install --upgrade pip
 
 COPY            requirements.txt /
 WORKDIR         /pip-packages/
 
 RUN             pip wheel -r /requirements.txt
+RUN             pip install --upgrade setuptools pip --break-system-packages;
 
 # RUNTIME STAGE - Copy packages from build stage and install runtime dependencies
 FROM            python:3.12-alpine3.21
@@ -42,7 +42,6 @@ RUN             apk -U upgrade binutils busybox expat libretls && \
                 openssl-dev \
                 make \
                 curl-dev \
-                py3-setuptools \
                 libcurl
 
 WORKDIR         /pip-packages/
@@ -50,11 +49,9 @@ COPY            --from=build /pip-packages/ /pip-packages/
 
 RUN             rm -rf /pip-packages/src
 RUN             pip install --no-deps --no-index --find-links=/pip-packages/ /pip-packages/*
-
+RUN             pip install --upgrade setuptools pip --break-system-packages;
 
 # Currently expat will not bump to latest if this upgrade is done earlier
 # https://unix.stackexchange.com/questions/769209/unable-to-install-or-upgrade-to-specific-version-of-alpine-expat-2-6-0-r0-in-alp
-RUN             apk add --upgrade expat py3-setuptools
+RUN             apk add --upgrade expat
 
-RUN             pip install --upgrade setuptools pip --break-system-packages
-RUN             pip3 install --upgrade setuptools pip --break-system-packages

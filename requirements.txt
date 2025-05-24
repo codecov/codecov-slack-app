@@ -78,3 +78,6 @@ urllib3==1.26.19
     # via
     #   requests
     #   sentry-sdk
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
