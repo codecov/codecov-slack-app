@@ -55,6 +55,3 @@ RUN             pip install --no-deps --no-index --find-links=/pip-packages/ /pi
 # Currently expat will not bump to latest if this upgrade is done earlier
 # https://unix.stackexchange.com/questions/769209/unable-to-install-or-upgrade-to-specific-version-of-alpine-expat-2-6-0-r0-in-alp
 RUN             apk add --upgrade expat
-
-# Upgrade setuptools>=80.8.0
-RUN             pip3 install --upgrade setuptools pip --break-system-packages
