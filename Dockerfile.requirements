@@ -19,7 +19,7 @@ RUN             apk update \
                 build-base \
                 cargo \
                 curl-dev \
-                py3-setuptools>=80.8.0 \
+                py3-setuptools \
                 && pip install --upgrade pip
 
 COPY            requirements.txt /
@@ -42,7 +42,7 @@ RUN             apk -U upgrade binutils busybox expat libretls && \
                 openssl-dev \
                 make \
                 curl-dev \
-                py3-setuptools>=80.8.0 \
+                py3-setuptools \
                 libcurl
 
 WORKDIR         /pip-packages/
@@ -55,3 +55,5 @@ RUN             pip install --no-deps --no-index --find-links=/pip-packages/ /pi
 # Currently expat will not bump to latest if this upgrade is done earlier
 # https://unix.stackexchange.com/questions/769209/unable-to-install-or-upgrade-to-specific-version-of-alpine-expat-2-6-0-r0-in-alp
 RUN             apk add --upgrade expat
+
+RUN             pip3 install --upgrade setuptools pip --break-system-packages
