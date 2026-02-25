@@ -1,6 +1,6 @@
-Django
+Django>=5.1,<5.2
 asgiref
-django-csp
+django-csp>=3.8
 djangorestframework
 gunicorn
 httpx
