@@ -175,7 +175,10 @@ SENTRY_SAMPLE_RATE = float(os.environ.get("SENTRY_SAMPLE_RATE", 0.1))
 
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN"),
-    integrations=[DjangoIntegration(), HttpxIntegration()],
+    integrations=[
+        DjangoIntegration(middleware_spans=False),
+        HttpxIntegration(),
+    ],
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
