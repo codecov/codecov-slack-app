@@ -4,6 +4,7 @@
 FROM            python:3.12-alpine3.21 as build
 
 RUN             apk update \
+                && apk upgrade --no-cache \
                 && apk add --update --no-cache \
                 git \
                 openssh \
@@ -19,20 +20,20 @@ RUN             apk update \
                 build-base \
                 cargo \
                 curl-dev \
-                && pip install --upgrade pip
+                && pip install --upgrade pip setuptools
 
 COPY            requirements.txt /
 WORKDIR         /pip-packages/
 
 RUN             pip wheel -r /requirements.txt
-RUN             pip install --upgrade setuptools pip --break-system-packages;
 
 # RUNTIME STAGE - Copy packages from build stage and install runtime dependencies
 FROM            python:3.12-alpine3.21
 
-RUN             apk -U upgrade binutils busybox expat libretls && \
-                apk add --no-cache postgresql-libs && \
-                apk add --no-cache --virtual .build-deps gcc \
+RUN             apk update && apk upgrade --no-cache \
+                && apk add --no-cache postgresql-libs \
+                && apk add --no-cache --virtual .build-deps \
+                gcc \
                 musl-dev \
                 postgresql-dev \
                 libxslt-dev \
@@ -47,11 +48,10 @@ RUN             apk -U upgrade binutils busybox expat libretls && \
 WORKDIR         /pip-packages/
 COPY            --from=build /pip-packages/ /pip-packages/
 
-RUN             rm -rf /pip-packages/src
-RUN             pip install --no-deps --no-index --find-links=/pip-packages/ /pip-packages/*
-RUN             pip install --upgrade setuptools pip --break-system-packages;
+RUN             rm -rf /pip-packages/src \
+                && pip install --no-deps --no-index --find-links=/pip-packages/ /pip-packages/* \
+                && pip install --upgrade 'setuptools>=82' pip --break-system-packages \
+                && apk del .build-deps
 
-# Currently expat will not bump to latest if this upgrade is done earlier
-# https://unix.stackexchange.com/questions/769209/unable-to-install-or-upgrade-to-specific-version-of-alpine-expat-2-6-0-r0-in-alp
+# expat must be upgraded after .build-deps removal; see alpine#15709
 RUN             apk add --upgrade expat
-
