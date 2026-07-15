@@ -51,6 +51,7 @@ COPY            --from=build /pip-packages/ /pip-packages/
 RUN             rm -rf /pip-packages/src \
                 && pip install --no-deps --no-index --find-links=/pip-packages/ /pip-packages/* \
                 && pip install --upgrade 'setuptools>=82' 'pip>=26.1.2' --break-system-packages \
+                && rm -rf /usr/local/lib/python3.12/ensurepip/_bundled/pip-*.whl \
                 && apk del .build-deps
 
 # expat must be upgraded after .build-deps removal; see alpine#15709
