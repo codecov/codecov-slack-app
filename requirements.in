@@ -1,4 +1,4 @@
-Django>=5.1,<5.2
+Django>=5.2,<5.3
 asgiref
 django-csp>=3.8,<4
 djangorestframework
