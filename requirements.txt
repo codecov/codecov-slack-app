@@ -18,14 +18,14 @@ certifi==2026.10.23
     #   sentry-sdk
 charset-normalizer==3.4.9
     # via requests
-django==5.1.15
+django==5.2.18
     # via
     #   -r requirements.in
     #   django-csp
     #   djangorestframework
 django-csp==3.8
     # via -r requirements.in
-djangorestframework==3.17.1
+djangorestframework==3.18.3
     # via -r requirements.in
 gunicorn==26.0.0
     # via -r requirements.in
@@ -52,7 +52,7 @@ psycopg2-binary==2.9.12
     # via -r requirements.in
 pygments==2.20.0
     # via pytest
-pyjwt==2.13.0
+pyjwt==2.15.1
     # via -r requirements.in
 pytest==9.1.1
     # via pytest-django
@@ -68,13 +68,13 @@ slack-sdk==3.43.0
     # via
     #   -r requirements.in
     #   slack-bolt
-sqlparse==0.5.5
+sqlparse==0.6.1
     # via
     #   -r requirements.in
     #   django
 typing-extensions==4.16.0
     # via anyio
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements.in
     #   requests
