@@ -55,4 +55,4 @@ RUN             rm -rf /pip-packages/src \
                 && apk del .build-deps
 
 # expat must be upgraded after .build-deps removal; see alpine#15709
-RUN             apk add --upgrade expat krb5-libs zlib
+RUN             apk add --upgrade expat krb5-libs zlib libssl3 libcrypto3
