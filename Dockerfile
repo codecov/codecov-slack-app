@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3
 ARG REQUIREMENTS_IMAGE
 ARG BERGLAS_VERSION=v2.0.18
-ARG GO_IMAGE=golang:1.27.3-bookworm
+ARG GO_IMAGE=golang:1.27.4-bookworm
 
 # Build berglas from source: the prebuilt image lags on the Go stdlib, which
 # carries critical/high CVEs in AR scans.
