@@ -27,7 +27,7 @@ django-csp==3.8
     # via -r requirements.in
 djangorestframework==3.18.3
     # via -r requirements.in
-gunicorn==26.0.0
+gunicorn==27.0.1
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
